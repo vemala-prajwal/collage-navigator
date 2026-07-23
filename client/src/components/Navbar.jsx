@@ -58,18 +58,23 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
         initial={false}
         animate={{ y: hidden ? -110 : 0 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 border-b border-white/10 transition-all duration-300 ${
-          scrolled ? 'bg-slate-950/80 backdrop-blur-md shadow-soft' : 'bg-transparent'
+        className={`fixed inset-x-0 top-0 z-50 border-b border-border transition-all duration-300 ${
+          scrolled ? 'bg-surface/95 backdrop-blur-md shadow-soft' : 'bg-transparent'
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-          <Link to="/" className="text-lg font-semibold tracking-wide text-white">
+          <Link to="/" className="text-lg font-semibold tracking-wide text-foreground">
             Campus Navigator
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} end className="relative text-sm text-slate-300 transition-colors duration-200 hover:text-white">
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end
+                className="relative text-sm text-foreground/70 transition-colors duration-200 hover:text-foreground"
+              >
                 {({ isActive }) => (
                   <span className="inline-flex items-center gap-2">
                     <span>{item.label}</span>
@@ -89,7 +94,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-slate-100 transition-all duration-200 hover:border-primary-500 hover:text-white md:inline-flex"
+              className="hidden rounded-2xl border border-border bg-surface-secondary px-3 py-2 text-foreground transition-all duration-200 hover:bg-accent/10 md:inline-flex"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
@@ -100,14 +105,14 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                 <button
                   type="button"
                   onClick={logout}
-                  className="rounded-2xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-500"
+                  className="rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-strong"
                 >
                   Logout
                 </button>
               ) : (
                 <Link
                   to="/login"
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:border-primary-500"
+                  className="rounded-2xl border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-foreground transition-all duration-200 hover:border-accent/80"
                 >
                   Login
                 </Link>
@@ -117,7 +122,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-100 transition-all duration-200 hover:bg-white/10 md:hidden"
+              className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary p-2 text-foreground transition-all duration-200 hover:bg-background-secondary md:hidden"
               aria-label="Open navigation menu"
             >
               <Menu size={20} />
@@ -136,7 +141,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
               exit="hidden"
               variants={overlayVariants}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-surface-secondary/90 backdrop-blur-sm"
               onClick={() => setMenuOpen(false)}
             />
 
@@ -147,7 +152,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
               exit="closed"
               variants={menuVariants}
               transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              className="fixed right-0 top-0 z-50 h-full w-[min(88vw,340px)] bg-slate-950/98 px-6 py-6 shadow-soft"
+              className="fixed right-0 top-0 z-50 h-full w-[min(88vw,340px)] bg-surface/95 px-6 py-6 shadow-soft"
             >
               <div className="flex items-center justify-between">
                 <Link to="/" className="text-lg font-semibold tracking-wide text-white" onClick={() => setMenuOpen(false)}>
@@ -199,11 +204,11 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                   visible: { transition: { staggerChildren: 0.08, delayChildren: 0.36 } },
                 }}
               >
-                <motion.button
+                    <motion.button
                   variants={itemVariants}
                   type="button"
                   onClick={toggleTheme}
-                  className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/10"
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-accent/10"
                 >
                   {theme === 'dark' ? 'Light mode' : 'Dark mode'}
                 </motion.button>
@@ -215,19 +220,19 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                       logout();
                       setMenuOpen(false);
                     }}
-                    className="rounded-2xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-500"
+                    className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-strong"
                   >
                     Logout
                   </motion.button>
                 ) : (
-                  <motion(Link)
+                  <motion.a
                     variants={itemVariants}
-                    to="/login"
+                    href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/10"
+                    className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-background-secondary"
                   >
                     Login
-                  </motion(Link>
+                  </motion.a>
                 )}
               </motion.div>
             </motion.aside>

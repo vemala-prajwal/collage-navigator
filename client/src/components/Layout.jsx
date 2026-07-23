@@ -9,20 +9,40 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link to="/" className="text-lg font-semibold tracking-wide">Campus Navigator</Link>
-          <nav className="flex items-center gap-3 text-sm">
-            <Link to="/" className="rounded px-3 py-2 hover:bg-slate-800">Home</Link>
-            <Link to="/canteen" className="rounded px-3 py-2 hover:bg-slate-800">Canteen</Link>
-            <button onClick={toggleTheme} className="rounded p-2 hover:bg-slate-800">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <header className="border-b border-border bg-surface/95 backdrop-blur-sm transition-colors duration-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
+          <Link to="/" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Campus Navigator
+          </Link>
+          <nav className="flex items-center gap-3 text-sm sm:gap-4">
+            <Link
+              to="/"
+              className="rounded px-3 py-2 text-foreground/70 transition hover:bg-background-secondary hover:text-foreground"
+            >
+              Home
+            </Link>
+            <Link
+              to="/canteen"
+              className="rounded px-3 py-2 text-foreground/70 transition hover:bg-background-secondary hover:text-foreground"
+            >
+              Canteen
+            </Link>
+            <button
+              onClick={toggleTheme}
+              className="rounded border border-border bg-surface-secondary px-3 py-2 text-foreground transition hover:bg-accent/10"
+              aria-label="Toggle theme"
+            >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             {user ? (
-              <button onClick={() => logout(navigate)} className="rounded bg-emerald-600 px-3 py-2">Logout</button>
+              <button onClick={() => logout(navigate)} className="rounded bg-accent px-3 py-2 text-white transition hover:bg-accent-strong">
+                Logout
+              </button>
             ) : (
-              <Link to="/login" className="rounded bg-sky-600 px-3 py-2">Login</Link>
+              <Link to="/login" className="rounded bg-accent px-3 py-2 text-white transition hover:bg-accent-strong">
+                Login
+              </Link>
             )}
           </nav>
         </div>
