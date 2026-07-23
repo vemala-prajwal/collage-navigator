@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X, Moon, Sun } from 'lucide-react';
 
+const MotionLink = motion(Link);
+
 const navItems = [
   { label: 'Home', to: '/' },
   { label: 'Map', to: '/map-search' },
@@ -204,7 +206,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                   visible: { transition: { staggerChildren: 0.08, delayChildren: 0.36 } },
                 }}
               >
-                    <motion.button
+                <motion.button
                   variants={itemVariants}
                   type="button"
                   onClick={toggleTheme}
@@ -225,14 +227,14 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                     Logout
                   </motion.button>
                 ) : (
-                  <motion.a
+                  <MotionLink
                     variants={itemVariants}
-                    href="/login"
+                    to="/login"
                     onClick={() => setMenuOpen(false)}
                     className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-background-secondary"
                   >
                     Login
-                  </motion.a>
+                  </MotionLink>
                 )}
               </motion.div>
             </motion.aside>
