@@ -29,6 +29,20 @@ const accentBlobMotion = {
   },
 };
 
+const secondaryBlobMotion = {
+  animate: {
+    x: [0, 10, -12, 14, 0],
+    y: [0, 14, -8, 12, 0],
+    scale: [1, 1.02, 0.98, 1.04, 1],
+    transition: {
+      duration: 28,
+      ease: [0.16, 1, 0.3, 1],
+      repeat: Infinity,
+      repeatType: 'mirror',
+    },
+  },
+};
+
 export default function AnimatedBackground({ className = '' }) {
   const [isVisible, setIsVisible] = useState(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -65,6 +79,10 @@ export default function AnimatedBackground({ className = '' }) {
       <motion.div
         className="animated-background__blob animated-background__blob--accent"
         {...(prefersReducedMotion || !isVisible ? {} : accentBlobMotion)}
+      />
+      <motion.div
+        className="animated-background__blob animated-background__blob--secondary"
+        {...(prefersReducedMotion || !isVisible ? {} : secondaryBlobMotion)}
       />
       <div className="animated-background__noise" />
     </div>

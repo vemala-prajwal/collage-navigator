@@ -60,14 +60,30 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
         initial={false}
         animate={{ y: hidden ? -110 : 0 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 border-b border-border transition-all duration-300 ${
-          scrolled ? 'bg-surface/95 backdrop-blur-md shadow-soft' : 'bg-transparent'
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
+          scrolled ? 'bg-background/80 dark:bg-surface/90 border-white/10 backdrop-blur-xl shadow-soft' : 'border-transparent bg-transparent'
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-          <Link to="/" className="text-lg font-semibold tracking-wide text-foreground">
-            Campus Navigator
-          </Link>
+          <div className="relative flex items-center gap-4">
+            <Link to="/" className="text-lg font-semibold tracking-wide text-foreground">
+              Campus Navigator
+            </Link>
+
+            <MotionLink
+              to="/map-search"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -2 }}
+              className="hidden items-center gap-2 rounded-full border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-[0.72rem] font-semibold text-primary-100 shadow-[0_16px_54px_-36px_rgba(59,130,246,0.9)] backdrop-blur-xl md:inline-flex"
+            >
+              <span>Live map</span>
+              <span className="rounded-full bg-primary-500 px-2 py-1 text-[0.65rem] uppercase tracking-[0.2em] text-white shadow-sm">
+                New
+              </span>
+            </MotionLink>
+          </div>
 
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) => (

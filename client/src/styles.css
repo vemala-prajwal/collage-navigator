@@ -50,10 +50,37 @@ html.dark {
     min-height: 100vh;
     font-family: var(--font-body);
     background-color: rgb(var(--color-background));
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(37, 99, 235, 0.22), transparent 16%),
+      radial-gradient(circle at 84% 24%, rgba(168, 85, 247, 0.18), transparent 20%),
+      radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.14), transparent 26%),
+      linear-gradient(180deg, rgb(var(--color-background)) 0%, rgb(var(--color-background-secondary)) 100%);
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center top;
     color: rgb(var(--color-foreground));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  @media (max-width: 767px) {
+    body {
+      background-position: center -12rem;
+      background-size: 180% auto;
+      background-image:
+        radial-gradient(circle at 20% 8%, rgba(37, 99, 235, 0.18), transparent 18%),
+        radial-gradient(circle at 85% 18%, rgba(168, 85, 247, 0.14), transparent 20%),
+        radial-gradient(circle at 50% 96%, rgba(16, 185, 129, 0.12), transparent 28%),
+        linear-gradient(180deg, rgb(var(--color-background)) 0%, rgb(var(--color-background-secondary)) 100%);
+    }
+  }
+
+  @media (min-width: 768px) {
+    body {
+      background-attachment: fixed;
+      background-position: center 8%;
+    }
   }
 
   h1,
@@ -182,7 +209,72 @@ html.dark {
 .animated-background__blob--accent {
   bottom: -10%;
   right: -10%;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.24), transparent 58%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.24), transparent 58%);
+}
+
+.animated-background__blob--secondary {
+  top: 55%;
+  left: 68%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.24), transparent 58%);
+  opacity: 0.22;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-position: center 10%;
+  }
+
+  .animated-background__blob {
+    width: 520px;
+    height: 520px;
+  }
+
+  .animated-background__blob--primary {
+    top: -18%;
+    left: -16%;
+  }
+
+  .animated-background__blob--accent {
+    bottom: -8%;
+    right: -14%;
+  }
+
+  .animated-background__blob--secondary {
+    top: 62%;
+    left: 58%;
+    width: 460px;
+    height: 460px;
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    background-position: center 8%;
+  }
+
+  .animated-background__blob {
+    width: 620px;
+    height: 620px;
+  }
+
+  .animated-background__blob--primary {
+    top: -18%;
+    left: -18%;
+  }
+
+  .animated-background__blob--accent {
+    bottom: -6%;
+    right: -16%;
+  }
+
+  .animated-background__blob--secondary {
+    top: 58%;
+    left: 62%;
+    width: 520px;
+    height: 520px;
+  }
 }
 
 .shimmer {
