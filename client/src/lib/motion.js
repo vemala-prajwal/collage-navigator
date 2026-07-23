@@ -35,3 +35,21 @@ export const pageTransition = {
     transition: premiumTransition(0.32),
   },
 };
+
+export const scaleFade = {
+  hidden: { opacity: 0, scale: 0.88 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: premiumTransition(0.6),
+  },
+};
+
+export const slideUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: premiumTransition(0.65),
+  },
+};

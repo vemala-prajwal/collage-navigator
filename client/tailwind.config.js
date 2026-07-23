@@ -9,8 +9,13 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       fontSize: {
+        'display-xl': ['clamp(3.75rem, 7vw, 5rem)', { lineHeight: '1.02', letterSpacing: '-0.04em' }],
         'display-lg': ['clamp(3rem, 5vw, 4rem)', { lineHeight: '1.05', letterSpacing: '-0.04em' }],
         'display-md': ['clamp(2.25rem, 3.5vw, 3rem)', { lineHeight: '1.08', letterSpacing: '-0.03em' }],
+        'display-sm': ['clamp(1.75rem, 2.5vw, 2.25rem)', { lineHeight: '1.1', letterSpacing: '-0.03em' }],
+      },
+      spacing: {
+        section: 'var(--section-gap)',
       },
       colors: {
         background: 'rgb(var(--color-background) / <alpha-value>)',
@@ -37,6 +42,7 @@ export default {
         soft: 'var(--shadow-soft)',
         elevated: 'var(--shadow-elevated)',
         card: 'var(--shadow-card)',
+        glow: 'var(--shadow-glow)',
       },
       borderRadius: {
         xl: '1rem',
@@ -54,7 +60,15 @@ export default {
       },
       backgroundImage: {
         'hero-gradient': 'var(--gradient-hero)',
-        'hero-mesh': 'var(--gradient-hero-mesh)',
+      },
+      animation: {
+        marquee: 'marquee 40s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
       },
     },
   },

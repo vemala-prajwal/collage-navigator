@@ -66,14 +66,14 @@ export default function MapSearchPage() {
   ];
 
   const searchPanel = (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-card">
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3">
-        <Search className="text-foreground-muted" size={18} />
+    <div className="premium-card p-4">
+      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/60 px-4 py-3.5 backdrop-blur-sm">
+        <Search className="text-accent/70" size={18} />
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search locations, dining, or buildings"
-          className="w-full bg-transparent text-foreground outline-none placeholder:text-foreground-muted/60"
+          className="w-full bg-transparent text-foreground outline-none placeholder:text-foreground-muted/50"
         />
       </div>
       <p className="mt-3 text-sm text-foreground-muted">
@@ -142,12 +142,14 @@ export default function MapSearchPage() {
           )}
         </section>
 
-        <section className="glass-panel relative overflow-hidden rounded-3xl p-6">
-          <div className="relative h-[520px] overflow-hidden rounded-2xl border border-border bg-surface-secondary">
+        <section className="glass-panel relative overflow-hidden rounded-2xl p-6">
+          <div className="relative h-[520px] overflow-hidden rounded-xl border border-border/40 bg-surface-secondary">
             {loading ? (
               <div className="absolute inset-0 shimmer" />
             ) : (
-              <div className="relative h-full bg-hero-mesh">
+              <div className="relative h-full">
+                <div className="hero-preview-grid absolute inset-0 opacity-40" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/40" />
                 {pinLayout.slice(0, Math.min(results.length, pinLayout.length)).map((position, index) => {
                   const location = results[index] || results[0];
                   const isActive = selectedId === location?._id;
@@ -160,8 +162,8 @@ export default function MapSearchPage() {
                       whileHover="hover"
                       whileTap="tap"
                       variants={pinVariants}
-                      className={`absolute grid h-14 w-14 place-items-center rounded-full border border-border bg-surface text-foreground shadow-card transition-all duration-200 ${
-                        isActive ? 'ring-4 ring-accent/25' : ''
+                      className={`absolute grid h-14 w-14 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-glow backdrop-blur-sm transition-all duration-300 ${
+                        isActive ? 'border-accent/50 ring-4 ring-accent/20' : ''
                       }`}
                       style={position}
                     >
@@ -173,7 +175,7 @@ export default function MapSearchPage() {
             )}
           </div>
 
-          <div className="relative mt-6 rounded-2xl border border-border bg-surface-secondary p-5 text-sm">
+          <div className="relative mt-6 premium-card p-5 text-sm">
             <p className="eyebrow mb-3 text-[0.65rem]">Selected location</p>
             {selectedId ? (
               <div className="space-y-2">

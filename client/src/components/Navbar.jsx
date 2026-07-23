@@ -55,16 +55,19 @@ export default function Navbar({ user, logout }) {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ease-out ${
-          scrolled ? 'glass-nav border-border/80' : 'border-transparent bg-transparent'
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-premium ${
+          scrolled ? 'glass-nav border-b border-border/40' : 'border-b border-transparent bg-transparent'
         }`}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-          <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
+          <Link to="/" className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight text-foreground">
+            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 transition-colors duration-300 group-hover:bg-accent/25">
+              <span className="h-2 w-2 rounded-sm bg-accent shadow-[0_0_8px_rgb(var(--color-accent)/0.6)]" />
+            </span>
             Campus Navigator
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex">
+          <nav className="hidden items-center gap-10 md:flex">
             {navItems.map((item) => (
               <NavLink
                 key={item.label}
@@ -72,7 +75,7 @@ export default function Navbar({ user, logout }) {
                 end={item.to === '/'}
                 title={item.hint}
                 isActive={item.activeMatch === false ? () => false : undefined}
-                className="relative py-1 text-sm font-semibold text-foreground-muted transition-colors duration-200 hover:text-foreground"
+                className="relative py-1 text-sm font-medium text-foreground-muted transition-colors duration-300 hover:text-foreground"
               >
                 {({ isActive }) => (
                   <>

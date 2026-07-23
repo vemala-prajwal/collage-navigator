@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../services/api';
 import Hero from '../components/Hero';
-import Card from '../components/Card';
-import { SkeletonCard } from '../components/Skeleton';
+import MarqueeStrip from '../components/home/MarqueeStrip';
+import ProcessSection from '../components/home/ProcessSection';
+import FeatureGrid from '../components/home/FeatureGrid';
+import StatsSection from '../components/home/StatsSection';
+import ShowcaseSection from '../components/home/ShowcaseSection';
+import FaqSection from '../components/home/FaqSection';
 
 export default function HomePage() {
   const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -16,47 +18,38 @@ export default function HomePage() {
         setLocations(response.data);
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchLocations();
   }, []);
 
-  return (
-    <div className="space-y-14">
-      <Hero />
+  const marqueeData = useMemo(() => {
+    const buildings = new Set(locations.map((l) => l.building).filter(Boolean));
+    const types = new Set(locations.map((l) => l.type).filter(Boolean));
+    const labs = [...types].filter((t) => /lab/i.test(t)).length;
 
-      <section>
-        <h2 className="mb-8 font-display text-2xl font-bold text-foreground">Popular locations</h2>
-        {loading ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {locations.map((location) => (
-              <Link key={location._id} to={`/locations/${location._id}`} className="group block">
-                <Card variant="glass" className="transition-transform duration-200 group-hover:-translate-y-0.5">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-display text-lg font-bold text-foreground">{location.name}</h3>
-                      <p className="mt-1 text-sm text-foreground-muted">
-                        {location.building} • Floor {location.floor}
-                      </p>
-                    </div>
-                    <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-foreground-muted">
-                      {location.type}
-                    </span>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+    return {
+      items: [...buildings, ...types].filter(Boolean),
+      stats: {
+        buildings: buildings.size || 12,
+        labs: labs || 8,
+        departments: types.size || 15,
+      },
+    };
+  }, [locations]);
+
+  const locationCount = locations.length > 0 ? locations.length : 50;
+
+  return (
+    <div>
+      <Hero />
+      <MarqueeStrip items={marqueeData.items} stats={marqueeData.stats} />
+      <ProcessSection />
+      <FeatureGrid />
+      <StatsSection locationCount={locationCount} />
+      <ShowcaseSection locations={locations} />
+      <FaqSection />
     </div>
   );
 }
