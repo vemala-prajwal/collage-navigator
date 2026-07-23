@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import LocationDetailPage from './pages/LocationDetailPage';
 import CanteenPage from './pages/CanteenPage';
+import MapSearchPage from './pages/MapSearchPage';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/map-search" element={<MapSearchPage />} />
             <Route path="/locations/:id" element={<LocationDetailPage />} />
             <Route path="/canteen" element={<CanteenPage />} />
           </Routes>

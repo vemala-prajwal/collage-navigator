@@ -84,8 +84,66 @@ body {
   }
 }
 
+.animated-background__blob {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  opacity: 0.26;
+  filter: blur(105px);
+}
+
+.animated-background__blob--primary {
+  top: -12%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.32), transparent 58%);
+}
+
+.animated-background__blob--accent {
+  bottom: -12%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.26), transparent 58%);
+}
+
+.animated-background__noise {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  animation: shimmer 1.7s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animated-background__layer {
+  .animated-background__blob {
     animation: none !important;
+  }
+
+  .shimmer::after {
+    animation: none;
   }
 }
