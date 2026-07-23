@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import Hero from '../components/Hero';
-import { Search, MapPinned, UtensilsCrossed, MessageSquareText } from 'lucide-react';
+import Card from '../components/Card';
+import { SkeletonCard } from '../components/Skeleton';
 
 export default function HomePage() {
-  const [query, setQuery] = useState('');
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await api.get('/locations', { params: { query } });
+        const response = await api.get('/locations');
         setLocations(response.data);
       } catch (error) {
         console.error(error);
@@ -22,35 +22,36 @@ export default function HomePage() {
     };
 
     fetchLocations();
-  }, [query]);
+  }, []);
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-14">
       <Hero />
 
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="mb-8 text-2xl font-semibold text-white">Popular locations</h2>
+      <section>
+        <h2 className="mb-8 font-display text-2xl font-bold text-foreground">Popular locations</h2>
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {[1, 2].map((item) => (
-              <div key={item} className="h-28 animate-pulse rounded-2xl bg-slate-800" />
-            ))}
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {locations.map((location) => (
-              <Link
-                key={location._id}
-                to={`/locations/${location._id}`}
-                className="rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{location.name}</h3>
-                    <p className="mt-1 text-sm text-slate-400">{location.building} • Floor {location.floor}</p>
+              <Link key={location._id} to={`/locations/${location._id}`} className="group block">
+                <Card variant="glass" className="transition-transform duration-200 group-hover:-translate-y-0.5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-foreground">{location.name}</h3>
+                      <p className="mt-1 text-sm text-foreground-muted">
+                        {location.building} • Floor {location.floor}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-border bg-surface-secondary px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-foreground-muted">
+                      {location.type}
+                    </span>
                   </div>
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300">{location.type}</span>
-                </div>
+                </Card>
               </Link>
             ))}
           </div>

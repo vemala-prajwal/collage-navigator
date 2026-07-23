@@ -23,7 +23,12 @@ function App() {
             <Route path="/locations/:id" element={<LocationDetailPage />} />
             <Route path="/canteen" element={<CanteenPage />} />
           </Routes>
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: '!bg-surface !text-foreground !border !border-border !shadow-elevated',
+            }}
+          />
         </Layout>
       </AuthProvider>
     </ThemeProvider>

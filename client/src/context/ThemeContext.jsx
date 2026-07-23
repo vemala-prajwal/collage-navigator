@@ -10,7 +10,7 @@ const getInitialTheme = () => {
 };
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(getInitialTheme);
+  const [theme, setThemeState] = useState(getInitialTheme);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -20,7 +20,8 @@ export function ThemeProvider({ children }) {
   const value = useMemo(
     () => ({
       theme,
-      toggleTheme: () => setTheme((current) => (current === 'dark' ? 'light' : 'dark')),
+      setTheme: setThemeState,
+      toggleTheme: () => setThemeState((current) => (current === 'dark' ? 'light' : 'dark')),
     }),
     [theme]
   );

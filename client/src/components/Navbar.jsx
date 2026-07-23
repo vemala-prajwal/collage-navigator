@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, Moon, Sun } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
+import Button from './Button';
 
 const MotionLink = motion(Link);
 
@@ -9,6 +11,7 @@ const navItems = [
   { label: 'Home', to: '/' },
   { label: 'Map', to: '/map-search' },
   { label: 'Canteen', to: '/canteen' },
+  { label: 'Feedback', to: '/map-search', hint: 'Pick a location to review', activeMatch: false },
 ];
 
 const overlayVariants = {
@@ -26,20 +29,15 @@ const itemVariants = {
   visible: { opacity: 1, x: 0 },
 };
 
-export default function Navbar({ user, logout, theme, toggleTheme }) {
+export default function Navbar({ user, logout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const prevScrollY = useRef(0);
 
   useEffect(() => {
     const onScroll = () => {
       const currentY = window.scrollY;
-      setScrolled(currentY > 50);
-      setHidden(currentY > prevScrollY.current && currentY > 120);
-      if (currentY < prevScrollY.current || currentY < 80) {
-        setHidden(false);
-      }
+      setScrolled(currentY > 24);
       prevScrollY.current = currentY;
     };
 
@@ -56,83 +54,53 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
 
   return (
     <>
-      <motion.header
-        initial={false}
-        animate={{ y: hidden ? -110 : 0 }}
-        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
-          scrolled ? 'bg-background/80 dark:bg-surface/90 border-white/10 backdrop-blur-xl shadow-soft' : 'border-transparent bg-transparent'
+      <header
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ease-out ${
+          scrolled ? 'glass-nav border-border/80' : 'border-transparent bg-transparent'
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-          <div className="relative flex items-center gap-4">
-            <Link to="/" className="text-lg font-semibold tracking-wide text-foreground">
-              Campus Navigator
-            </Link>
-
-            <MotionLink
-              to="/map-search"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -2 }}
-              className="hidden items-center gap-2 rounded-full border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-[0.72rem] font-semibold text-primary-100 shadow-[0_16px_54px_-36px_rgba(59,130,246,0.9)] backdrop-blur-xl md:inline-flex"
-            >
-              <span>Live map</span>
-              <span className="rounded-full bg-primary-500 px-2 py-1 text-[0.65rem] uppercase tracking-[0.2em] text-white shadow-sm">
-                New
-              </span>
-            </MotionLink>
-          </div>
+          <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
+            Campus Navigator
+          </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) => (
               <NavLink
-                key={item.to}
+                key={item.label}
                 to={item.to}
-                end
-                className="relative text-sm text-foreground/70 transition-colors duration-200 hover:text-foreground"
+                end={item.to === '/'}
+                title={item.hint}
+                isActive={item.activeMatch === false ? () => false : undefined}
+                className="relative py-1 text-sm font-semibold text-foreground-muted transition-colors duration-200 hover:text-foreground"
               >
                 {({ isActive }) => (
-                  <span className="inline-flex items-center gap-2">
-                    <span>{item.label}</span>
+                  <>
+                    {item.label}
                     {isActive ? (
                       <motion.span
                         layoutId="nav-underline"
-                        className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-primary-500"
+                        className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-accent"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     ) : null}
-                  </span>
+                  </>
                 )}
               </NavLink>
             ))}
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="hidden rounded-2xl border border-border bg-surface-secondary px-3 py-2 text-foreground transition-all duration-200 hover:bg-accent/10 md:inline-flex"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            <ThemeToggle className="hidden md:inline-flex" />
 
             <div className="hidden items-center gap-3 md:flex">
               {user ? (
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-strong"
-                >
+                <Button variant="primary" onClick={logout}>
                   Logout
-                </button>
+                </Button>
               ) : (
-                <Link
-                  to="/login"
-                  className="rounded-2xl border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-foreground transition-all duration-200 hover:border-accent/80"
-                >
-                  Login
+                <Link to="/login">
+                  <Button variant="secondary">Login</Button>
                 </Link>
               )}
             </div>
@@ -140,14 +108,14 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary p-2 text-foreground transition-all duration-200 hover:bg-background-secondary md:hidden"
+              className="inline-flex items-center justify-center rounded-xl border border-border bg-surface-secondary p-2 text-foreground transition-all duration-200 hover:bg-surface-elevated md:hidden"
               aria-label="Open navigation menu"
             >
               <Menu size={20} />
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <AnimatePresence>
         {menuOpen ? (
@@ -159,7 +127,7 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
               exit="hidden"
               variants={overlayVariants}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 z-40 bg-surface-secondary/90 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
               onClick={() => setMenuOpen(false)}
             />
 
@@ -170,16 +138,20 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
               exit="closed"
               variants={menuVariants}
               transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              className="fixed right-0 top-0 z-50 h-full w-[min(88vw,340px)] bg-surface/95 px-6 py-6 shadow-soft"
+              className="fixed right-0 top-0 z-50 flex h-full w-[min(88vw,340px)] flex-col border-l border-border bg-surface px-6 py-6 shadow-elevated"
             >
               <div className="flex items-center justify-between">
-                <Link to="/" className="text-lg font-semibold tracking-wide text-white" onClick={() => setMenuOpen(false)}>
+                <Link
+                  to="/"
+                  className="font-display text-lg font-bold text-foreground"
+                  onClick={() => setMenuOpen(false)}
+                >
                   Campus Navigator
                 </Link>
                 <button
                   type="button"
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-100 transition-all duration-200 hover:bg-white/10"
+                  className="rounded-xl border border-border bg-surface-secondary p-2 text-foreground transition-colors hover:bg-surface-elevated"
                   aria-label="Close navigation menu"
                 >
                   <X size={20} />
@@ -191,19 +163,22 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
                 animate="visible"
                 className="mt-10"
                 variants={{
-                  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.12 } },
+                  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
                 }}
               >
-                <ul className="space-y-4">
+                <ul className="space-y-2">
                   {navItems.map((item) => (
-                    <motion.li key={item.to} variants={itemVariants}>
+                    <motion.li key={item.label} variants={itemVariants}>
                       <NavLink
                         to={item.to}
-                        end
+                        end={item.to === '/'}
+                        isActive={item.activeMatch === false ? () => false : undefined}
                         onClick={() => setMenuOpen(false)}
                         className={({ isActive }) =>
-                          `block rounded-2xl px-4 py-3 text-base font-semibold transition-colors duration-200 ${
-                            isActive ? 'bg-primary-600/15 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                          `block rounded-xl px-4 py-3 text-base font-semibold transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-accent-muted/30 text-accent'
+                              : 'text-foreground-muted hover:bg-surface-secondary hover:text-foreground'
                           }`
                         }
                       >
@@ -215,41 +190,38 @@ export default function Navbar({ user, logout, theme, toggleTheme }) {
               </motion.nav>
 
               <motion.div
-                className="mt-10 flex flex-col gap-3"
+                className="mt-auto flex flex-col gap-3 pt-10"
                 initial="hidden"
                 animate="visible"
                 variants={{
-                  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.36 } },
+                  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
                 }}
               >
-                <motion.button
-                  variants={itemVariants}
-                  type="button"
-                  onClick={toggleTheme}
-                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-accent/10"
-                >
-                  {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-                </motion.button>
+                <motion.div variants={itemVariants}>
+                  <ThemeToggle showLabel className="w-full justify-center py-3" />
+                </motion.div>
                 {user ? (
-                  <motion.button
-                    variants={itemVariants}
-                    type="button"
-                    onClick={() => {
-                      logout();
-                      setMenuOpen(false);
-                    }}
-                    className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-strong"
-                  >
-                    Logout
-                  </motion.button>
+                  <motion.div variants={itemVariants}>
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        logout();
+                        setMenuOpen(false);
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </motion.div>
                 ) : (
                   <MotionLink
                     variants={itemVariants}
                     to="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface-secondary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-background-secondary"
+                    className="inline-flex w-full"
                   >
-                    Login
+                    <Button variant="secondary" className="w-full">
+                      Login
+                    </Button>
                   </MotionLink>
                 )}
               </motion.div>
