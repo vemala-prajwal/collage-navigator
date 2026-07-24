@@ -3,17 +3,20 @@ import { motion } from 'framer-motion';
 
 const statusStyles = {
   available: {
-    container: 'border-success/30 bg-success-muted/40 text-success',
+    container:
+      'border-success/30 bg-success-muted/40 text-success dark:border-success/25 dark:bg-success/10 dark:text-success',
     dot: 'bg-success',
     pulse: true,
   },
   limited: {
-    container: 'border-warning/30 bg-warning-muted/40 text-warning',
+    container:
+      'border-warning/30 bg-warning-muted/40 text-warning dark:border-warning/25 dark:bg-warning/10 dark:text-warning',
     dot: 'bg-warning',
     pulse: false,
   },
   soldOut: {
-    container: 'border-error/30 bg-error-muted/40 text-error',
+    container:
+      'border-error/30 bg-error-muted/40 text-error dark:border-error/25 dark:bg-error/10 dark:text-error',
     dot: 'bg-error',
     pulse: false,
   },

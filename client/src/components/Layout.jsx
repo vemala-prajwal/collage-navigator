@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import Footer from './home/Footer';
 import AmbientBackground from './AmbientBackground';
+import PageTransition from './PageTransition';
+import ScrollToTop from './ScrollToTop';
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -14,11 +16,18 @@ export default function Layout({ children }) {
   return (
     <div className="relative min-h-screen bg-background text-foreground transition-colors duration-300">
       <AmbientBackground />
+      <ScrollToTop />
       <Navbar user={user} logout={handleLogout} />
-      <main className={isHome ? 'relative pt-[4.5rem]' : 'relative mx-auto max-w-6xl px-4 pb-12 pt-[4.5rem] md:px-6'}>
-        {children}
+      <main
+        className={
+          isHome
+            ? 'relative pt-[4.5rem]'
+            : 'relative mx-auto max-w-7xl px-5 pb-16 pt-[4.5rem] sm:px-8 lg:px-12'
+        }
+      >
+        <PageTransition>{children}</PageTransition>
       </main>
-      {isHome ? <Footer /> : null}
+      <Footer />
     </div>
   );
 }

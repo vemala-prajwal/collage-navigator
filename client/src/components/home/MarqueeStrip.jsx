@@ -16,7 +16,7 @@ export default function MarqueeStrip({ items = DEFAULT_ITEMS, stats = null }) {
   const doubled = [...displayItems, ...displayItems];
 
   return (
-    <section className="relative border-y border-border/30 bg-surface-secondary/20 py-8">
+    <section id="discover" className="relative border-y border-border/30 bg-surface-secondary/20 py-8 dark:border-white/[0.05] dark:bg-surface/20">
       {stats ? (
         <p className="section-container mb-6 text-center text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted/80">
           Trusted across{' '}

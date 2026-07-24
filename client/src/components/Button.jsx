@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const variantStyles = {
   primary:
-    'bg-accent text-on-accent shadow-glow hover:bg-accent-strong hover:brightness-110 focus:ring-accent/40',
+    'bg-accent text-on-accent shadow-glow hover:bg-accent-strong hover:brightness-110 dark:hover:brightness-105 focus:ring-accent/40',
   secondary:
     'border border-border/60 bg-surface-secondary/50 text-foreground backdrop-blur-sm hover:border-accent/30 hover:bg-surface-elevated/80 focus:ring-accent/30',
   ghost:

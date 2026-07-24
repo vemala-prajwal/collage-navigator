@@ -11,7 +11,7 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
     <button
       type="button"
       onClick={toggleTheme}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 py-2 text-foreground transition-all duration-200 ease-out hover:border-accent/40 hover:bg-accent-muted/30 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 py-2 text-foreground transition-all duration-200 ease-out hover:border-accent/40 hover:bg-accent-muted/30 dark:hover:bg-surface-elevated/60 dark:hover:border-accent/25 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       <span className="relative inline-flex h-5 w-5 items-center justify-center overflow-hidden">

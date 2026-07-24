@@ -24,7 +24,7 @@ export default function LoginPage() {
         variants={staggerContainer(0.08, 0.05)}
         className="relative w-full max-w-md"
       >
-        <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-accent/10 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-accent/10 blur-3xl dark:bg-accent/[0.04] dark:blur-[80px]" aria-hidden="true" />
         <div className="premium-card relative p-8 sm:p-10">
           <motion.div variants={fadeUp}>
             <p className="eyebrow mb-4">Welcome back</p>

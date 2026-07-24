@@ -31,7 +31,7 @@ export default function StatsSection({ locationCount = 50 }) {
 
   return (
     <section className="section-gap relative overflow-hidden border-t border-border/30">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent dark:from-accent/[0.02]" aria-hidden="true" />
       <div className="section-container relative">
         <Reveal className="mb-16">
           <h2 className="display-headline max-w-xl">

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 export default function PageHeader({ eyebrow, title, description, children, className = '' }) {
   return (
     <section className={`relative mb-12 overflow-hidden rounded-2xl border border-border/40 bg-surface-secondary/30 p-8 backdrop-blur-sm sm:p-10 ${className}`}>
-      <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/8 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/8 blur-3xl dark:bg-accent/[0.04] dark:blur-[100px]" aria-hidden="true" />
       <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
           {eyebrow ? <p className="eyebrow mb-5">{eyebrow}</p> : null}

@@ -8,11 +8,11 @@ export default function HeroPreview({ className = '' }) {
 
   return (
     <div
-      className={`premium-card relative aspect-[4/3] overflow-hidden bg-surface/80 ${className}`}
+      className={`premium-card relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
       aria-hidden="true"
     >
       <div className="hero-preview-grid absolute inset-0 opacity-50" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent dark:from-background/95 dark:via-transparent" />
 
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice">
         <defs>

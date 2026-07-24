@@ -162,8 +162,8 @@ export default function MapSearchPage() {
                       whileHover="hover"
                       whileTap="tap"
                       variants={pinVariants}
-                      className={`absolute grid h-14 w-14 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-glow backdrop-blur-sm transition-all duration-300 ${
-                        isActive ? 'border-accent/50 ring-4 ring-accent/20' : ''
+                      className={`absolute grid h-14 w-14 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-card backdrop-blur-sm transition-all duration-300 dark:shadow-none dark:bg-surface/80 ${
+                        isActive ? 'border-accent/50 ring-4 ring-accent/20 dark:shadow-glow' : ''
                       }`}
                       style={position}
                     >

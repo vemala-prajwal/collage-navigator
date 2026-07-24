@@ -7,6 +7,7 @@ import FeatureGrid from '../components/home/FeatureGrid';
 import StatsSection from '../components/home/StatsSection';
 import ShowcaseSection from '../components/home/ShowcaseSection';
 import FaqSection from '../components/home/FaqSection';
+import CtaSection from '../components/home/CtaSection';
 
 export default function HomePage() {
   const [locations, setLocations] = useState([]);
@@ -49,6 +50,7 @@ export default function HomePage() {
       <FeatureGrid />
       <StatsSection locationCount={locationCount} />
       <ShowcaseSection locations={locations} />
+      <CtaSection />
       <FaqSection />
     </div>
   );
