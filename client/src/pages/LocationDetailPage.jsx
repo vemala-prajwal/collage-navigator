@@ -1,25 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import api from '../services/api';
-import Card from '../components/Card';
-import Button from '../components/Button';
-import Badge from '../components/Badge';
-import StarRating from '../components/StarRating';
-import { Skeleton, SkeletonCard } from '../components/Skeleton';
-
-const feedbackVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
-};
 
 export default function LocationDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -36,149 +22,37 @@ export default function LocationDetailPage() {
     fetchLocation();
   }, [id]);
 
-  const sortedFeedback = useMemo(
-    () => [...(data?.feedbacks || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
-    [data?.feedbacks]
-  );
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!rating) return;
-
-    setSubmitting(true);
-    try {
-      await api.post('/feedback', {
-        targetType: 'location',
-        targetId: id,
-        rating,
-        comment,
-      });
-      const response = await api.get(`/locations/${id}`);
-      setData(response.data);
-      setComment('');
-      setRating(0);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-48 w-full rounded-3xl" />
-        <SkeletonCard />
-      </div>
-    );
+    return <div className="h-40 animate-pulse rounded-2xl border border-slate-200 bg-white/70 shadow-sm dark:border-slate-800 dark:bg-slate-900/70" />;
   }
 
   return (
-    <div>
-      <section className="glass-panel mb-10 rounded-3xl p-8 sm:p-10">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <p className="eyebrow">Location details</p>
-            <h1 className="mt-3 font-display text-display-md font-extrabold text-foreground">
-              {data?.location?.name}
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-foreground-muted">
-              {data?.location?.description}
-            </p>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-surface-secondary p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted">Building</p>
-                <p className="mt-3 text-lg font-semibold text-foreground">{data?.location?.building}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-surface-secondary p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted">
-                  Average rating
-                </p>
-                <p className="mt-3 text-lg font-semibold text-foreground">{data?.averageRating} / 5</p>
+    <div className="rounded-[1.75rem] border border-slate-200/80 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{data?.location?.name}</h1>
+      <p className="mt-2 text-slate-600 dark:text-slate-400">{data?.location?.description}</p>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Building</p>
+          <p className="mt-2 font-medium text-slate-900 dark:text-slate-100">{data?.location?.building}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Average rating</p>
+          <p className="mt-2 font-medium text-slate-900 dark:text-slate-100">{data?.averageRating} / 5</p>
+        </div>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Feedback</h2>
+        <div className="mt-3 space-y-3">
+          {data?.feedbacks?.length ? data.feedbacks.map((feedback) => (
+            <div key={feedback._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-slate-800 dark:text-slate-100">{feedback.comment || 'No comment'}</span>
+                <span className="text-amber-500">{'★'.repeat(feedback.rating)}</span>
               </div>
             </div>
-          </div>
-
-          <Card variant="elevated" hover={false}>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <p className="eyebrow text-[0.65rem]">Share your experience</p>
-                <p className="mt-2 text-sm leading-6 text-foreground-muted">
-                  Rate the location and leave a comment to help fellow students and staff.
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-foreground">Your rating</p>
-                <div className="mt-4">
-                  <StarRating value={rating} onChange={setRating} />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="feedback-comment" className="block text-sm font-semibold text-foreground">
-                  Your feedback
-                </label>
-                <textarea
-                  id="feedback-comment"
-                  value={comment}
-                  onChange={(event) => setComment(event.target.value)}
-                  placeholder="Share what you liked or what could improve"
-                  rows={5}
-                  className="input-field mt-3 resize-y"
-                />
-              </div>
-
-              <Button loading={submitting} type="submit" className="w-full">
-                Submit feedback
-              </Button>
-            </form>
-          </Card>
+          )) : <p className="text-slate-500 dark:text-slate-400">No feedback yet.</p>}
         </div>
-      </section>
-
-      <section className="space-y-6">
-        <h2 className="font-display text-2xl font-bold text-foreground">Recent feedback</h2>
-        {sortedFeedback.length ? (
-          <div className="grid gap-6">
-            {sortedFeedback.map((feedback) => (
-              <motion.div key={feedback._id} initial="hidden" animate="visible" variants={feedbackVariants}>
-                <Card variant="glass">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 text-sm text-foreground-muted">
-                        <span>{feedback.userId?.name || 'Anonymous'}</span>
-                        <span>•</span>
-                        <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div className="mt-3 flex items-center gap-1 text-accent">
-                        {'★'.repeat(feedback.rating)}
-                      </div>
-                    </div>
-                    <Badge
-                      status={
-                        feedback.rating >= 4 ? 'available' : feedback.rating === 3 ? 'limited' : 'soldOut'
-                      }
-                    >
-                      {feedback.rating >= 4
-                        ? 'Highly rated'
-                        : feedback.rating === 3
-                          ? 'Needs attention'
-                          : 'Improve this place'}
-                    </Badge>
-                  </div>
-                  <p className="mt-4 text-sm leading-6 text-foreground-muted">
-                    {feedback.comment || 'No comment provided.'}
-                  </p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-foreground-muted">No feedback yet. Be the first to leave a review.</p>
-        )}
-      </section>
+      </div>
     </div>
   );
 }
