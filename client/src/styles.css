@@ -396,53 +396,125 @@ html.dark .ambient-bg__noise {
 }
 
 .ambient-orb--primary {
-  top: -10%;
-  left: -5%;
-  width: min(700px, 55vw);
-  height: min(700px, 55vw);
-  background: radial-gradient(circle, rgb(var(--color-accent) / 0.18) 0%, transparent 70%);
+  top: -12%;
+  left: -6%;
+  width: min(800px, 62vw);
+  height: min(800px, 62vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.20) 0%,
+    rgb(var(--color-accent) / 0.08) 40%,
+    transparent 70%
+  );
+}
+
+html.dark .ambient-orb--primary {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.28) 0%,
+    rgb(var(--color-accent) / 0.10) 40%,
+    transparent 70%
+  );
 }
 
 .ambient-orb--secondary {
-  bottom: -15%;
-  right: -8%;
-  width: min(600px, 50vw);
-  height: min(600px, 50vw);
-  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.14) 0%, transparent 70%);
+  bottom: -18%;
+  right: -10%;
+  width: min(700px, 58vw);
+  height: min(700px, 58vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.18) 0%,
+    rgb(var(--color-accent2) / 0.06) 40%,
+    transparent 70%
+  );
+}
+
+html.dark .ambient-orb--secondary {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.26) 0%,
+    rgb(var(--color-accent2) / 0.08) 40%,
+    transparent 70%
+  );
 }
 
 .ambient-orb--accent {
-  top: 35%;
-  left: 45%;
-  width: min(500px, 40vw);
-  height: min(500px, 40vw);
-  background: radial-gradient(circle, rgb(var(--color-accent) / 0.08) 0%, transparent 70%);
+  top: 38%;
+  left: 48%;
+  width: min(550px, 44vw);
+  height: min(550px, 44vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.10) 0%,
+    transparent 65%
+  );
 }
 
 .ambient-orb--tertiary {
-  top: 60%;
-  left: 10%;
-  width: min(400px, 35vw);
-  height: min(400px, 35vw);
-  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.10) 0%, transparent 70%);
+  top: 62%;
+  left: 8%;
+  width: min(500px, 40vw);
+  height: min(500px, 40vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.13) 0%,
+    transparent 65%
+  );
 }
 
-/* ─── GRID OVERLAY ───────────────────────────────────────────────────── */
-.grid-overlay {
+html.dark .ambient-orb--tertiary {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.20) 0%,
+    transparent 65%
+  );
+}
+
+/* ─── DOT GRID (modern Vercel / Resend style) ────────────────────────── */
+.dot-grid {
   position: fixed;
   inset: 0;
-  z-index: -9;
+  z-index: -10;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgb(var(--color-accent) / 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--color-accent) / 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background-image: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.14) 1px,
+    transparent 1px
+  );
+  background-size: 40px 40px;
 }
 
-html.dark .grid-overlay {
-  background-image:
-    linear-gradient(rgb(var(--color-accent) / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--color-accent) / 0.05) 1px, transparent 1px);
+html.dark .dot-grid {
+  background-image: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.22) 1px,
+    transparent 1px
+  );
+}
+
+/* ─── MOUSE SPOTLIGHT (CSS variable driven, zero JS render cost) ─────── */
+.mouse-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: -7;
+  pointer-events: none;
+  background: radial-gradient(
+    900px circle at var(--spot-x, -9999px) var(--spot-y, -9999px),
+    rgb(var(--color-accent) / 0.07) 0%,
+    rgb(var(--color-accent2) / 0.04) 35%,
+    transparent 70%
+  );
+  transition: background 0.08s linear;
+}
+
+html.dark .mouse-spotlight {
+  background: radial-gradient(
+    900px circle at var(--spot-x, -9999px) var(--spot-y, -9999px),
+    rgb(var(--color-accent) / 0.12) 0%,
+    rgb(var(--color-accent2) / 0.07) 35%,
+    transparent 70%
+  );
 }
 
 /* ─── HERO ────────────────────────────────────────────────────────────── */

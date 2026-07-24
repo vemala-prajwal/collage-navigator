@@ -118,9 +118,8 @@ export default function Hero() {
               {QUICK_STATS.map((stat) => {
                 const Icon = stat.icon;
                 return (
-                  <motion.div
+                  <div
                     key={stat.label}
-                    whileHover={{ scale: 1.05, y: -2 }}
                     className="gradient-border flex items-center gap-2 rounded-full border border-border/50 bg-surface/60 px-4 py-2 backdrop-blur-sm"
                   >
                     <Icon size={13} className="text-accent" />
@@ -128,7 +127,7 @@ export default function Hero() {
                     <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
                       {stat.label}
                     </span>
-                  </motion.div>
+                  </div>
                 );
               })}
             </motion.div>
