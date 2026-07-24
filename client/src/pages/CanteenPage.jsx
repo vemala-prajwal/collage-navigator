@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+import Card from '../components/Card';
+import Badge from '../components/Badge';
+import PageHeader from '../components/PageHeader';
+import { SkeletonCard } from '../components/Skeleton';
 
-const statusStyles = {
-  available: 'bg-emerald-600/20 text-emerald-400',
-  limited: 'bg-amber-600/20 text-amber-400',
-  soldOut: 'bg-rose-600/20 text-rose-400',
+const listVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const statusLabel = {
+  available: 'Available',
+  limited: 'Limited',
+  soldOut: 'Sold out',
 };
 
 export default function CanteenPage() {
@@ -26,30 +41,50 @@ export default function CanteenPage() {
     fetchItems();
   }, []);
 
-  if (loading) {
-    return <div className="grid gap-4 md:grid-cols-2">{[1, 2].map((item) => <div key={item} className="h-32 animate-pulse rounded-2xl bg-slate-800" />)}</div>;
-  }
-
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Live canteen menu</h1>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {items.map((item) => (
-          <div key={item._id} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="font-semibold">{item.name}</h2>
-                <p className="mt-1 text-sm text-slate-400">{item.category}</p>
-              </div>
-              <span className={`rounded-full px-3 py-1 text-xs uppercase ${statusStyles[item.status]}`}>{item.status}</span>
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-lg font-semibold">₹{item.price}</p>
-              <p className="text-xs text-slate-500">Updated {new Date(item.updatedAt).toLocaleDateString()}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <PageHeader
+        eyebrow="Canteen menu"
+        title="Fresh campus food, status-first."
+        description="Scan the live menu, see availability instantly, and spot the fastest line with confidence."
+      />
+
+      <motion.section
+        initial="hidden"
+        animate={loading ? 'hidden' : 'visible'}
+        variants={listVariants}
+        className="grid gap-6 md:grid-cols-2"
+      >
+        {loading
+          ? [1, 2, 3, 4].map((item) => <SkeletonCard key={item} />)
+          : items.map((item) => (
+              <motion.div key={item._id} variants={itemVariants}>
+                <Card variant="glass" className="h-full">
+                  <div className="flex flex-col gap-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h2 className="font-display text-2xl font-bold text-foreground">{item.name}</h2>
+                        <p className="mt-2 text-sm text-foreground-muted">{item.category}</p>
+                      </div>
+                      <Badge status={item.status}>{statusLabel[item.status] || 'Available'}</Badge>
+                    </div>
+
+                    <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-lg font-semibold text-foreground">₹{item.price}</p>
+                        <p className="mt-1 text-sm text-foreground-muted">
+                          Updated {new Date(item.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-foreground-muted">
+                        Chef&apos;s pick
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+      </motion.section>
     </div>
   );
 }
