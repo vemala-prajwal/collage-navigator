@@ -75,7 +75,11 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className="section-gap border-t border-border/30">
+    <section className="section-gap relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.4), transparent)' }}
+      />
       <div className="section-container">
         <div className="grid gap-16 lg:grid-cols-[1fr_1.4fr] lg:gap-24">
           <Reveal>
@@ -83,7 +87,7 @@ export default function FaqSection() {
             <h2 className="display-headline">
               Common
               <br />
-              <span className="italic text-foreground-muted">questions.</span>
+              <span className="text-gradient italic">questions.</span>
             </h2>
           </Reveal>
 

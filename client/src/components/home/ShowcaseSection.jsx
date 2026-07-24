@@ -93,13 +93,17 @@ export default function ShowcaseSection({ locations = [] }) {
   const locationCards = locations.slice(0, 3);
 
   return (
-    <section className="section-gap border-t border-border/30">
+    <section className="section-gap relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.4), transparent)' }}
+      />
       <div className="section-container">
         <Reveal>
           <p className="eyebrow mb-6">Explore the platform</p>
           <h2 className="display-headline max-w-2xl">
             See it in
-            <span className="italic text-foreground-muted"> action.</span>
+            <span className="text-gradient italic"> action.</span>
           </h2>
         </Reveal>
 

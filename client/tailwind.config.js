@@ -30,6 +30,8 @@ export default {
         'accent-strong': 'rgb(var(--color-accent-strong) / <alpha-value>)',
         'accent-muted': 'rgb(var(--color-accent-muted) / <alpha-value>)',
         'on-accent': 'rgb(var(--color-on-accent) / <alpha-value>)',
+        accent2: 'rgb(var(--color-accent2) / <alpha-value>)',
+        'accent2-muted': 'rgb(var(--color-accent2-muted) / <alpha-value>)',
         success: 'rgb(var(--color-success) / <alpha-value>)',
         'success-muted': 'rgb(var(--color-success-muted) / <alpha-value>)',
         warning: 'rgb(var(--color-warning) / <alpha-value>)',
@@ -43,6 +45,7 @@ export default {
         elevated: 'var(--shadow-elevated)',
         card: 'var(--shadow-card)',
         glow: 'var(--shadow-glow)',
+        glow2: 'var(--shadow-glow2)',
       },
       borderRadius: {
         xl: '1rem',

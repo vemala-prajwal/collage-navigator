@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Reveal, RevealStagger } from '../Reveal';
+import { Reveal } from '../Reveal';
 import { fadeUp, premiumTransition, scaleFade, staggerContainer } from '../../lib/motion';
 
 const STEPS = [
@@ -41,13 +41,17 @@ function ProcessStep({ step, index, total }) {
   return (
     <motion.div
       variants={fadeUp}
-      className={`group grid gap-6 border-t border-border/50 py-14 md:grid-cols-[auto_1fr] md:gap-16 lg:gap-24 ${
-        index === total - 1 ? 'border-b' : ''
+      className={`process-step group grid gap-6 py-14 md:grid-cols-[auto_1fr] md:gap-16 lg:gap-24 ${
+        index < total - 1
+          ? 'border-b'
+          : ''
       }`}
+      style={{ borderColor: 'rgb(var(--color-border)/0.4)' }}
     >
+      {/* Big number */}
       <div className="overflow-hidden">
         <motion.span
-          className="process-number block transition-opacity duration-500 group-hover:opacity-80"
+          className="process-number block"
           initial={reduceMotion ? false : scaleFade.hidden}
           whileInView={reduceMotion ? undefined : scaleFade.visible}
           viewport={{ once: true, amount: 0.5 }}
@@ -56,15 +60,25 @@ function ProcessStep({ step, index, total }) {
           {step.number}
         </motion.span>
       </div>
+
+      {/* Content */}
       <div className="md:pt-4">
-        <h3 className="font-display text-display-sm font-bold text-foreground">{step.title}</h3>
-        <p className="mt-4 max-w-lg text-base leading-relaxed text-foreground-muted">{step.description}</p>
+        <h3 className="font-display text-display-sm font-bold text-foreground">
+          {step.title}
+        </h3>
+        <p className="mt-4 max-w-lg text-base leading-relaxed text-foreground-muted">
+          {step.description}
+        </p>
         <Link
           to={step.to}
-          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent opacity-0 transition-all duration-300 group-hover:opacity-100"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold opacity-0 transition-all duration-300 group-hover:opacity-100"
+          style={{ color: 'rgb(var(--color-accent))' }}
         >
           {step.cta}
-          <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <ArrowUpRight
+            size={16}
+            className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          />
         </Link>
       </div>
     </motion.div>
@@ -75,19 +89,24 @@ export default function ProcessSection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="section-gap">
+    <section className="section-gap relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.35), transparent)' }}
+      />
       <div className="section-container">
         <Reveal>
           <p className="eyebrow mb-6">How it works</p>
           <h2 className="display-headline max-w-3xl">
             Four steps.
             <br />
-            <span className="font-normal italic text-foreground-muted">Zero confusion.</span>
+            <span className="text-gradient italic">Zero confusion.</span>
           </h2>
         </Reveal>
 
         <motion.div
-          className="mt-20 space-y-0"
+          className="mt-20 border-t"
+          style={{ borderColor: 'rgb(var(--color-border)/0.4)' }}
           initial={reduceMotion ? false : 'hidden'}
           whileInView={reduceMotion ? undefined : 'visible'}
           viewport={{ once: true, amount: 0.08 }}

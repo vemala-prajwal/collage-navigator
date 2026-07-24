@@ -8,47 +8,52 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
   const isDark = theme === 'dark';
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={toggleTheme}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-secondary px-3 py-2 text-foreground transition-all duration-200 ease-out hover:border-accent/40 hover:bg-accent-muted/30 dark:hover:bg-surface-elevated/60 dark:hover:border-accent/25 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-surface-secondary/70 px-3 py-2 text-foreground backdrop-blur-sm transition-all duration-300 hover:border-accent/50 hover:bg-surface-elevated/80 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
+      {/* Icon track */}
       <span className="relative inline-flex h-5 w-5 items-center justify-center overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
           {isDark ? (
             <motion.span
               key="sun"
-              initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 flex items-center justify-center"
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0 flex items-center justify-center text-amber-400"
             >
               <Sun size={18} strokeWidth={2} />
             </motion.span>
           ) : (
             <motion.span
               key="moon"
-              initial={{ opacity: 0, rotate: 90, scale: 0.6 }}
+              initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: -90, scale: 0.6 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 flex items-center justify-center"
+              exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0 flex items-center justify-center text-accent"
             >
               <Moon size={18} strokeWidth={2} />
             </motion.span>
           )}
         </AnimatePresence>
       </span>
+
       {showLabel ? (
         <span className="text-sm font-semibold">{isDark ? 'Light' : 'Dark'}</span>
       ) : null}
-    </button>
+    </motion.button>
   );
 }
 
 ThemeToggle.propTypes = {
-  className: PropTypes.string,
-  showLabel: PropTypes.bool,
+  className:  PropTypes.string,
+  showLabel:  PropTypes.bool,
 };

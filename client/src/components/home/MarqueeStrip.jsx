@@ -16,16 +16,36 @@ export default function MarqueeStrip({ items = DEFAULT_ITEMS, stats = null }) {
   const doubled = [...displayItems, ...displayItems];
 
   return (
-    <section id="discover" className="relative border-y border-border/30 bg-surface-secondary/20 py-8 dark:border-white/[0.05] dark:bg-surface/20">
+    <section
+      id="discover"
+      className="relative overflow-hidden py-8"
+      style={{
+        background: 'rgb(var(--color-surface-secondary)/0.4)',
+        borderTop:    '1px solid rgb(var(--color-border)/0.3)',
+        borderBottom: '1px solid rgb(var(--color-border)/0.3)',
+      }}
+    >
+      {/* Top gradient line */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: 'var(--gradient-accent)' }}
+        aria-hidden="true"
+      />
+
       {stats ? (
         <p className="section-container mb-6 text-center text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted/80">
           Trusted across{' '}
-          <span className="text-accent">{stats.buildings}</span> buildings ·{' '}
-          <span className="text-accent">{stats.labs}</span> labs ·{' '}
-          <span className="text-accent">{stats.departments}</span> departments
+          <span className="text-gradient font-bold">{stats.buildings}</span>{' '}
+          buildings ·{' '}
+          <span className="text-gradient font-bold">{stats.labs}</span>{' '}
+          labs ·{' '}
+          <span className="text-gradient font-bold">{stats.departments}</span>{' '}
+          departments
         </p>
       ) : null}
-      <div className="overflow-hidden">
+
+      {/* Fade masks */}
+      <div className="overflow-hidden" style={{ maskImage: 'linear-gradient(90deg, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, black 10%, black 90%, transparent)' }}>
         <div className="marquee-track">
           {doubled.map((item, index) => (
             <span key={`${item}-${index}`} className="marquee-item">
@@ -41,8 +61,8 @@ export default function MarqueeStrip({ items = DEFAULT_ITEMS, stats = null }) {
 MarqueeStrip.propTypes = {
   items: PropTypes.arrayOf(PropTypes.string),
   stats: PropTypes.shape({
-    buildings: PropTypes.number,
-    labs: PropTypes.number,
+    buildings:   PropTypes.number,
+    labs:        PropTypes.number,
     departments: PropTypes.number,
   }),
 };
