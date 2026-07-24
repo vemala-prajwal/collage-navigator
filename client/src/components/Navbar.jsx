@@ -60,11 +60,11 @@ export default function Navbar({ user, logout }) {
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
-          <Link to="/" className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight text-foreground">
-            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 transition-colors duration-300 group-hover:bg-accent/25">
-              <span className="h-2 w-2 rounded-sm bg-accent shadow-[0_0_8px_rgb(var(--color-accent)/0.6)]" />
+          <Link to="/" className="group flex items-center gap-3 font-display text-lg font-black tracking-[-0.03em] text-foreground sm:text-2xl lg:text-[1.7rem]">
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-accent/15 transition-colors duration-300 group-hover:bg-accent/25 sm:h-10 sm:w-10">
+              <span className="h-2.5 w-2.5 rounded-sm bg-accent shadow-[0_0_8px_rgb(var(--color-accent)/0.6)]" />
             </span>
-            Campus Navigator
+            <span className="leading-none">Campus Navigator</span>
           </Link>
 
           <nav className="hidden items-center gap-10 md:flex">
