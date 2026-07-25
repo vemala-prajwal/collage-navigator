@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -32,14 +33,17 @@ app.use('/api/locations', locationRoutes);
 app.use('/api/canteen-items', canteenRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+const distPath = path.join(__dirname, '../client/dist');
+const indexPath = path.join(distPath, 'index.html');
+
+if (fs.existsSync(indexPath)) {
+  app.use(express.static(distPath));
 
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
       return res.status(404).json({ message: 'API route not found' });
     }
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    res.sendFile(indexPath);
   });
 }
 

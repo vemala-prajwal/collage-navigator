@@ -54,6 +54,13 @@
   --color-shimmer-base: 200 190 240;
   --color-shimmer-highlight: 255 255 255;
   --section-gap: clamp(6rem, 12vw, 10rem);
+
+  --pointer-x: 50%;
+  --pointer-y: 30%;
+  --pointer-x-px: 50vw;
+  --pointer-y-px: 30vh;
+  --scroll-y: 0px;
+  --scroll-progress: 0;
 }
 
 /* ─── DARK THEME ──────────────────────────────────────────────────────── */
@@ -340,20 +347,187 @@ html.dark {
   }
 }
 
-/* ─── INTERACTIVE PARTICLE BACKGROUND ───────────────────────────────── */
-.particle-canvas {
+/* ─── INTERACTIVE AMBIENT SCENE ──────────────────────────────────────── */
+.ambient-scene {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 
-/* ─── AMBIENT MESH BACKGROUND ────────────────────────────────────────── */
-.ambient-bg {
+.ambient-base {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-hero);
+}
+
+.ambient-mesh {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-mesh);
+  opacity: 1;
+}
+
+.ambient-mesh--animated {
+  transform: translate(
+    calc((var(--pointer-x, 50%) - 50%) * 0.04),
+    calc((var(--pointer-y, 30%) - 30%) * 0.04)
+  );
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(var(--color-accent) / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-accent) / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 20%, transparent 75%);
+  transform: translate(
+    calc((var(--pointer-x, 50%) - 50%) * -0.015),
+    calc((var(--pointer-y, 30%) - 30%) * -0.015)
+  );
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.dark .ambient-grid {
+  background-image:
+    linear-gradient(rgb(var(--color-accent) / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-accent) / 0.06) 1px, transparent 1px);
+}
+
+.ambient-beams {
+  position: absolute;
+  inset: -30% -20%;
+  overflow: hidden;
+}
+
+.ambient-beam {
+  position: absolute;
+  width: 140%;
+  height: 28%;
+  left: -20%;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+
+html.dark .ambient-beam {
+  mix-blend-mode: plus-lighter;
+  opacity: 0.35;
+}
+
+.ambient-beam--1 {
+  top: 8%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgb(var(--color-accent) / 0.14) 35%,
+    rgb(var(--color-accent2) / 0.1) 65%,
+    transparent 100%
+  );
+  animation: beam-drift-1 22s ease-in-out infinite;
+}
+
+.ambient-beam--2 {
+  top: 42%;
+  background: linear-gradient(
+    75deg,
+    transparent 0%,
+    rgb(var(--color-accent2) / 0.1) 40%,
+    rgb(var(--color-accent) / 0.08) 70%,
+    transparent 100%
+  );
+  animation: beam-drift-2 28s ease-in-out infinite;
+}
+
+.ambient-beam--3 {
+  top: 72%;
+  height: 22%;
+  background: linear-gradient(
+    95deg,
+    transparent 0%,
+    rgb(var(--color-accent) / 0.08) 50%,
+    transparent 100%
+  );
+  animation: beam-drift-3 34s ease-in-out infinite;
+}
+
+.ambient-spotlight {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: blur(50px);
+  will-change: left, top;
+}
+
+.ambient-spotlight--primary {
+  left: var(--pointer-x, 50%);
+  top: var(--pointer-y, 30%);
+  width: min(680px, 90vw);
+  height: min(680px, 90vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.16) 0%,
+    rgb(var(--color-accent) / 0.06) 35%,
+    transparent 68%
+  );
+  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1), top 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-spotlight--secondary {
+  left: calc(var(--pointer-x, 50%) + 8%);
+  top: calc(var(--pointer-y, 30%) + 6%);
+  width: min(420px, 60vw);
+  height: min(420px, 60vw);
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.12) 0%,
+    rgb(var(--color-accent2) / 0.04) 40%,
+    transparent 70%
+  );
+  transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1), top 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.dark .ambient-spotlight--primary {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.12) 0%,
+    rgb(var(--color-accent) / 0.04) 38%,
+    transparent 68%
+  );
+}
+
+html.dark .ambient-spotlight--secondary {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent2) / 0.1) 0%,
+    rgb(var(--color-accent2) / 0.03) 42%,
+    transparent 72%
+  );
+}
+
+.bg-particles {
   position: fixed;
   inset: 0;
-  z-index: -10;
+  z-index: 1;
   pointer-events: none;
+  opacity: 0.85;
+}
+
+html.dark .bg-particles {
+  opacity: 0.65;
+}
+
+/* ─── AMBIENT ORBS ───────────────────────────────────────────────────── */
+.ambient-bg {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -370,12 +544,6 @@ html.dark .ambient-bg__noise {
   opacity: 0.045;
 }
 
-.ambient-mesh {
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-mesh);
-}
-
 .ambient-orb {
   position: absolute;
   border-radius: 50%;
@@ -384,53 +552,91 @@ html.dark .ambient-bg__noise {
 }
 
 .ambient-orb--primary {
-  top: -10%;
-  left: -5%;
-  width: min(700px, 55vw);
-  height: min(700px, 55vw);
-  background: radial-gradient(circle, rgb(var(--color-accent) / 0.18) 0%, transparent 70%);
+  top: -12%;
+  left: -8%;
+  width: min(780px, 58vw);
+  height: min(780px, 58vw);
+  background: radial-gradient(circle, rgb(var(--color-accent) / 0.2) 0%, transparent 68%);
 }
 
 .ambient-orb--secondary {
-  bottom: -15%;
-  right: -8%;
-  width: min(600px, 50vw);
-  height: min(600px, 50vw);
-  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.14) 0%, transparent 70%);
+  bottom: -18%;
+  right: -10%;
+  width: min(680px, 52vw);
+  height: min(680px, 52vw);
+  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.16) 0%, transparent 68%);
 }
 
 .ambient-orb--accent {
-  top: 35%;
-  left: 45%;
-  width: min(500px, 40vw);
-  height: min(500px, 40vw);
-  background: radial-gradient(circle, rgb(var(--color-accent) / 0.08) 0%, transparent 70%);
+  top: 32%;
+  left: 42%;
+  width: min(540px, 42vw);
+  height: min(540px, 42vw);
+  background: radial-gradient(circle, rgb(var(--color-accent) / 0.1) 0%, transparent 68%);
 }
 
 .ambient-orb--tertiary {
-  top: 60%;
-  left: 10%;
-  width: min(400px, 35vw);
-  height: min(400px, 35vw);
-  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.10) 0%, transparent 70%);
+  top: 58%;
+  left: 8%;
+  width: min(460px, 38vw);
+  height: min(460px, 38vw);
+  background: radial-gradient(circle, rgb(var(--color-accent2) / 0.12) 0%, transparent 68%);
 }
 
-/* ─── GRID OVERLAY ───────────────────────────────────────────────────── */
-.grid-overlay {
-  position: fixed;
+.ambient-vignette {
+  position: absolute;
   inset: 0;
-  z-index: -9;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgb(var(--color-accent) / 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--color-accent) / 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 45%, transparent 40%, rgb(var(--color-background) / 0.55) 100%),
+    linear-gradient(to bottom, rgb(var(--color-background) / 0.15) 0%, transparent 18%, transparent 82%, rgb(var(--color-background) / 0.35) 100%);
 }
 
-html.dark .grid-overlay {
-  background-image:
-    linear-gradient(rgb(var(--color-accent) / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--color-accent) / 0.05) 1px, transparent 1px);
+html.dark .ambient-vignette {
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 42%, transparent 35%, rgb(var(--color-background) / 0.75) 100%),
+    linear-gradient(to bottom, rgb(var(--color-background) / 0.25) 0%, transparent 15%, transparent 85%, rgb(var(--color-background) / 0.5) 100%);
+}
+
+html.dark .ambient-orb {
+  filter: blur(120px);
+}
+
+.ambient-orb-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ambient-orb-wrap--slow {
+  transform: translateY(calc(var(--scroll-y, 0px) * -0.08));
+}
+
+.ambient-orb-wrap--medium {
+  transform: translateY(calc(var(--scroll-y, 0px) * -0.05));
+}
+
+.ambient-orb-wrap--fast {
+  transform: translateY(calc(var(--scroll-y, 0px) * -0.12));
+}
+
+@keyframes beam-drift-1 {
+  0%, 100% { transform: translateX(-8%) rotate(-8deg) scale(1); opacity: 0.45; }
+  50% { transform: translateX(12%) rotate(-5deg) scale(1.08); opacity: 0.7; }
+}
+
+@keyframes beam-drift-2 {
+  0%, 100% { transform: translateX(10%) rotate(6deg) scale(1.02); opacity: 0.35; }
+  50% { transform: translateX(-14%) rotate(3deg) scale(1.06); opacity: 0.6; }
+}
+
+@keyframes beam-drift-3 {
+  0%, 100% { transform: translateX(-5%) rotate(-3deg); opacity: 0.3; }
+  50% { transform: translateX(8%) rotate(-6deg); opacity: 0.55; }
+}
+
+/* ─── GRID OVERLAY (legacy alias) ───────────────────────────────────── */
+.grid-overlay {
+  display: none;
 }
 
 /* ─── HERO ────────────────────────────────────────────────────────────── */
@@ -613,5 +819,8 @@ html.dark .glow-pill {
   .marquee-track,
   .shimmer::after,
   .floating-badge,
-  .floating-badge-delayed { animation: none !important; }
+  .floating-badge-delayed,
+  .ambient-beam,
+  .ambient-mesh--animated,
+  .ambient-grid { animation: none !important; transition: none !important; }
 }
