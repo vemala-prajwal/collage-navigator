@@ -113,7 +113,7 @@ function RegisterPage() {
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
-      const message = err.message || 'Unable to create your account right now.';
+      const message = err?.message || err?.response?.data?.message || 'Unable to create your account right now.';
       setError(message);
       toast.error(message);
     } finally {

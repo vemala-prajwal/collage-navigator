@@ -5,15 +5,32 @@ const client = axios.create({
 });
 
 const getErrorMessage = (error) => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
+  const responseData = error?.response?.data;
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData;
   }
-  if (error.response?.data?.errors?.length) {
-    return error.response.data.errors.map((item) => item.msg).join(', ');
+
+  if (responseData?.message) {
+    return responseData.message;
   }
-  if (error.message === 'Network Error') {
+
+  if (responseData?.error) {
+    return responseData.error;
+  }
+
+  if (responseData?.errors?.length) {
+    return responseData.errors.map((item) => item.msg || item.message || item).filter(Boolean).join(', ');
+  }
+
+  if (error?.message === 'Network Error') {
     return 'Unable to reach the server. Make sure the backend is running.';
   }
+
+  if (error?.message) {
+    return error.message;
+  }
+
   return 'Something went wrong. Please try again.';
 };
 
