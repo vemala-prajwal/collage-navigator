@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Home',     to: '/' },
   { label: 'Map',      to: '/map-search' },
   { label: 'Canteen',  to: '/canteen' },
-  { label: 'Feedback', to: '/map-search', hint: 'Pick a location to review', activeMatch: false },
+  { label: 'Admin',    to: '/admin' },
 ];
 
 const overlayVariants = {
@@ -80,7 +80,6 @@ export default function Navbar({ user, logout }) {
                 to={item.to}
                 end={item.to === '/'}
                 title={item.hint}
-                isActive={item.activeMatch === false ? () => false : undefined}
                 className="relative py-1.5 text-sm font-medium text-foreground-muted transition-colors duration-300 hover:text-foreground"
               >
                 {({ isActive }) => (
@@ -185,7 +184,6 @@ export default function Navbar({ user, logout }) {
                       <NavLink
                         to={item.to}
                         end={item.to === '/'}
-                        isActive={item.activeMatch === false ? () => false : undefined}
                         onClick={() => setMenuOpen(false)}
                         className={({ isActive }) =>
                           `block rounded-xl px-4 py-3 text-base font-semibold transition-all duration-200 ${
