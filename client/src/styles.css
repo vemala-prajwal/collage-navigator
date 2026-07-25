@@ -240,6 +240,23 @@ html.dark {
     border-color: rgb(var(--color-border) / 0.6);
   }
 
+  /* ── Flat card (No hover lift, no glare) ── */
+  .flat-card {
+    position: relative;
+    border-radius: 1.25rem;
+    border: 1px solid rgb(var(--color-border) / 0.5);
+    background: rgb(var(--color-surface) / 0.85);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.04);
+    transition: none;
+  }
+
+  .flat-card:hover {
+    transform: none !important;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.04) !important;
+    border-color: rgb(var(--color-border) / 0.5) !important;
+  }
+
   /* ── Input ── */
   .input-field {
     @apply w-full rounded-xl border border-border/70 bg-surface-secondary/80 px-4 py-3.5 text-foreground outline-none backdrop-blur-sm transition-all duration-300 ease-premium placeholder:text-foreground-muted/50 focus:border-accent/70 focus:bg-surface focus:ring-4 focus:ring-accent/15;

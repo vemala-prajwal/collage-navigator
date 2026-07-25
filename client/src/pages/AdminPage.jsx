@@ -9,6 +9,11 @@ import {
   RefreshCw,
   Search,
   Building,
+  Lock,
+  KeyRound,
+  User,
+  LogOut,
+  AlertCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -17,6 +22,14 @@ import Button from '../components/Button';
 import Badge from '../components/Badge';
 
 export default function AdminPage() {
+  // Password protection state
+  const [isAdminAuth, setIsAdminAuth] = useState(() => {
+    return sessionStorage.getItem('admin_portal_auth') === 'true';
+  });
+  const [adminIdInput, setAdminIdInput] = useState('');
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [authError, setAuthError] = useState('');
+
   const [activeTab, setActiveTab] = useState('locations'); // 'locations' | 'canteen'
   const [locations, setLocations] = useState([]);
   const [canteenItems, setCanteenItems] = useState([]);
@@ -40,7 +53,31 @@ export default function AdminPage() {
     status: 'available',
   });
 
+  // Handle Admin Portal login
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminIdInput.trim() === 'admin' && adminPasswordInput === 'admin@12345') {
+      sessionStorage.setItem('admin_portal_auth', 'true');
+      setIsAdminAuth(true);
+      setAuthError('');
+      toast.success('Admin portal access granted');
+    } else {
+      setAuthError('Invalid Admin ID or Password');
+      toast.error('Invalid credentials');
+    }
+  };
+
+  // Handle Admin Portal logout / re-lock
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('admin_portal_auth');
+    setIsAdminAuth(false);
+    setAdminIdInput('');
+    setAdminPasswordInput('');
+    toast.success('Admin session locked');
+  };
+
   const fetchData = async () => {
+    if (!isAdminAuth) return;
     setLoading(true);
     try {
       const [locRes, canteenRes] = await Promise.allSettled([
@@ -81,7 +118,85 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [isAdminAuth]);
+
+  // If not authenticated, render password lock screen
+  if (!isAdminAuth) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center py-12 px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flat-card w-full max-w-md p-8 sm:p-10 shadow-elevated"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="icon-well text-accent mb-4 p-4 rounded-2xl bg-accent/10 border-accent/20">
+              <Lock size={32} />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-foreground">Admin Portal Access</h2>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Enter your credentials to unlock campus management tools.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="mt-8 space-y-5">
+            {authError && (
+              <div className="flex items-center gap-2 rounded-xl border border-error/30 bg-error/10 p-3 text-xs font-semibold text-error">
+                <AlertCircle size={16} />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="admin-id" className="block text-xs font-bold uppercase tracking-wider text-foreground-muted mb-2">
+                Admin ID
+              </label>
+              <div className="relative">
+                <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted" />
+                <input
+                  id="admin-id"
+                  type="text"
+                  placeholder="Enter ID"
+                  value={adminIdInput}
+                  onChange={(e) => {
+                    setAdminIdInput(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
+                  className="input-field pl-11"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="admin-password" className="block text-xs font-bold uppercase tracking-wider text-foreground-muted mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <KeyRound size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted" />
+                <input
+                  id="admin-password"
+                  type="password"
+                  placeholder="Enter Password"
+                  value={adminPasswordInput}
+                  onChange={(e) => {
+                    setAdminPasswordInput(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
+                  className="input-field pl-11"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full py-3.5 text-sm font-bold mt-2">
+              Authenticate Portal
+            </Button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Safe arrays
   const safeLocations = Array.isArray(locations) ? locations : [];
@@ -190,15 +305,17 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-10 pb-16">
-      <PageHeader
-        eyebrow="Admin Dashboard"
-        title="Campus Control Panel"
-        description="Manage campus locations, map markers, canteen live menu items, and view system status."
-      />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <PageHeader
+          eyebrow="Admin Dashboard"
+          title="Campus Control Panel"
+          description="Manage campus locations, map markers, canteen live menu items, and view system status."
+        />
+      </div>
 
       {/* Overview Metric Cards */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="premium-card p-6">
+        <div className="flat-card p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
               Locations Mapped
@@ -213,7 +330,7 @@ export default function AdminPage() {
           <p className="mt-1 text-xs text-foreground-muted">Verified campus points</p>
         </div>
 
-        <div className="premium-card p-6">
+        <div className="flat-card p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
               Canteen Items
@@ -228,7 +345,7 @@ export default function AdminPage() {
           <p className="mt-1 text-xs text-foreground-muted">Live menu items</p>
         </div>
 
-        <div className="premium-card p-6">
+        <div className="flat-card p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
               Buildings Covered
@@ -243,7 +360,7 @@ export default function AdminPage() {
           <p className="mt-1 text-xs text-foreground-muted">Unique campus structures</p>
         </div>
 
-        <div className="premium-card p-6">
+        <div className="flat-card p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
               System Health
@@ -288,22 +405,33 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <Button
-          variant="secondary"
-          onClick={fetchData}
-          className="!py-2 !px-4 text-xs"
-          disabled={loading}
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={fetchData}
+            className="!py-2 !px-4 text-xs"
+            disabled={loading}
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </Button>
+
+          <button
+            onClick={handleAdminLogout}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-error/30 bg-error/10 px-3.5 py-2 text-xs font-semibold text-error hover:bg-error/20 transition"
+            title="Lock Admin Session"
+          >
+            <LogOut size={14} />
+            Lock Portal
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: LOCATIONS MANAGEMENT */}
       {activeTab === 'locations' && (
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Add Location Form */}
-          <div className="premium-card p-6 lg:col-span-1 h-fit">
+          <div className="flat-card p-6 lg:col-span-1 h-fit">
             <div className="flex items-center gap-2 text-accent font-bold text-lg mb-4">
               <Plus size={20} />
               <span>Add New Location</span>
@@ -441,7 +569,7 @@ export default function AdminPage() {
       {activeTab === 'canteen' && (
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Add Canteen Item Form */}
-          <div className="premium-card p-6 lg:col-span-1 h-fit">
+          <div className="flat-card p-6 lg:col-span-1 h-fit">
             <div className="flex items-center gap-2 text-accent2 font-bold text-lg mb-4">
               <Plus size={20} />
               <span>Add Canteen Item</span>
