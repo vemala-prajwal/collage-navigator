@@ -223,15 +223,13 @@ html.dark {
     border: 1px solid rgb(var(--color-border) / 0.6);
     background: rgb(var(--color-surface-secondary) / 0.7);
     backdrop-filter: blur(12px);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.4s;
+    transition: border-color 0.3s ease;
   }
 
   .premium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-glow);
-    border-color: rgb(var(--color-accent) / 0.4);
+    transform: none;
+    box-shadow: var(--shadow-card);
+    border-color: rgb(var(--color-border) / 0.8);
   }
 
   .premium-card-no-hover:hover {
@@ -439,12 +437,7 @@ html.dark .grid-overlay {
 
 /* ─── HERO ────────────────────────────────────────────────────────────── */
 .hero-glow {
-  position: absolute;
-  inset: -20%;
-  background: radial-gradient(ellipse at 40% 30%, rgb(var(--color-accent) / 0.18) 0%, transparent 55%),
-              radial-gradient(ellipse at 70% 60%, rgb(var(--color-accent2) / 0.12) 0%, transparent 55%);
-  filter: blur(40px);
-  pointer-events: none;
+  display: none;
 }
 
 .hero-preview-grid {
@@ -496,11 +489,10 @@ html.dark .glow-pill {
 /* ─── STAT CARD ──────────────────────────────────────────────────────── */
 .stat-card-glow {
   position: relative;
-  transition: transform 0.3s ease;
 }
 
 .stat-card-glow:hover {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 /* ─── NAVBAR PILL ─────────────────────────────────────────────────────── */

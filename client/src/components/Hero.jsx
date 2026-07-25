@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import Button from './Button';
 import HeroPreview from './home/HeroPreview';
 import RealLogo from './RealLogo';
 import { premiumTransition, staggerContainer, fadeUp } from '../lib/motion';
@@ -23,7 +22,6 @@ export default function Hero() {
         style={{ background: 'var(--gradient-hero)' }}
         aria-hidden="true"
       />
-      <div className="hero-glow" aria-hidden="true" />
 
       {/* Decorative rings */}
       <div
@@ -35,10 +33,10 @@ export default function Hero() {
             key={size}
             className="absolute rounded-full border border-accent/[0.06]"
             style={{
-              width:  size,
+              width: size,
               height: size,
-              top:   -size / 2,
-              left:  -size / 2,
+              top: -size / 2,
+              left: -size / 2,
               animationDuration: `${20 + i * 8}s`,
             }}
           />
@@ -58,7 +56,7 @@ export default function Hero() {
             <motion.div variants={fadeUp} className="mb-8">
               <span className="glow-pill">
                 <span
-                  className="inline-block h-1.5 w-1.5 rounded-full animate-pulse"
+                  className="inline-block h-1.5 w-1.5 rounded-full"
                   style={{ background: 'var(--gradient-accent)' }}
                 />
                 Campus navigation, reimagined
@@ -89,28 +87,26 @@ export default function Hero() {
               className="mt-8 max-w-md text-base leading-relaxed text-foreground-muted sm:text-lg"
             >
               Search destinations, follow live routes, check canteen status,
-              and leave feedback — all in one beautiful place.
+              and leave feedback — all in one place.
             </motion.p>
 
             {/* CTA buttons */}
             <motion.div variants={fadeUp} className="mt-12 flex flex-wrap items-center gap-5">
               <Link to="/map-search">
-                <motion.button
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="btn-gradient relative inline-flex items-center gap-2 overflow-hidden rounded-full px-8 py-4 text-base font-semibold text-white beam-sweep"
+                <button
+                  type="button"
+                  className="btn-gradient relative inline-flex items-center gap-2 overflow-hidden rounded-full px-8 py-4 text-base font-semibold text-white"
                 >
                   <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
                   <span className="relative z-10">Explore Campus</span>
-                </motion.button>
+                </button>
               </Link>
               <Link
                 to="/canteen"
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-foreground-muted transition-all duration-300 hover:text-foreground"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground-muted hover:text-foreground"
               >
                 View canteen
-                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+                <span>→</span>
               </Link>
             </motion.div>
 
@@ -120,7 +116,7 @@ export default function Hero() {
                 return (
                   <div
                     key={stat.label}
-                    className="gradient-border flex items-center gap-2 rounded-full border border-border/50 bg-surface/60 px-4 py-2 backdrop-blur-sm"
+                    className="flex items-center gap-2 rounded-full border border-border/50 bg-surface/60 px-4 py-2 backdrop-blur-sm"
                   >
                     <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt={`${stat.label} logo`} />
                     <span className="font-display text-sm font-bold text-foreground">{stat.value}</span>
@@ -133,27 +129,15 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ── Right: Preview card ── */}
+          {/* ── Right: Preview card (No background glow behind it) ── */}
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, x: 48, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ ...premiumTransition(0.8), delay: 0.15 }}
             className="relative"
           >
-            {/* Outer glow */}
-            <div
-              className="absolute -inset-6 rounded-3xl opacity-40 blur-3xl"
-              style={{ background: 'var(--gradient-accent)' }}
-              aria-hidden="true"
-            />
-
             {/* Floating badge — top right */}
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="floating-badge absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-elevated backdrop-blur-xl"
-            >
+            <div className="absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-card backdrop-blur-xl">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg"
                     style={{ background: 'var(--gradient-accent)' }}>
                 <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
@@ -162,15 +146,10 @@ export default function Hero() {
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Status</p>
                 <p className="text-xs font-bold text-foreground">Live Updates</p>
               </div>
-            </motion.div>
+            </div>
 
             {/* Floating badge — bottom left */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="floating-badge-delayed absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-elevated backdrop-blur-xl"
-            >
+            <div className="absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-card backdrop-blur-xl">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/15">
                 <RealLogo slug="googlestreetview" color="10b981" size={14} alt="Street View logo" />
               </span>
@@ -178,30 +157,22 @@ export default function Hero() {
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Rating</p>
                 <p className="text-xs font-bold text-foreground">4.9 / 5.0</p>
               </div>
-            </motion.div>
+            </div>
 
-            <HeroPreview className="relative shadow-elevated" />
+            <HeroPreview className="relative" />
           </motion.div>
         </div>
 
         {/* ── Scroll cue ── */}
         {!reduceMotion ? (
-          <motion.a
+          <a
             href="#discover"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...premiumTransition(0.6), delay: 1.2 }}
-            className="mt-12 flex flex-col items-center gap-2 self-center text-foreground-muted transition-colors hover:text-foreground lg:mt-8"
+            className="mt-12 flex flex-col items-center gap-2 self-center text-foreground-muted hover:text-foreground lg:mt-8"
             aria-label="Scroll to discover more"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.28em]">Discover</span>
-            <motion.span
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <ChevronDown size={20} strokeWidth={1.5} />
-            </motion.span>
-          </motion.a>
+            <ChevronDown size={20} strokeWidth={1.5} />
+          </a>
         ) : null}
       </div>
     </section>
