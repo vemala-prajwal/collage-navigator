@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, Compass } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import Button from './Button';
+import RealLogo from './RealLogo';
 
 const MotionLink = motion(Link);
 
@@ -65,20 +66,8 @@ export default function Navbar({ user, logout }) {
             to="/"
             className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
           >
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden">
-              {/* gradient bg */}
-              <span
-                className="absolute inset-0 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"
-                style={{ background: 'var(--gradient-accent)' }}
-              />
-              <Compass
-                size={16}
-                strokeWidth={2.5}
-                className="relative z-10 text-white"
-              />
-              {/* glow ring on hover */}
-              <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ boxShadow: 'var(--shadow-glow)' }} />
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden border border-border/50 bg-surface-secondary/80 p-1.5">
+              <RealLogo slug="googlemaps" color="8b5cf6" size={18} alt="Google Maps logo" />
             </span>
             <span className="text-gradient">Campus Navigator</span>
           </Link>
@@ -169,9 +158,8 @@ export default function Navbar({ user, logout }) {
                   className="flex items-center gap-2 font-display text-lg font-bold"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg"
-                        style={{ background: 'var(--gradient-accent)' }}>
-                    <Compass size={14} strokeWidth={2.5} className="text-white" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/50 bg-surface-secondary/80 p-1.5">
+                    <RealLogo slug="googlemaps" color="8b5cf6" size={14} alt="Google Maps logo" />
                   </span>
                   <span className="text-gradient">Campus Nav</span>
                 </Link>

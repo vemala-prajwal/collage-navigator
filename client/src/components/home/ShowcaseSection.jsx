@@ -3,7 +3,6 @@ import { ArrowUpRight, Map, UtensilsCrossed, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 import { Reveal, RevealItem, RevealStagger } from '../Reveal';
-import { premiumTransition } from '../../lib/motion';
 
 const SHOWCASE_ITEMS = [
   {
@@ -40,18 +39,17 @@ function ShowcaseCard({ item, locationPreview }) {
     <RevealItem>
       <Link to={locationPreview ? `/locations/${locationPreview._id}` : item.to} className="group block h-full">
         <motion.article
-          whileHover={{ y: -8, transition: premiumTransition(0.35) }}
           className="premium-card flex h-full flex-col p-8"
         >
-          <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
+          <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-40`} />
 
           <div className="relative flex items-start justify-between gap-4">
-            <div className="icon-well group-hover:border-accent/30 group-hover:bg-accent/10">
-              <Icon size={20} className="text-foreground-muted transition-colors duration-300 group-hover:text-accent" strokeWidth={1.5} />
+            <div className="icon-well">
+              <Icon size={20} className="text-foreground-muted" strokeWidth={1.5} />
             </div>
             <ArrowUpRight
               size={20}
-              className="text-foreground-muted transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
+              className="text-foreground-muted"
             />
           </div>
 
@@ -62,7 +60,7 @@ function ShowcaseCard({ item, locationPreview }) {
             <div className="hero-preview-grid h-full w-full opacity-30" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="rounded-full border border-border/50 bg-surface/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground-muted backdrop-blur-sm transition-colors duration-300 group-hover:border-accent/30 group-hover:text-accent">
+              <span className="rounded-full border border-border/50 bg-surface/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground-muted backdrop-blur-sm">
                 Open preview
               </span>
             </div>
@@ -135,7 +133,7 @@ export default function ShowcaseSection({ locations = [] }) {
                   </div>
                   <ArrowUpRight
                     size={16}
-                    className="text-foreground-muted opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:text-accent"
+                    className="text-foreground-muted"
                   />
                 </Link>
               ))}

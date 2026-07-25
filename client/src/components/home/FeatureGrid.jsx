@@ -1,40 +1,40 @@
-import { MapPin, UtensilsCrossed, MessageSquare, Zap, Clock, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Reveal, RevealItem, RevealStagger } from '../Reveal';
+import RealLogo from '../RealLogo';
 
 const FEATURES = [
   {
-    icon: MapPin,
+    logo: 'googlemaps',
     title: 'Real-time navigation',
     description: 'Live routes across every mapped building and floor.',
     color: 'var(--gradient-accent)',
   },
   {
-    icon: UtensilsCrossed,
+    logo: 'ubereats',
     title: 'Live canteen status',
     description: 'Menu availability and queue updates every two minutes.',
     color: 'linear-gradient(135deg, rgb(16 185 129), rgb(52 211 153))',
   },
   {
-    icon: MessageSquare,
+    logo: 'googlemessages',
     title: 'Verified feedback',
     description: 'Student-submitted ratings that facilities actually act on.',
     color: 'linear-gradient(135deg, rgb(245 158 11), rgb(251 191 36))',
   },
   {
-    icon: Zap,
+    logo: 'googlecloud',
     title: 'Speed by default',
     description: 'Instant search results — no loading screens, no friction.',
     color: 'var(--gradient-accent)',
   },
   {
-    icon: Clock,
+    logo: 'googlecalendar',
     title: 'Always current',
     description: 'Campus data refreshed around the clock, not once a semester.',
     color: 'linear-gradient(135deg, rgb(239 68 68), rgb(248 113 113))',
   },
   {
-    icon: ShieldCheck,
+    logo: 'googleworkspace',
     title: 'Trusted data',
     description: 'Every location verified against official campus records.',
     color: 'linear-gradient(135deg, rgb(16 185 129), rgb(52 211 153))',
@@ -65,7 +65,6 @@ export default function FeatureGrid() {
           stagger={0.08}
         >
           {FEATURES.map((feature) => {
-            const Icon = feature.icon;
             return (
               <RevealItem key={feature.title}>
                 <motion.div
@@ -88,7 +87,7 @@ export default function FeatureGrid() {
                         opacity: 1,
                       }}
                     >
-                      <Icon size={18} strokeWidth={1.8} className="text-white" />
+                      <RealLogo slug={feature.logo} color="ffffff" size={18} alt={`${feature.title} logo`} />
                     </span>
                   </div>
 

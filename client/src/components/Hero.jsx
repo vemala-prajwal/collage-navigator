@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronDown, MapPin, Zap, Star } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Button from './Button';
 import HeroPreview from './home/HeroPreview';
+import RealLogo from './RealLogo';
 import { premiumTransition, staggerContainer, fadeUp } from '../lib/motion';
 
 const QUICK_STATS = [
-  { value: 'Live', label: 'Routes', icon: Zap },
-  { value: '2 min', label: 'Canteen sync', icon: MapPin },
-  { value: '4.9 ★', label: 'Avg rating', icon: Star },
+  { value: 'Live', label: 'Routes', logo: 'googlemaps' },
+  { value: '2 min', label: 'Canteen sync', logo: 'google' },
+  { value: '4.9 ★', label: 'Avg rating', logo: 'googlestreetview' },
 ];
 
 export default function Hero() {
@@ -100,7 +101,7 @@ export default function Hero() {
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="btn-gradient relative inline-flex items-center gap-2 overflow-hidden rounded-full px-8 py-4 text-base font-semibold text-white beam-sweep"
                 >
-                  <MapPin size={18} className="relative z-10" />
+                  <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
                   <span className="relative z-10">Explore Campus</span>
                 </motion.button>
               </Link>
@@ -116,14 +117,13 @@ export default function Hero() {
             {/* Stats pills */}
             <motion.div variants={fadeUp} className="mt-14 flex flex-wrap gap-3">
               {QUICK_STATS.map((stat) => {
-                const Icon = stat.icon;
                 return (
                   <motion.div
                     key={stat.label}
                     whileHover={{ scale: 1.05, y: -2 }}
                     className="gradient-border flex items-center gap-2 rounded-full border border-border/50 bg-surface/60 px-4 py-2 backdrop-blur-sm"
                   >
-                    <Icon size={13} className="text-accent" />
+                    <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt={`${stat.label} logo`} />
                     <span className="font-display text-sm font-bold text-foreground">{stat.value}</span>
                     <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
                       {stat.label}
@@ -157,7 +157,7 @@ export default function Hero() {
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-lg"
                     style={{ background: 'var(--gradient-accent)' }}>
-                <Zap size={14} className="text-white" />
+                <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
               </span>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Status</p>
@@ -173,7 +173,7 @@ export default function Hero() {
               className="floating-badge-delayed absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-elevated backdrop-blur-xl"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/15">
-                <Star size={14} className="text-success" />
+                <RealLogo slug="googlestreetview" color="10b981" size={14} alt="Street View logo" />
               </span>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Rating</p>
