@@ -54,9 +54,21 @@ export default function AdminPage() {
   });
 
   // Handle Admin Portal login
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
     if (adminIdInput.trim() === 'admin' && adminPasswordInput === 'admin@12345') {
+      const adminEmail = import.meta.env.VITE_SUPABASE_ADMIN_EMAIL;
+      const adminPassword = import.meta.env.VITE_SUPABASE_ADMIN_PASSWORD;
+
+      if (adminEmail && adminPassword) {
+        const { error } = await api.signInAdmin(adminEmail, adminPassword);
+        if (error) {
+          setAuthError('Supabase admin sign-in failed. Check your admin email/password in the client environment.');
+          toast.error('Supabase admin sign-in failed');
+          return;
+        }
+      }
+
       sessionStorage.setItem('admin_portal_auth', 'true');
       setIsAdminAuth(true);
       setAuthError('');
@@ -68,7 +80,8 @@ export default function AdminPage() {
   };
 
   // Handle Admin Portal logout / re-lock
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
+    await api.signOutAdmin();
     sessionStorage.removeItem('admin_portal_auth');
     setIsAdminAuth(false);
     setAdminIdInput('');

@@ -56,7 +56,14 @@ export default function MapSearchPage() {
     };
 
     const timer = setTimeout(fetchLocations, 240);
-    return () => clearTimeout(timer);
+    const subscription = api.subscribe('locations', () => {
+      fetchLocations();
+    });
+
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, [query]);
 
   const results = useMemo(() => {

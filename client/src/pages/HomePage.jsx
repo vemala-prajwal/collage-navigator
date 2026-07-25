@@ -28,6 +28,11 @@ export default function HomePage() {
     };
 
     fetchLocations();
+    const subscription = api.subscribe('locations', () => {
+      fetchLocations();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const marqueeData = useMemo(() => {

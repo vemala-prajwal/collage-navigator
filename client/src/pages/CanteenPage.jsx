@@ -46,6 +46,11 @@ export default function CanteenPage() {
     };
 
     fetchItems();
+    const subscription = api.subscribe('canteen_items', () => {
+      fetchItems();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const safeItems = Array.isArray(items) ? items : [];

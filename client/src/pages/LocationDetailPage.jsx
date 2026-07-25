@@ -34,6 +34,17 @@ export default function LocationDetailPage() {
     };
 
     fetchLocation();
+    const locationSubscription = api.subscribe('locations', () => {
+      fetchLocation();
+    });
+    const feedbackSubscription = api.subscribe('feedback', () => {
+      fetchLocation();
+    });
+
+    return () => {
+      locationSubscription.unsubscribe();
+      feedbackSubscription.unsubscribe();
+    };
   }, [id]);
 
   const sortedFeedback = useMemo(
