@@ -253,6 +253,12 @@ html.dark {
     border-color: rgb(var(--color-border) / 0.75);
   }
 
+  .premium-card-no-hover:hover {
+    transform: none;
+    box-shadow: inherit;
+    border-color: rgb(var(--color-border) / 0.6);
+  }
+
   /* ── Input ── */
   .input-field {
     @apply w-full rounded-xl border border-border/70 bg-surface-secondary/80 px-4 py-3.5 text-foreground outline-none backdrop-blur-sm transition-all duration-300 ease-premium placeholder:text-foreground-muted/50 focus:border-accent/70 focus:bg-surface focus:ring-4 focus:ring-accent/15;

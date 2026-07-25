@@ -8,7 +8,7 @@ export default function HeroPreview({ className = '' }) {
 
   return (
     <div
-      className={`premium-card relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
+      className={`premium-card premium-card-no-hover relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
       aria-hidden="true"
     >
       <div className="hero-preview-grid absolute inset-0 opacity-50" />
