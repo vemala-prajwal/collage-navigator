@@ -14,7 +14,7 @@ function LoginPage() {
     event.preventDefault();
     setLoading(true);
     try {
-      await login({ idOrEmail: identifier, password });
+      await login({ email: identifier, password });
       navigate('/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Invalid credentials');
