@@ -8,7 +8,7 @@ export default function HeroPreview({ className = '' }) {
 
   return (
     <div
-      className={`premium-card premium-card-no-hover relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
+      className={`premium-card relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
       aria-hidden="true"
     >
       <div className="hero-preview-grid absolute inset-0 opacity-50" />
@@ -24,6 +24,7 @@ export default function HeroPreview({ className = '' }) {
             </feMerge>
           </filter>
         </defs>
+
         <motion.path
           d={routePath}
           fill="none"
@@ -36,25 +37,15 @@ export default function HeroPreview({ className = '' }) {
           animate={{ pathLength: 1, opacity: 0.85 }}
           transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
         />
+
         {!reduceMotion ? (
           <>
-            <motion.circle
-              r="8"
-              fill="rgb(var(--color-accent))"
-              opacity="0.3"
-              initial={{ offsetDistance: '0%' }}
-              animate={{ offsetDistance: '100%' }}
-              transition={{ duration: 6, ease: 'linear', repeat: Infinity, delay: 1 }}
-              style={{ offsetPath: `path('${routePath}')` }}
-            />
-            <motion.circle
-              r="5"
-              fill="rgb(var(--color-accent))"
-              initial={{ offsetDistance: '0%' }}
-              animate={{ offsetDistance: '100%' }}
-              transition={{ duration: 6, ease: 'linear', repeat: Infinity, delay: 1 }}
-              style={{ offsetPath: `path('${routePath}')` }}
-            />
+            <circle r="8" fill="rgb(var(--color-accent))" opacity="0.3">
+              <animateMotion path={routePath} dur="6s" repeatCount="indefinite" />
+            </circle>
+            <circle r="5" fill="rgb(var(--color-accent))">
+              <animateMotion path={routePath} dur="6s" repeatCount="indefinite" />
+            </circle>
           </>
         ) : null}
       </svg>

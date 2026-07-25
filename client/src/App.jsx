@@ -10,29 +10,32 @@ import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/map-search" element={<MapSearchPage />} />
-            <Route path="/locations/:id" element={<LocationDetailPage />} />
-            <Route path="/canteen" element={<CanteenPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className: '!bg-surface !text-foreground !border !border-border !shadow-elevated',
-            }}
-          />
-        </Layout>
+        <ErrorBoundary>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/map-search" element={<MapSearchPage />} />
+              <Route path="/locations/:id" element={<LocationDetailPage />} />
+              <Route path="/canteen" element={<CanteenPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                className: '!bg-surface !text-foreground !border !border-border !shadow-elevated',
+              }}
+            />
+          </Layout>
+        </ErrorBoundary>
       </AuthProvider>
     </ThemeProvider>
   );

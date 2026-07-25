@@ -228,34 +228,15 @@ html.dark {
                 border-color 0.4s;
   }
 
-  .premium-card::before {
-    content: none;
-  }
-
-  .premium-card::after {
-    content: '';
-    position: absolute;
-    inset: 1px;
-    border-radius: calc(1.25rem - 1px);
-    background: rgb(var(--color-surface-secondary) / 0.95);
-    z-index: 1;
-    transition: background 0.4s;
-  }
-
-  .premium-card > * {
-    position: relative;
-    z-index: 2;
-  }
-
   .premium-card:hover {
-    transform: none;
-    box-shadow: var(--shadow-card);
-    border-color: rgb(var(--color-border) / 0.75);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow);
+    border-color: rgb(var(--color-accent) / 0.4);
   }
 
   .premium-card-no-hover:hover {
     transform: none;
-    box-shadow: inherit;
+    box-shadow: var(--shadow-card);
     border-color: rgb(var(--color-border) / 0.6);
   }
 
@@ -498,14 +479,11 @@ html.dark .glow-pill {
 /* ─── STAT CARD ──────────────────────────────────────────────────────── */
 .stat-card-glow {
   position: relative;
+  transition: transform 0.3s ease;
 }
 
-.stat-card-glow::before {
-  content: none;
-}
-
-.stat-card-glow:hover::before {
-  opacity: 0;
+.stat-card-glow:hover {
+  transform: translateY(-2px);
 }
 
 /* ─── NAVBAR PILL ─────────────────────────────────────────────────────── */
