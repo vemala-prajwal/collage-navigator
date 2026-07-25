@@ -40,9 +40,16 @@ export default function MapSearchPage() {
       setLoading(true);
       try {
         const response = await api.get('/locations', { params: { query } });
-        setLocations(response.data);
+        const data = response.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.locations)
+          ? data.locations
+          : [];
+        setLocations(list);
       } catch (error) {
         console.error(error);
+        setLocations([]);
       } finally {
         setLoading(false);
       }
@@ -53,8 +60,13 @@ export default function MapSearchPage() {
   }, [query]);
 
   const results = useMemo(() => {
-    if (!query) return locations;
-    return locations.filter((location) => location.name.toLowerCase().includes(query.toLowerCase()));
+    const safeLocations = Array.isArray(locations) ? locations : [];
+    if (!query) return safeLocations;
+    return safeLocations.filter(
+      (location) =>
+        location?.name?.toLowerCase().includes(query.toLowerCase()) ||
+        location?.building?.toLowerCase().includes(query.toLowerCase())
+    );
   }, [locations, query]);
 
   const pinLayout = [
@@ -103,22 +115,22 @@ export default function MapSearchPage() {
           ) : (
             <motion.div initial="hidden" animate="visible" variants={listVariants} className="space-y-4">
               {results.map((location) => {
-                const status = statusMap[location.status] || 'available';
-                const isSelected = selectedId === location._id;
+                const status = statusMap[location?.status] || 'available';
+                const isSelected = selectedId === location?._id;
 
                 return (
-                  <motion.div key={location._id} variants={itemVariants}>
-                    <Link to={`/locations/${location._id}`}>
+                  <motion.div key={location?._id || Math.random()} variants={itemVariants}>
+                    <Link to={`/locations/${location?._id}`}>
                       <Card
                         className={`cursor-pointer ${isSelected ? 'border-accent/40 ring-2 ring-accent/15' : ''}`}
-                        onMouseEnter={() => setSelectedId(location._id)}
+                        onMouseEnter={() => setSelectedId(location?._id)}
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="max-w-xl">
-                            <p className="eyebrow text-[0.65rem]">{location.type || 'Campus point'}</p>
-                            <h2 className="mt-2 font-display text-2xl font-bold text-foreground">{location.name}</h2>
+                            <p className="eyebrow text-[0.65rem]">{location?.type || 'Campus point'}</p>
+                            <h2 className="mt-2 font-display text-2xl font-bold text-foreground">{location?.name}</h2>
                             <p className="mt-2 text-sm text-foreground-muted">
-                              {location.building} • Floor {location.floor}
+                              {location?.building} • Floor {location?.floor}
                             </p>
                           </div>
                           <Badge status={status}>
@@ -127,10 +139,10 @@ export default function MapSearchPage() {
                         </div>
                         <div className="mt-5 flex flex-wrap gap-2 text-xs text-foreground-muted">
                           <span className="rounded-full border border-border bg-surface-secondary px-3 py-1">
-                            ID {location._id.slice(-4)}
+                            ID {location?._id?.slice(-4) || '----'}
                           </span>
                           <span className="rounded-full border border-border bg-surface-secondary px-3 py-1">
-                            {location.building}
+                            {location?.building}
                           </span>
                         </div>
                       </Card>
@@ -180,7 +192,7 @@ export default function MapSearchPage() {
             {selectedId ? (
               <div className="space-y-2">
                 <p className="text-base font-semibold text-foreground">
-                  {results.find((location) => location._id === selectedId)?.name || 'Campus location'}
+                  {results.find((location) => location?._id === selectedId)?.name || 'Campus location'}
                 </p>
                 <p className="text-sm text-foreground-muted">
                   Open the location page to leave feedback and see full details.

@@ -14,9 +14,16 @@ export default function HomePage() {
     const fetchLocations = async () => {
       try {
         const response = await api.get('/locations');
-        setLocations(response.data);
+        const data = response.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.locations)
+          ? data.locations
+          : [];
+        setLocations(list);
       } catch (error) {
         console.error(error);
+        setLocations([]);
       }
     };
 
@@ -24,8 +31,9 @@ export default function HomePage() {
   }, []);
 
   const marqueeData = useMemo(() => {
-    const buildings = new Set(locations.map((l) => l.building).filter(Boolean));
-    const types = new Set(locations.map((l) => l.type).filter(Boolean));
+    const safeLocations = Array.isArray(locations) ? locations : [];
+    const buildings = new Set(safeLocations.map((l) => l?.building).filter(Boolean));
+    const types = new Set(safeLocations.map((l) => l?.type).filter(Boolean));
     const labs = [...types].filter((t) => /lab/i.test(t)).length;
 
     return {
@@ -37,8 +45,6 @@ export default function HomePage() {
       },
     };
   }, [locations]);
-
-  const locationCount = locations.length > 0 ? locations.length : 50;
 
   return (
     <div>

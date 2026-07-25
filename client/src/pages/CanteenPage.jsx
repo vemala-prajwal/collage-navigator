@@ -30,9 +30,16 @@ export default function CanteenPage() {
     const fetchItems = async () => {
       try {
         const response = await api.get('/canteen-items');
-        setItems(response.data);
+        const data = response.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+          ? data.items
+          : [];
+        setItems(list);
       } catch (error) {
         console.error(error);
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -40,6 +47,8 @@ export default function CanteenPage() {
 
     fetchItems();
   }, []);
+
+  const safeItems = Array.isArray(items) ? items : [];
 
   return (
     <div>
@@ -57,33 +66,39 @@ export default function CanteenPage() {
       >
         {loading
           ? [1, 2, 3, 4].map((item) => <SkeletonCard key={item} />)
-          : items.map((item) => (
-              <motion.div key={item._id} variants={itemVariants}>
-                <Card variant="glass" className="h-full">
-                  <div className="flex flex-col gap-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="font-display text-2xl font-bold text-foreground">{item.name}</h2>
-                        <p className="mt-2 text-sm text-foreground-muted">{item.category}</p>
+          : safeItems.length === 0 ? (
+              <div className="col-span-2 p-8 text-center text-foreground-muted">
+                No canteen menu items currently available.
+              </div>
+            ) : (
+              safeItems.map((item) => (
+                <motion.div key={item._id} variants={itemVariants}>
+                  <Card variant="glass" className="h-full">
+                    <div className="flex flex-col gap-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h2 className="font-display text-2xl font-bold text-foreground">{item.name}</h2>
+                          <p className="mt-2 text-sm text-foreground-muted">{item.category}</p>
+                        </div>
+                        <Badge status={item.status}>{statusLabel[item.status] || 'Available'}</Badge>
                       </div>
-                      <Badge status={item.status}>{statusLabel[item.status] || 'Available'}</Badge>
-                    </div>
 
-                    <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-lg font-semibold text-foreground">₹{item.price}</p>
-                        <p className="mt-1 text-sm text-foreground-muted">
-                          Updated {new Date(item.updatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="rounded-xl border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-foreground-muted">
-                        Chef&apos;s pick
+                      <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-lg font-semibold text-foreground">₹{item.price}</p>
+                          <p className="mt-1 text-sm text-foreground-muted">
+                            Updated {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'recently'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-border bg-surface-secondary px-4 py-2 text-sm font-semibold text-foreground-muted">
+                          Chef&apos;s pick
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                  </Card>
+                </motion.div>
+              ))
+            )}
       </motion.section>
     </div>
   );

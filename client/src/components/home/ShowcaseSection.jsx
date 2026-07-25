@@ -38,19 +38,14 @@ function ShowcaseCard({ item, locationPreview }) {
   return (
     <RevealItem>
       <Link to={locationPreview ? `/locations/${locationPreview._id}` : item.to} className="group block h-full">
-        <motion.article
-          className="premium-card flex h-full flex-col p-8"
-        >
+        <motion.article className="premium-card flex h-full flex-col p-8">
           <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-40`} />
 
           <div className="relative flex items-start justify-between gap-4">
             <div className="icon-well">
               <Icon size={20} className="text-foreground-muted" strokeWidth={1.5} />
             </div>
-            <ArrowUpRight
-              size={20}
-              className="text-foreground-muted"
-            />
+            <ArrowUpRight size={20} className="text-foreground-muted" />
           </div>
 
           <h3 className="relative mt-8 font-display text-2xl font-bold text-foreground">{title}</h3>
@@ -88,7 +83,8 @@ ShowcaseCard.propTypes = {
 };
 
 export default function ShowcaseSection({ locations = [] }) {
-  const locationCards = locations.slice(0, 3);
+  const safeLocations = Array.isArray(locations) ? locations : [];
+  const locationCards = safeLocations.slice(0, 3);
 
   return (
     <section className="section-gap relative overflow-hidden">
@@ -115,11 +111,11 @@ export default function ShowcaseSection({ locations = [] }) {
           ))}
         </RevealStagger>
 
-        {locations.length > 0 ? (
+        {safeLocations.length > 0 ? (
           <Reveal className="mt-20" delay={0.1}>
             <p className="eyebrow mb-8">Popular destinations</p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {locations.slice(0, 6).map((location) => (
+              {safeLocations.slice(0, 6).map((location) => (
                 <Link
                   key={location._id}
                   to={`/locations/${location._id}`}
@@ -131,10 +127,7 @@ export default function ShowcaseSection({ locations = [] }) {
                       {location.building} · Floor {location.floor}
                     </p>
                   </div>
-                  <ArrowUpRight
-                    size={16}
-                    className="text-foreground-muted"
-                  />
+                  <ArrowUpRight size={16} className="text-foreground-muted" />
                 </Link>
               ))}
             </div>

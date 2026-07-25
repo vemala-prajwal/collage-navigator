@@ -6,14 +6,9 @@ import {
   UtensilsCrossed,
   Plus,
   Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
   RefreshCw,
   Search,
   Building,
-  Layers,
-  Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -22,7 +17,7 @@ import Button from '../components/Button';
 import Badge from '../components/Badge';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('locations'); // 'locations' | 'canteen' | 'stats'
+  const [activeTab, setActiveTab] = useState('locations'); // 'locations' | 'canteen'
   const [locations, setLocations] = useState([]);
   const [canteenItems, setCanteenItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +48,29 @@ export default function AdminPage() {
         api.get('/canteen-items'),
       ]);
 
-      if (locRes.status === 'fulfilled') setLocations(locRes.value.data || []);
-      if (canteenRes.status === 'fulfilled') setCanteenItems(canteenRes.value.data || []);
+      if (locRes.status === 'fulfilled') {
+        const data = locRes.value.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.locations)
+          ? data.locations
+          : [];
+        setLocations(list);
+      } else {
+        setLocations([]);
+      }
+
+      if (canteenRes.status === 'fulfilled') {
+        const data = canteenRes.value.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+          ? data.items
+          : [];
+        setCanteenItems(list);
+      } else {
+        setCanteenItems([]);
+      }
     } catch (err) {
       console.error(err);
       toast.error('Failed to load admin data');
@@ -67,6 +83,10 @@ export default function AdminPage() {
     fetchData();
   }, []);
 
+  // Safe arrays
+  const safeLocations = Array.isArray(locations) ? locations : [];
+  const safeCanteenItems = Array.isArray(canteenItems) ? canteenItems : [];
+
   // Add location handler
   const handleAddLocation = async (e) => {
     e.preventDefault();
@@ -76,7 +96,7 @@ export default function AdminPage() {
     }
     try {
       const res = await api.post('/locations', newLocation);
-      setLocations((prev) => [...prev, res.data]);
+      setLocations((prev) => (Array.isArray(prev) ? [...prev, res.data] : [res.data]));
       toast.success(`Location "${newLocation.name}" created!`);
       setNewLocation({
         name: '',
@@ -95,7 +115,7 @@ export default function AdminPage() {
     if (!window.confirm(`Are you sure you want to delete "${name}"?`)) return;
     try {
       await api.delete(`/locations/${id}`);
-      setLocations((prev) => prev.filter((l) => l._id !== id));
+      setLocations((prev) => (Array.isArray(prev) ? prev.filter((l) => l._id !== id) : []));
       toast.success(`Location "${name}" removed.`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete location');
@@ -114,7 +134,7 @@ export default function AdminPage() {
         ...newCanteenItem,
         price: parseFloat(newCanteenItem.price),
       });
-      setCanteenItems((prev) => [...prev, res.data]);
+      setCanteenItems((prev) => (Array.isArray(prev) ? [...prev, res.data] : [res.data]));
       toast.success(`Canteen item "${newCanteenItem.name}" added!`);
       setNewCanteenItem({
         name: '',
@@ -139,7 +159,9 @@ export default function AdminPage() {
     try {
       await api.patch(`/canteen-items/${id}/toggle-status`, { status: nextStatus });
       setCanteenItems((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, status: nextStatus } : item))
+        Array.isArray(prev)
+          ? prev.map((item) => (item._id === id ? { ...item, status: nextStatus } : item))
+          : []
       );
       toast.success('Status updated!');
     } catch (err) {
@@ -152,18 +174,18 @@ export default function AdminPage() {
     if (!window.confirm(`Delete "${name}" from menu?`)) return;
     try {
       await api.delete(`/canteen-items/${id}`);
-      setCanteenItems((prev) => prev.filter((item) => item._id !== id));
+      setCanteenItems((prev) => (Array.isArray(prev) ? prev.filter((item) => item._id !== id) : []));
       toast.success(`"${name}" removed from menu.`);
     } catch (err) {
       toast.error('Failed to delete item');
     }
   };
 
-  const filteredLocations = locations.filter(
+  const filteredLocations = safeLocations.filter(
     (l) =>
-      l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.building.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.type.toLowerCase().includes(searchQuery.toLowerCase())
+      l?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      l?.building?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      l?.type?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -186,7 +208,7 @@ export default function AdminPage() {
             </div>
           </div>
           <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {locations.length}
+            {safeLocations.length}
           </p>
           <p className="mt-1 text-xs text-foreground-muted">Verified campus points</p>
         </div>
@@ -201,7 +223,7 @@ export default function AdminPage() {
             </div>
           </div>
           <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {canteenItems.length}
+            {safeCanteenItems.length}
           </p>
           <p className="mt-1 text-xs text-foreground-muted">Live menu items</p>
         </div>
@@ -216,7 +238,7 @@ export default function AdminPage() {
             </div>
           </div>
           <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {new Set(locations.map((l) => l.building)).size || 0}
+            {new Set(safeLocations.map((l) => l?.building).filter(Boolean)).size || 0}
           </p>
           <p className="mt-1 text-xs text-foreground-muted">Unique campus structures</p>
         </div>
@@ -250,7 +272,7 @@ export default function AdminPage() {
             }`}
           >
             <MapPin size={16} />
-            Locations ({locations.length})
+            Locations ({safeLocations.length})
           </button>
 
           <button
@@ -262,7 +284,7 @@ export default function AdminPage() {
             }`}
           >
             <UtensilsCrossed size={16} />
-            Canteen Menu ({canteenItems.length})
+            Canteen Menu ({safeCanteenItems.length})
           </button>
         </div>
 
@@ -492,12 +514,12 @@ export default function AdminPage() {
           {/* Canteen List */}
           <div className="space-y-4 lg:col-span-2">
             <div className="divide-y divide-border/40 rounded-2xl border border-border/50 bg-surface/60 backdrop-blur-md overflow-hidden">
-              {canteenItems.length === 0 ? (
+              {safeCanteenItems.length === 0 ? (
                 <div className="p-8 text-center text-foreground-muted">
                   No menu items found. Add your first item using the form.
                 </div>
               ) : (
-                canteenItems.map((item) => (
+                safeCanteenItems.map((item) => (
                   <div
                     key={item._id}
                     className="flex flex-wrap items-center justify-between gap-4 p-4 hover:bg-surface-secondary/50 transition"
