@@ -4,6 +4,7 @@ import Hero from '../components/Hero';
 import MarqueeStrip from '../components/home/MarqueeStrip';
 import ProcessSection from '../components/home/ProcessSection';
 import FeatureGrid from '../components/home/FeatureGrid';
+import StatsSection from '../components/home/StatsSection';
 import ShowcaseSection from '../components/home/ShowcaseSection';
 import FaqSection from '../components/home/FaqSection';
 
@@ -46,6 +47,7 @@ export default function HomePage() {
       <MarqueeStrip items={marqueeData.items} stats={marqueeData.stats} />
       <ProcessSection />
       <FeatureGrid />
+      <StatsSection locationCount={locationCount} />
       <ShowcaseSection locations={locations} />
       <FaqSection />
     </div>

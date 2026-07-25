@@ -8,10 +8,20 @@ const variantClasses = {
 };
 
 export default function Card({ children, variant = 'default', hover = true, className = '', ...props }) {
+  const motionProps = hover
+    ? {
+        whileHover: {
+          y: -6,
+          transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+        },
+      }
+    : {};
+
   const isPremium = variant === 'default';
 
   return (
     <motion.div
+      {...motionProps}
       className={`relative overflow-hidden rounded-2xl border p-6 transition-all duration-500 ease-premium ${
         isPremium ? 'premium-card' : `border ${variantClasses[variant] || variantClasses.glass}`
       } ${className}`}

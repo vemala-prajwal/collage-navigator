@@ -22,32 +22,32 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
         <AnimatePresence mode="wait" initial={false}>
           {isDark ? (
             <motion.span
-              key="moon"
+              key="sun"
               initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
               exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 flex items-center justify-center text-amber-400"
             >
-              <Moon size={18} strokeWidth={2} />
+              <Sun size={18} strokeWidth={2} />
             </motion.span>
           ) : (
             <motion.span
-              key="sun"
+              key="moon"
               initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
               exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 flex items-center justify-center text-accent"
             >
-              <Sun size={18} strokeWidth={2} />
+              <Moon size={18} strokeWidth={2} />
             </motion.span>
           )}
         </AnimatePresence>
       </span>
 
       {showLabel ? (
-        <span className="text-sm font-semibold">{isDark ? 'Dark' : 'Light'}</span>
+        <span className="text-sm font-semibold">{isDark ? 'Light' : 'Dark'}</span>
       ) : null}
     </motion.button>
   );
