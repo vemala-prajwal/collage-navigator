@@ -1,16 +1,18 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const canteenRoutes = require('./routes/canteenRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
-
-dotenv.config({ path: '../.env' });
 
 const app = express();
 
