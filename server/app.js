@@ -17,7 +17,7 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,6 +32,18 @@ app.use('/api/auth', authRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/canteen-items', canteenRoutes);
 app.use('/api/feedback', feedbackRoutes);
+
+const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+if (process.env.NODE_ENV === 'production' || fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ message: 'API route not found' });
+    }
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);
