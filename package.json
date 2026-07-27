@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "workspaces": ["client", "server"],
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "build": "npm run build --prefix client"
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "build": "npm run build --workspace=client"
   },
   "engines": {
     "node": ">=18.0.0"
