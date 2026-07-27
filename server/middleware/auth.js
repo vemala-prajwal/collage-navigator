@@ -14,6 +14,7 @@ const protect = async (req, res, next) => {
       _id: decoded.id,
       id: decoded.id,
       role: decoded.role || 'student',
+      sanUsn: decoded.sanUsn || '',
     };
 
     next();

@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? 'http://localhost:5000/api/auth' : '/api/auth');
+// Always use a relative path so requests route through the Vite proxy
+// in development (avoids cross-origin 405 errors) and resolve correctly
+// in production regardless of the server port.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api/auth';
 
 const client = axios.create({
   baseURL: apiBaseUrl,

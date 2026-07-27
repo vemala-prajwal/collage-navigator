@@ -38,6 +38,7 @@ export function AuthProvider({ children }) {
           email: currentUser.email,
           campus: currentUser.campus,
           role: currentUser.role,
+          sanUsn: currentUser.sanUsn || '',
         };
         setUser(normalizedUser);
         localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));

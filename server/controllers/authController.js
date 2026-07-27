@@ -10,7 +10,12 @@ const supabase = supabaseUrl && supabaseServiceRoleKey
   ? createClient(supabaseUrl, supabaseServiceRoleKey)
   : null;
 
-const generateToken = (user) => jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+const generateToken = (user) =>
+  jwt.sign(
+    { id: user.id, role: user.role, sanUsn: user.sanUsn || '' },
+    process.env.JWT_SECRET || 'dev-secret',
+    { expiresIn: '7d' }
+  );
 
 const formatValidationErrors = (errors) => errors.array().map((error) => error.msg).join(', ');
 
@@ -50,7 +55,7 @@ const registerUser = async (req, res, next) => {
     }
 
     res.status(201).json({
-      token: generateToken({ id: data.user.id, role: role || 'student' }),
+      token: generateToken({ id: data.user.id, role: role || 'student', sanUsn: sanUsn || '' }),
       user: { id: data.user.id, name, email: email.toLowerCase(), campus, role: role || 'student', sanUsn: sanUsn || '' },
     });
   } catch (error) {
@@ -78,13 +83,14 @@ const loginUser = async (req, res, next) => {
     const metadata = data.user.user_metadata || {};
 
     res.json({
-      token: generateToken({ id: data.user.id, role: metadata.role || 'student' }),
+      token: generateToken({ id: data.user.id, role: metadata.role || 'student', sanUsn: metadata.sanUsn || '' }),
       user: {
         id: data.user.id,
         name: metadata.name || email,
         email: data.user.email,
         campus: metadata.campus || 'Main Campus',
         role: metadata.role || 'student',
+        sanUsn: metadata.sanUsn || '',
       },
     });
   } catch (error) {
