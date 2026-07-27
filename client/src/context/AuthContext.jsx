@@ -61,14 +61,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
   };
 
-  const register = async ({ name, email, password, campus }) => {
-    const data = await registerUser({ name, email, password, campus });
+  const register = async ({ name, email, password, campus, sanUsn }) => {
+    const data = await registerUser({ name, email, password, campus, sanUsn });
     const nextUser = {
       id: data.user.id,
       name: data.user.name,
       email: data.user.email,
       campus: data.user.campus,
       role: data.user.role,
+      sanUsn: data.user.sanUsn || '',
     };
     persistSession(data.token, nextUser);
     return nextUser;

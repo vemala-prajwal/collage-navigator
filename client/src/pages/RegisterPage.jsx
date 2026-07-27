@@ -36,6 +36,7 @@ function RegisterPage() {
     name: '',
     email: '',
     campus: '',
+    sanUsn: '',
     password: '',
     confirmPassword: '',
   });
@@ -87,6 +88,16 @@ function RegisterPage() {
       return;
     }
 
+    if (!form.sanUsn.trim()) {
+      setError('Please enter your SAN/USN number.');
+      return;
+    }
+
+    if (!/^[A-Za-z0-9]+$/.test(form.sanUsn.trim())) {
+      setError('SAN/USN must contain only letters and numbers.');
+      return;
+    }
+
     if (form.password.length < 8) {
       setError('Password must be at least 8 characters long.');
       return;
@@ -109,6 +120,7 @@ function RegisterPage() {
         email: form.email.trim().toLowerCase(),
         password: form.password,
         campus: form.campus,
+        sanUsn: form.sanUsn.trim().toUpperCase(),
       });
       toast.success('Account created successfully');
       navigate('/');
@@ -184,6 +196,22 @@ function RegisterPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="sanUsn">
+              SAN / USN Number
+            </label>
+            <input
+              id="sanUsn"
+              name="sanUsn"
+              type="text"
+              value={form.sanUsn}
+              onChange={handleChange}
+              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm uppercase outline-none ring-0 placeholder:normal-case"
+              placeholder="e.g. 1RN21CS001"
+              maxLength={20}
+            />
           </div>
 
           <div>

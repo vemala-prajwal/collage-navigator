@@ -25,7 +25,7 @@ const registerUser = async (req, res, next) => {
       return res.status(500).json({ message: 'Supabase is not configured on the server.' });
     }
 
-    const { name, email, password, campus, role } = req.body;
+    const { name, email, password, campus, role, sanUsn } = req.body;
 
     const { data: existingUsers, error: lookupError } = await supabase.auth.admin.listUsers();
 
@@ -42,7 +42,7 @@ const registerUser = async (req, res, next) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name, campus, role: role || 'student' },
+      user_metadata: { name, campus, role: role || 'student', sanUsn: sanUsn || '' },
     });
 
     if (error) {
@@ -51,7 +51,7 @@ const registerUser = async (req, res, next) => {
 
     res.status(201).json({
       token: generateToken({ id: data.user.id, role: role || 'student' }),
-      user: { id: data.user.id, name, email: email.toLowerCase(), campus, role: role || 'student' },
+      user: { id: data.user.id, name, email: email.toLowerCase(), campus, role: role || 'student', sanUsn: sanUsn || '' },
     });
   } catch (error) {
     next(error);
@@ -97,6 +97,11 @@ const registerValidators = [
   body('email').isEmail().normalizeEmail().withMessage('A valid email is required'),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
   body('campus').isIn(CAMPUSES).withMessage('Please select a valid campus'),
+  body('sanUsn')
+    .isString()
+    .trim()
+    .notEmpty().withMessage('SAN/USN number is required')
+    .matches(/^[A-Za-z0-9]+$/).withMessage('SAN/USN must contain only letters and numbers'),
 ];
 
 const loginValidators = [
