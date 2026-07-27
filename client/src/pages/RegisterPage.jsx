@@ -4,8 +4,7 @@ import toast from 'react-hot-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchCampuses } from '../services/authApi';
-
-const fallbackCampuses = ['Main Campus', 'North Campus', 'West Campus', 'South Campus'];
+import { CAMPUSES } from '../lib/campuses';
 
 const getPasswordStrength = (password) => {
   if (!password) {
@@ -40,7 +39,7 @@ function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
-  const [campuses, setCampuses] = useState(fallbackCampuses);
+  const [campuses, setCampuses] = useState(CAMPUSES);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -54,7 +53,7 @@ function RegisterPage() {
           setCampuses(data);
         }
       } catch {
-        setCampuses(fallbackCampuses);
+        setCampuses(CAMPUSES);
       }
     };
 
