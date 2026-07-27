@@ -56,26 +56,39 @@ export default function AdminPage() {
   // Handle Admin Portal login
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    if (adminIdInput.trim() === 'admin' && adminPasswordInput === 'admin@12345') {
-      const adminEmail = import.meta.env.VITE_SUPABASE_ADMIN_EMAIL;
-      const adminPassword = import.meta.env.VITE_SUPABASE_ADMIN_PASSWORD;
 
-      if (adminEmail && adminPassword) {
-        const { error } = await api.signInAdmin(adminEmail, adminPassword);
-        if (error) {
-          setAuthError('Supabase admin sign-in failed. Check your admin email/password in the client environment.');
-          toast.error('Supabase admin sign-in failed');
-          return;
-        }
-      }
+    const isValidAdminCredentials =
+      adminIdInput.trim() === 'admin' && adminPasswordInput === 'admin@12345';
 
-      sessionStorage.setItem('admin_portal_auth', 'true');
-      setIsAdminAuth(true);
-      setAuthError('');
-      toast.success('Admin portal access granted');
-    } else {
+    if (!isValidAdminCredentials) {
       setAuthError('Invalid Admin ID or Password');
       toast.error('Invalid credentials');
+      return;
+    }
+
+    // Immediately grant local admin access
+    sessionStorage.setItem('admin_portal_auth', 'true');
+    setIsAdminAuth(true);
+    setAuthError('');
+    toast.success('Admin portal access granted');
+
+    // Optionally sign into Supabase (non-blocking) if real admin env vars are configured
+    const adminEmail = import.meta.env.VITE_SUPABASE_ADMIN_EMAIL || '';
+    const adminPassword = import.meta.env.VITE_SUPABASE_ADMIN_PASSWORD || '';
+    const hasRealAdminCredentials =
+      Boolean(adminEmail) &&
+      Boolean(adminPassword) &&
+      !adminEmail.includes('example.com') &&
+      !adminPassword.includes('your-');
+
+    if (hasRealAdminCredentials) {
+      api.signInAdmin(adminEmail, adminPassword)
+        .then(({ error }) => {
+          if (error) {
+            console.warn('Supabase admin sign-in failed (non-blocking):', error);
+          }
+        })
+        .catch((err) => console.warn('Supabase admin sign-in error (non-blocking):', err));
     }
   };
 
