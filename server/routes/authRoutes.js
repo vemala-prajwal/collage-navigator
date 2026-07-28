@@ -6,15 +6,25 @@ const {
   loginValidators,
   getCampuses,
 } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
+const { getCurrentUser } = require('../lib/authService');
 
 const router = express.Router();
 
 router.get('/campuses', getCampuses);
 router.post('/register', registerValidators, registerUser);
 router.post('/login', loginValidators, loginUser);
-router.get('/me', protect, (req, res) => {
-  res.json({ user: req.user });
+router.get('/me', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const user = await getCurrentUser(token);
+    res.json({ user });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
+  }
 });
 
 module.exports = router;

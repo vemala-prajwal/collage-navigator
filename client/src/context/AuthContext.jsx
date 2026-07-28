@@ -22,9 +22,11 @@ export function AuthProvider({ children }) {
 
       setToken(savedToken);
 
+      let savedUserData = null;
       if (savedUser) {
         try {
-          setUser(JSON.parse(savedUser));
+          savedUserData = JSON.parse(savedUser);
+          setUser(savedUserData);
         } catch {
           localStorage.removeItem(USER_KEY);
         }
@@ -34,14 +36,16 @@ export function AuthProvider({ children }) {
       if (currentUser) {
         const normalizedUser = {
           id: currentUser._id || currentUser.id,
-          name: currentUser.name,
-          email: currentUser.email,
-          campus: currentUser.campus,
-          role: currentUser.role,
-          sanUsn: currentUser.sanUsn || '',
+          name: currentUser.name || savedUserData?.name,
+          email: currentUser.email || savedUserData?.email,
+          campus: currentUser.campus || savedUserData?.campus,
+          role: currentUser.role || savedUserData?.role || 'student',
+          sanUsn: currentUser.sanUsn || savedUserData?.sanUsn || '',
         };
         setUser(normalizedUser);
         localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+      } else if (savedUserData) {
+        setUser(savedUserData);
       } else {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
@@ -84,6 +88,7 @@ export function AuthProvider({ children }) {
       email: data.user.email,
       campus: data.user.campus,
       role: data.user.role,
+      sanUsn: data.user.sanUsn || '',
     };
     persistSession(data.token, nextUser);
     return nextUser;

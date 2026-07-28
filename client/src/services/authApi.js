@@ -2,12 +2,14 @@ import axios from 'axios';
 import { CAMPUSES } from '../lib/campuses';
 import { supabase } from '../lib/supabaseClient';
 
-// Relative path routes through Vite proxy in dev and the host API in production.
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api/auth';
 
 const client = axios.create({
   baseURL: apiBaseUrl,
   timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 const mapSupabaseUser = (user) => {
@@ -25,7 +27,7 @@ const mapSupabaseUser = (user) => {
 
 const ensureSupabase = () => {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+    throw new Error('Authentication service is unavailable. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
 
   return supabase;
@@ -36,8 +38,9 @@ const shouldUseSupabaseFallback = (error) => {
 
   return (
     !error?.response ||
-    status === 405 ||
     status === 404 ||
+    status === 405 ||
+    status === 500 ||
     status === 502 ||
     status === 503 ||
     error?.code === 'ECONNABORTED' ||
@@ -64,12 +67,22 @@ const getErrorMessage = (error) => {
     return responseData.errors.map((item) => item.msg || item.message || item).filter(Boolean).join(', ');
   }
 
-  if (error?.response?.status === 405) {
-    return 'Registration is unavailable on this host. Please try again in a moment.';
+  const status = error?.response?.status;
+
+  if (status === 405 || status === 404) {
+    return 'Registration service is unavailable. Please redeploy the app or try again shortly.';
   }
 
-  if (error?.message === 'Network Error') {
-    return 'Unable to reach the server. Make sure the backend is running.';
+  if (status === 500 || status === 502 || status === 503) {
+    return 'The server is temporarily unavailable. Please try again in a moment.';
+  }
+
+  if (error?.code === 'ECONNABORTED') {
+    return 'The request timed out. Please check your connection and try again.';
+  }
+
+  if (error?.message === 'Network Error' || !error?.response) {
+    return 'Unable to reach the server. Make sure you are online and the backend is running.';
   }
 
   if (error?.message) {
@@ -81,13 +94,14 @@ const getErrorMessage = (error) => {
 
 const registerWithSupabase = async ({ name, email, password, campus, sanUsn }) => {
   const authClient = ensureSupabase();
+  const normalizedEmail = email.trim().toLowerCase();
 
   const { data, error } = await authClient.auth.signUp({
-    email: email.toLowerCase(),
+    email: normalizedEmail,
     password,
     options: {
       data: {
-        name,
+        name: name.trim(),
         campus,
         role: 'student',
         sanUsn: sanUsn || '',
@@ -109,7 +123,7 @@ const registerWithSupabase = async ({ name, email, password, campus, sanUsn }) =
 
   if (!data.session) {
     const { data: loginData, error: loginError } = await authClient.auth.signInWithPassword({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password,
     });
 
