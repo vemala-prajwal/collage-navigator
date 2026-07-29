@@ -18,21 +18,32 @@ const client = axios.create({
 const getErrorMessage = (error) => {
   const responseData = error?.response?.data;
 
+  const parseMessage = (val) => {
+    if (!val) return '';
+    let str = typeof val === 'string' ? val : JSON.stringify(val);
+    if (str.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(str);
+        str = parsed.message || parsed.error_description || parsed.error || str;
+      } catch {
+        // Keep original string if parse fails
+      }
+    }
+    return typeof str === 'string' ? str : '';
+  };
+
   if (typeof responseData === 'string' && responseData.trim()) {
-    return responseData;
+    const parsed = parseMessage(responseData);
+    if (parsed) return parsed;
   }
 
   if (responseData?.message) {
-    const msg = typeof responseData.message === 'string'
-      ? responseData.message
-      : JSON.stringify(responseData.message);
+    const msg = parseMessage(responseData.message);
     if (msg && msg !== '{}') return msg;
   }
 
   if (responseData?.error) {
-    const msg = typeof responseData.error === 'string'
-      ? responseData.error
-      : JSON.stringify(responseData.error);
+    const msg = parseMessage(responseData.error);
     if (msg && msg !== '{}') return msg;
   }
 

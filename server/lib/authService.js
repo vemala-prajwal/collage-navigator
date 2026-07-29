@@ -19,6 +19,45 @@ const generateToken = (user) =>
     { expiresIn: '7d' }
   );
 
+/**
+ * Supabase Admin API errors often embed a JSON string inside error.message,
+ * e.g. '{"code":"500","message":"A server error has occurred"}'.
+ * This helper parses that and returns a clean, user-facing message string.
+ */
+const extractSupabaseMessage = (error) => {
+  if (!error) return 'An unexpected error occurred.';
+
+  let raw = error.message || '';
+
+  // Attempt to parse if the message looks like JSON.
+  if (typeof raw === 'string' && raw.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(raw);
+      raw = parsed.message || parsed.error_description || parsed.error || raw;
+    } catch {
+      // Not valid JSON — keep raw as-is.
+    }
+  }
+
+  const lower = String(raw).toLowerCase();
+
+  if (!raw || lower === 'a server error has occurred') {
+    return 'Account creation failed. Please try again in a moment.';
+  }
+  if (/already|exists|duplicate|registered/i.test(raw)) {
+    return 'An account with this email already exists.';
+  }
+  if (/password/i.test(raw)) {
+    return 'Password does not meet requirements. Please use a stronger password.';
+  }
+  if (/email/i.test(raw) && /invalid|format/i.test(raw)) {
+    return 'Please enter a valid email address.';
+  }
+
+  // Generic sanitised fallback.
+  return 'Account creation failed. Please try again.';
+};
+
 const validateRegisterPayload = ({ name, email, password, campus, sanUsn }) => {
   const errors = [];
 
@@ -167,6 +206,8 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
     console.error('[registerAccount] pre-check error:', preCheckError.message || preCheckError);
   }
 
+  let createdUser = null;
+
   const { data, error } = await authClient.auth.admin.createUser({
     email: normalizedEmail,
     password,
@@ -179,26 +220,72 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
     },
   });
 
-  if (error) {
-    // Supabase may still return 422 / duplicate errors if race-condition hit.
+  if (!error && data?.user) {
+    createdUser = data.user;
+  } else {
+    console.error('[registerAccount] createUser error:', error?.message || error);
+
+    // Check for duplicate before anything else.
     if (
-      /already|exists|duplicate|registered/i.test(error.message) ||
-      error.status === 422
+      /already|exists|duplicate|registered/i.test(error?.message || '') ||
+      error?.status === 422
     ) {
       const duplicateError = new Error('An account with this email already exists.');
       duplicateError.statusCode = 409;
       throw duplicateError;
     }
 
-    const serviceError = new Error(error.message || 'Account creation failed.');
+    // Fallback: Try auth.signUp if admin.createUser failed (e.g. 500 due to SMTP/trigger issues on admin endpoint)
+    try {
+      const signUpRes = await authClient.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: {
+            name: String(name).trim(),
+            campus,
+            role: normalizedRole,
+            sanUsn: normalizedSanUsn,
+          },
+        },
+      });
+
+      if (signUpRes.data?.user) {
+        createdUser = signUpRes.data.user;
+        // Attempt to auto-confirm user if needed
+        try {
+          await authClient.auth.admin.updateUserById(createdUser.id, { email_confirm: true });
+        } catch (confirmErr) {
+          console.warn('[registerAccount] Failed to auto-confirm fallback user:', confirmErr.message);
+        }
+      } else if (signUpRes.error) {
+        if (/already|exists|duplicate|registered/i.test(signUpRes.error.message || '')) {
+          const duplicateError = new Error('An account with this email already exists.');
+          duplicateError.statusCode = 409;
+          throw duplicateError;
+        }
+        throw signUpRes.error;
+      }
+    } catch (fallbackErr) {
+      if (fallbackErr.statusCode) throw fallbackErr;
+
+      console.error('[registerAccount] signUp fallback error:', fallbackErr.message || fallbackErr);
+      const serviceError = new Error(extractSupabaseMessage(error || fallbackErr));
+      serviceError.statusCode = 500;
+      throw serviceError;
+    }
+  }
+
+  if (!createdUser) {
+    const serviceError = new Error('Account creation failed. Please try again.');
     serviceError.statusCode = 500;
     throw serviceError;
   }
 
   return {
-    token: generateToken({ id: data.user.id, role: normalizedRole, sanUsn: normalizedSanUsn }),
+    token: generateToken({ id: createdUser.id, role: normalizedRole, sanUsn: normalizedSanUsn }),
     user: {
-      id: data.user.id,
+      id: createdUser.id,
       name: String(name).trim(),
       email: normalizedEmail,
       campus,
