@@ -106,8 +106,13 @@ const findUserByEmail = async (authClient, email) => {
 
   while (page <= 25) {
     const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
+
+    // If the admin API call fails, stop searching and return null rather than
+    // throwing a raw Supabase error that has no statusCode and would reach the
+    // global error handler with a non-string message (causing '[object Object]').
     if (error) {
-      throw error;
+      console.error('[findUserByEmail] listUsers error:', error.message || error);
+      return null;
     }
 
     const match = data?.users?.find((user) => user.email?.toLowerCase() === normalizedEmail);
@@ -143,11 +148,23 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
   const normalizedSanUsn = String(sanUsn || '').trim().toUpperCase();
 
   // Check if the email is already registered before attempting creation.
-  const existingUser = await findUserByEmail(authClient, normalizedEmail);
-  if (existingUser) {
-    const duplicateError = new Error('An account with this email already exists.');
-    duplicateError.statusCode = 409;
-    throw duplicateError;
+  // Wrap in try/catch so a Supabase admin API failure never surfaces as
+  // an unstructured error; we simply skip the pre-check and let createUser
+  // handle duplicates itself.
+  try {
+    const existingUser = await findUserByEmail(authClient, normalizedEmail);
+    if (existingUser) {
+      const duplicateError = new Error('An account with this email already exists.');
+      duplicateError.statusCode = 409;
+      throw duplicateError;
+    }
+  } catch (preCheckError) {
+    // Re-throw only if it is our own structured error (has statusCode).
+    if (preCheckError.statusCode) {
+      throw preCheckError;
+    }
+    // Otherwise log and continue — createUser will catch true duplicates below.
+    console.error('[registerAccount] pre-check error:', preCheckError.message || preCheckError);
   }
 
   const { data, error } = await authClient.auth.admin.createUser({

@@ -23,11 +23,17 @@ const getErrorMessage = (error) => {
   }
 
   if (responseData?.message) {
-    return responseData.message;
+    const msg = typeof responseData.message === 'string'
+      ? responseData.message
+      : JSON.stringify(responseData.message);
+    if (msg && msg !== '{}') return msg;
   }
 
   if (responseData?.error) {
-    return responseData.error;
+    const msg = typeof responseData.error === 'string'
+      ? responseData.error
+      : JSON.stringify(responseData.error);
+    if (msg && msg !== '{}') return msg;
   }
 
   if (responseData?.errors?.length) {
