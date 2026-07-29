@@ -11,6 +11,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/auth/:path*",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/api/locations/:path*",
       "destination": "/api/index.js"
     },

@@ -3,21 +3,46 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login({ email: identifier, password });
+      await login({ email: normalizedEmail, password });
+      toast.success('Signed in successfully!');
       navigate('/');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid credentials');
+    } catch (err) {
+      const message = err?.message || 'Invalid email or password';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -31,43 +56,59 @@ function LoginPage() {
           <h1 className="mt-2 text-3xl font-semibold text-foreground">Sign in to Campus Navigator</h1>
         </div>
 
-<form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="identifier">
-                Username or email
-              </label>
-              <input
-                id="identifier"
-                type="text"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-0"
-                placeholder="admin or you@example.com"
-              />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-2xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">
+              {error}
             </div>
+          )}
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-0"
-                placeholder="••••••••"
-              />
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) setError('');
+              }}
+              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-0"
+              placeholder="you@example.com"
+            />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? 'Signing in...' : 'Continue'}
-            </button>
-          </form>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (error) setError('');
+              }}
+              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-0"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
 
         <p className="mt-6 text-sm text-foreground-muted">
           New here?{' '}

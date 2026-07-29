@@ -3,7 +3,10 @@ const { createClient } = require('@supabase/supabase-js');
 const { CAMPUSES } = require('../constants/campuses');
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE;
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE ||
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = supabaseUrl && supabaseServiceRoleKey
   ? createClient(supabaseUrl, supabaseServiceRoleKey)
@@ -96,6 +99,36 @@ const fetchUserProfileById = async (authClient, userId, decodedFallback = {}) =>
   };
 };
 
+const findUserByEmail = async (authClient, email) => {
+  const normalizedEmail = email.toLowerCase();
+  let page = 1;
+  const perPage = 200;
+
+  while (page <= 25) {
+    const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
+    if (error) {
+      throw error;
+    }
+
+    const match = data?.users?.find((user) => user.email?.toLowerCase() === normalizedEmail);
+    if (match) {
+      return match;
+    }
+
+    if (!data?.users?.length || data.users.length < perPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+};
+
+const confirmUserEmail = async (authClient, userId) => {
+  await authClient.auth.admin.updateUserById(userId, { email_confirm: true });
+};
+
 const registerAccount = async ({ name, email, password, campus, role, sanUsn }) => {
   const validationErrors = validateRegisterPayload({ name, email, password, campus, sanUsn });
   if (validationErrors.length) {
@@ -108,6 +141,14 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
   const normalizedEmail = String(email).trim().toLowerCase();
   const normalizedRole = role || 'student';
   const normalizedSanUsn = String(sanUsn || '').trim().toUpperCase();
+
+  // Check if the email is already registered before attempting creation.
+  const existingUser = await findUserByEmail(authClient, normalizedEmail);
+  if (existingUser) {
+    const duplicateError = new Error('An account with this email already exists.');
+    duplicateError.statusCode = 409;
+    throw duplicateError;
+  }
 
   const { data, error } = await authClient.auth.admin.createUser({
     email: normalizedEmail,
@@ -122,13 +163,19 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
   });
 
   if (error) {
-    if (/already|exists|duplicate|registered/i.test(error.message)) {
-      const duplicateError = new Error('An account with this email already exists');
-      duplicateError.statusCode = 400;
+    // Supabase may still return 422 / duplicate errors if race-condition hit.
+    if (
+      /already|exists|duplicate|registered/i.test(error.message) ||
+      error.status === 422
+    ) {
+      const duplicateError = new Error('An account with this email already exists.');
+      duplicateError.statusCode = 409;
       throw duplicateError;
     }
 
-    throw error;
+    const serviceError = new Error(error.message || 'Account creation failed.');
+    serviceError.statusCode = 500;
+    throw serviceError;
   }
 
   return {
@@ -154,13 +201,35 @@ const loginAccount = async ({ email, password }) => {
 
   const authClient = ensureSupabase();
   const normalizedEmail = String(email).trim().toLowerCase();
-  const { data, error } = await authClient.auth.signInWithPassword({
+
+  let { data, error } = await authClient.auth.signInWithPassword({
     email: normalizedEmail,
     password,
   });
 
+  // If Supabase reports the email is unconfirmed (e.g. old account created without
+  // email_confirm:true), auto-confirm it with the admin API and retry once.
+  if (error && /email not confirmed/i.test(error.message)) {
+    try {
+      const unconfirmedUser = await findUserByEmail(authClient, normalizedEmail);
+      if (unconfirmedUser) {
+        await authClient.auth.admin.updateUserById(unconfirmedUser.id, { email_confirm: true });
+        const retry = await authClient.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        if (!retry.error) {
+          data = retry.data;
+          error = null;
+        }
+      }
+    } catch {
+      // Fall through to the error handler below.
+    }
+  }
+
   if (error) {
-    const authError = new Error('Invalid credentials');
+    const authError = new Error('Invalid email or password.');
     authError.statusCode = 401;
     throw authError;
   }

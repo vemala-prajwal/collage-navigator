@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { CAMPUSES } from '../lib/campuses';
-import { supabase } from '../lib/supabaseClient';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api/auth';
 
@@ -12,42 +11,10 @@ const client = axios.create({
   },
 });
 
-const mapSupabaseUser = (user) => {
-  const metadata = user.user_metadata || {};
-
-  return {
-    id: user.id,
-    name: metadata.name || user.email,
-    email: user.email,
-    campus: metadata.campus || 'Main Campus',
-    role: metadata.role || 'student',
-    sanUsn: metadata.sanUsn || '',
-  };
-};
-
-const ensureSupabase = () => {
-  if (!supabase) {
-    throw new Error('Authentication service is unavailable. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
-  }
-
-  return supabase;
-};
-
-const shouldUseSupabaseFallback = (error) => {
-  const status = error?.response?.status;
-
-  return (
-    !error?.response ||
-    status === 404 ||
-    status === 405 ||
-    status === 500 ||
-    status === 502 ||
-    status === 503 ||
-    error?.code === 'ECONNABORTED' ||
-    error?.message === 'Network Error'
-  );
-};
-
+/**
+ * Extracts a human-readable error message from an Axios error.
+ * All auth is routed through the backend — no client-side Supabase fallback.
+ */
 const getErrorMessage = (error) => {
   const responseData = error?.response?.data;
 
@@ -64,13 +31,28 @@ const getErrorMessage = (error) => {
   }
 
   if (responseData?.errors?.length) {
-    return responseData.errors.map((item) => item.msg || item.message || item).filter(Boolean).join(', ');
+    return responseData.errors
+      .map((item) => item.msg || item.message || item)
+      .filter(Boolean)
+      .join(', ');
   }
 
   const status = error?.response?.status;
 
-  if (status === 405 || status === 404) {
-    return 'Registration service is unavailable. Please redeploy the app or try again shortly.';
+  if (status === 401) {
+    return 'Invalid email or password.';
+  }
+
+  if (status === 409) {
+    return 'An account with this email already exists.';
+  }
+
+  if (status === 400) {
+    return responseData?.message || 'Please check your details and try again.';
+  }
+
+  if (status === 404 || status === 405) {
+    return 'Auth service is unavailable. Please try again shortly.';
   }
 
   if (status === 500 || status === 502 || status === 503) {
@@ -92,124 +74,40 @@ const getErrorMessage = (error) => {
   return 'Something went wrong. Please try again.';
 };
 
-const registerWithSupabase = async ({ name, email, password, campus, sanUsn }) => {
-  const authClient = ensureSupabase();
-  const normalizedEmail = email.trim().toLowerCase();
-
-  const { data, error } = await authClient.auth.signUp({
-    email: normalizedEmail,
-    password,
-    options: {
-      data: {
-        name: name.trim(),
-        campus,
-        role: 'student',
-        sanUsn: sanUsn || '',
-      },
-    },
-  });
-
-  if (error) {
-    if (/already registered|already exists|duplicate/i.test(error.message)) {
-      throw new Error('An account with this email already exists');
-    }
-
-    throw new Error(error.message);
-  }
-
-  if (!data.user) {
-    throw new Error('Unable to create your account right now.');
-  }
-
-  if (!data.session) {
-    const { data: loginData, error: loginError } = await authClient.auth.signInWithPassword({
-      email: normalizedEmail,
-      password,
-    });
-
-    if (loginError) {
-      throw new Error('Account created. Please check your email to confirm your address, then sign in.');
-    }
-
-    return {
-      token: loginData.session.access_token,
-      user: mapSupabaseUser(loginData.user),
-    };
-  }
-
-  return {
-    token: data.session.access_token,
-    user: mapSupabaseUser(data.user),
-  };
-};
-
-const loginWithSupabase = async ({ email, password }) => {
-  const authClient = ensureSupabase();
-  const { data, error } = await authClient.auth.signInWithPassword({
-    email: email.toLowerCase(),
-    password,
-  });
-
-  if (error) {
-    throw new Error(error.message === 'Invalid login credentials' ? 'Invalid credentials' : error.message);
-  }
-
-  return {
-    token: data.session.access_token,
-    user: mapSupabaseUser(data.user),
-  };
-};
-
-const fetchCurrentUserFromSupabase = async (token) => {
-  if (!supabase || !token) {
-    return null;
-  }
-
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) {
-    return null;
-  }
-
-  return mapSupabaseUser(data.user);
-};
-
+/** Register a new account via the backend API. */
 export async function registerUser(payload) {
   try {
     const { data } = await client.post('/register', payload);
     return data;
   } catch (error) {
-    if (shouldUseSupabaseFallback(error)) {
-      return registerWithSupabase(payload);
-    }
-
     throw new Error(getErrorMessage(error));
   }
 }
 
+/** Sign in via the backend API. */
 export async function loginUser(payload) {
   try {
     const { data } = await client.post('/login', payload);
     return data;
   } catch (error) {
-    if (shouldUseSupabaseFallback(error)) {
-      return loginWithSupabase(payload);
-    }
-
     throw new Error(getErrorMessage(error));
   }
 }
 
+/**
+ * Validate an existing session token against the backend.
+ * Returns null (without throwing) if the token is invalid/expired so the
+ * AuthProvider can clear the session silently.
+ */
 export async function fetchCurrentUser(token) {
+  if (!token) return null;
   try {
     const { data } = await client.get('/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return data.user;
-  } catch (error) {
-    if (shouldUseSupabaseFallback(error)) {
-      return fetchCurrentUserFromSupabase(token);
-    }
-
+    return data.user || null;
+  } catch {
+    // Token is invalid or backend is unreachable — clear the session.
     return null;
   }
 }
