@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MapPin } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import AuthShell from '../components/auth/AuthShell';
+import AuthField from '../components/auth/AuthField';
 import { useAuth } from '../context/AuthContext';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,6 +13,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,90 +53,86 @@ function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center justify-center px-6 py-24">
-      <div className="premium-card relative w-full max-w-md overflow-hidden p-8 sm:p-10">
-        <div
-          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgb(var(--color-accent)/0.16) 0%, transparent 70%)' }}
-          aria-hidden="true"
-        />
-        <div className="relative">
-          <div className="mb-6 flex flex-col items-start gap-4">
-            <span
-              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_24px_rgb(109_40_217/0.35)]"
-              style={{ background: 'var(--gradient-accent)' }}
-            >
-              <MapPin size={20} className="text-white" />
-            </span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Welcome back</p>
-              <h1 className="mt-2 font-display text-3xl font-bold text-foreground">Sign in to Campus Navigator</h1>
-            </div>
+    <AuthShell
+      eyebrow="Welcome back"
+      title={
+        <>
+          Sign in to your <span className="italic">account.</span>
+        </>
+      }
+      description="Access live routes, canteen status and the places you care about."
+      footer={
+        <p>
+          New to Campus Navigator?{' '}
+          <Link
+            to="/register"
+            className="font-semibold text-accent transition-colors hover:text-accent-strong"
+          >
+            Create an account
+          </Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        {error && (
+          <div
+            className="flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
+            role="alert"
+          >
+            <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
+            <p className="text-sm font-medium text-error">{error}</p>
           </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-2xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">
-                {error}
-              </div>
-            )}
+        <AuthField label="Email" htmlFor="email" icon={<Mail size={16} />}>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (error) setError('');
+            }}
+            className="input-field pl-11"
+            placeholder="you@campus.edu"
+          />
+        </AuthField>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  if (error) setError('');
-                }}
-                className="input-field"
-                placeholder="you@example.com"
-              />
-            </div>
+        <AuthField label="Password" htmlFor="password" icon={<Lock size={16} />}>
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) setError('');
+            }}
+            className="input-field pr-12 pl-11"
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-3 flex items-center text-foreground-muted transition-colors hover:text-foreground"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </AuthField>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground-muted" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  if (error) setError('');
-                }}
-                className="input-field"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-gradient inline-flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="mt-6 text-sm text-foreground-muted">
-            New here?{' '}
-            <Link to="/register" className="font-semibold text-accent">
-              Create an account
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-gradient inline-flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? 'Signing in...' : 'Sign in'}
+        </button>
+      </form>
+    </AuthShell>
   );
 }
 
