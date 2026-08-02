@@ -11,8 +11,24 @@ const applyCors = (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 };
 
-const readJsonBody = (req) =>
-  new Promise((resolve, reject) => {
+const readJsonBody = (req) => {
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === 'object') {
+      return Promise.resolve(req.body);
+    }
+
+    try {
+      return Promise.resolve(JSON.parse(String(req.body)));
+    } catch {
+      return Promise.reject(new Error('Invalid JSON body'));
+    }
+  }
+
+  if (req.readableEnded) {
+    return Promise.resolve({});
+  }
+
+  return new Promise((resolve, reject) => {
     let raw = '';
 
     req.on('data', (chunk) => {
@@ -34,6 +50,7 @@ const readJsonBody = (req) =>
 
     req.on('error', reject);
   });
+};
 
 const createHandler = ({ allowedMethods, handler }) => async (req, res) => {
   applyCors(req, res);

@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Fall back to other locations so the app also picks up env vars when run
 // from a different working directory or inside a serverless bundle.
-if (!process.env.SUPABASE_URL) {
+if (!process.env.SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
   const altCandidates = [
     path.resolve(__dirname, '../.env'),
     path.resolve(process.cwd(), '.env'),

@@ -68,6 +68,13 @@ export function AuthProvider({ children }) {
 
   const register = async ({ name, email, password, campus, sanUsn }) => {
     const data = await registerUser({ name, email, password, campus, sanUsn });
+    if (!data?.user) {
+      throw new Error('Account creation failed. Please try again.');
+    }
+    if (!data.token && !data.requiresEmailConfirmation) {
+      throw new Error('Account creation failed. Please try again.');
+    }
+
     const nextUser = {
       id: data.user.id,
       name: data.user.name,
@@ -76,8 +83,15 @@ export function AuthProvider({ children }) {
       role: data.user.role,
       sanUsn: data.user.sanUsn || '',
     };
-    persistSession(data.token, nextUser);
-    return nextUser;
+
+    // A public Supabase sign-up may require email confirmation before a
+    // session exists. Keep the account response so the form can explain the
+    // next step without persisting an unusable token.
+    if (data.token) {
+      persistSession(data.token, nextUser);
+    }
+
+    return { ...data, user: nextUser };
   };
 
   const login = async ({ email, password }) => {

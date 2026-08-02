@@ -22,30 +22,51 @@ for (const candidate of envCandidates) {
   }
 }
 
-let supabase = null;
+let supabaseClients = null;
 
-// Lazily create the Supabase admin client so credentials are read at call time,
-// not at module load. This makes the code robust to environment loading order
-// across the Express app and the Vercel serverless functions.
-const getSupabaseClient = () => {
-  if (supabase) return supabase;
+// Keep the admin and public clients separate. The admin client can create an
+// already-confirmed account, while the public client keeps registration
+// functional on deployments that only expose the standard Supabase anon key.
+const getSupabaseClients = () => {
+  if (supabaseClients) return supabaseClients;
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseServiceRoleKey =
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const serviceRoleKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE ||
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
+  const clientOptions = { auth: { persistSession: false, autoRefreshToken: false } };
 
-  if (supabaseUrl && supabaseServiceRoleKey) {
-    supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-  }
+  supabaseClients = {
+    admin: supabaseUrl && serviceRoleKey ? createClient(supabaseUrl, serviceRoleKey, clientOptions) : null,
+    public: supabaseUrl && anonKey ? createClient(supabaseUrl, anonKey, clientOptions) : null,
+  };
 
-  return supabase;
+  return supabaseClients;
+};
+
+const getSupabaseAdminClient = () => getSupabaseClients().admin;
+
+const getSupabaseClient = () => {
+  const { admin, public: publicClient } = getSupabaseClients();
+  return admin || publicClient;
 };
 
 const generateToken = (user) =>
   jwt.sign(
-    { id: user.id, role: user.role, sanUsn: user.sanUsn || '' },
+    {
+      id: user.id,
+      role: user.role,
+      sanUsn: user.sanUsn || '',
+      name: user.name || '',
+      email: user.email || '',
+      campus: user.campus || '',
+    },
     process.env.JWT_SECRET || 'dev-secret',
     { expiresIn: '7d' }
   );
@@ -58,7 +79,7 @@ const generateToken = (user) =>
 const extractSupabaseMessage = (error) => {
   if (!error) return 'An unexpected error occurred.';
 
-  let raw = error.message || '';
+  let raw = error.message || error.error_description || error.error || '';
 
   // Attempt to parse if the message looks like JSON.
   if (typeof raw === 'string' && raw.trim().startsWith('{')) {
@@ -89,7 +110,7 @@ const extractSupabaseMessage = (error) => {
   return 'Account creation failed. Please try again.';
 };
 
-const validateRegisterPayload = ({ name, email, password, campus, sanUsn }) => {
+const validateRegisterPayload = ({ name, email, password, campus, sanUsn } = {}) => {
   const errors = [];
 
   if (!name || !String(name).trim()) {
@@ -118,7 +139,7 @@ const validateRegisterPayload = ({ name, email, password, campus, sanUsn }) => {
   return errors;
 };
 
-const validateLoginPayload = ({ email, password }) => {
+const validateLoginPayload = ({ email, password } = {}) => {
   const errors = [];
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
@@ -158,7 +179,18 @@ const mapSupabaseUser = (user) => {
 };
 
 const fetchUserProfileById = async (authClient, userId, decodedFallback = {}) => {
-  const { data, error } = await authClient.auth.admin.getUserById(userId);
+  let data = null;
+  let error = null;
+
+  try {
+    if (authClient.auth.admin) {
+      ({ data, error } = await authClient.auth.admin.getUserById(userId));
+    } else {
+      error = new Error('Admin auth is unavailable');
+    }
+  } catch (adminError) {
+    error = adminError;
+  }
 
   if (!error && data?.user) {
     return mapSupabaseUser(data.user);
@@ -166,6 +198,9 @@ const fetchUserProfileById = async (authClient, userId, decodedFallback = {}) =>
 
   return {
     id: decodedFallback.id || userId,
+    name: decodedFallback.name || '',
+    email: decodedFallback.email || '',
+    campus: decodedFallback.campus || 'Main Campus',
     role: decodedFallback.role || 'student',
     sanUsn: decodedFallback.sanUsn || '',
   };
@@ -206,7 +241,49 @@ const confirmUserEmail = async (authClient, userId) => {
   await authClient.auth.admin.updateUserById(userId, { email_confirm: true });
 };
 
-const registerAccount = async ({ name, email, password, campus, role, sanUsn }) => {
+const isDuplicateAuthError = (error) =>
+  /already|exists|duplicate|registered/i.test(error?.message || '') ||
+  error?.status === 422 ||
+  error?.code === 'user_already_exists';
+
+const createRegistrationError = (error) => {
+  const registrationError = new Error(extractSupabaseMessage(error));
+  registrationError.statusCode = isDuplicateAuthError(error) ? 409 : 500;
+  return registrationError;
+};
+
+const signUpWithClient = async ({ authClient, email, password, name, campus, role, sanUsn }) => {
+  const { data, error } = await authClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name, campus, role, sanUsn },
+    },
+  });
+
+  if (error) {
+    throw createRegistrationError(error);
+  }
+
+  if (!data?.user) {
+    throw createRegistrationError(new Error('Account creation failed.'));
+  }
+
+  // Supabase masks duplicate accounts on public sign-up by returning a user
+  // without identities. Treat that response as a conflict rather than showing
+  // a misleading success state.
+  if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    throw createRegistrationError({ message: 'User already registered' });
+  }
+
+  return {
+    user: data.user,
+    requiresEmailConfirmation: !data.session,
+  };
+};
+
+const registerAccount = async (payload = {}) => {
+  const { name, email, password, campus, sanUsn } = payload;
   const validationErrors = validateRegisterPayload({ name, email, password, campus, sanUsn });
   if (validationErrors.length) {
     const error = new Error(validationErrors.join(', '));
@@ -214,99 +291,103 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
     throw error;
   }
 
-  const authClient = ensureSupabase();
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const normalizedRole = role || 'student';
-  const normalizedSanUsn = String(sanUsn || '').trim().toUpperCase();
-
-  // Check if the email is already registered before attempting creation.
-  // Wrap in try/catch so a Supabase admin API failure never surfaces as
-  // an unstructured error; we simply skip the pre-check and let createUser
-  // handle duplicates itself.
-  try {
-    const existingUser = await findUserByEmail(authClient, normalizedEmail);
-    if (existingUser) {
-      const duplicateError = new Error('An account with this email already exists.');
-      duplicateError.statusCode = 409;
-      throw duplicateError;
-    }
-  } catch (preCheckError) {
-    // Re-throw only if it is our own structured error (has statusCode).
-    if (preCheckError.statusCode) {
-      throw preCheckError;
-    }
-    // Otherwise log and continue — createUser will catch true duplicates below.
-    console.error('[registerAccount] pre-check error:', preCheckError.message || preCheckError);
+  const { admin: adminClient, public: publicClient } = getSupabaseClients();
+  const authClient = adminClient || publicClient;
+  if (!authClient) {
+    ensureSupabase();
   }
 
-  let createdUser = null;
+  const normalizedEmail = String(email).trim().toLowerCase();
+  // Public registration must never be able to assign an elevated role.
+  const normalizedRole = 'student';
+  const normalizedSanUsn = String(sanUsn || '').trim().toUpperCase();
 
-  const { data, error } = await authClient.auth.admin.createUser({
-    email: normalizedEmail,
-    password,
-    email_confirm: true,
-    user_metadata: {
+  let createdUser;
+  let requiresEmailConfirmation = false;
+
+  if (adminClient) {
+    // Check for an existing account before attempting creation. If the admin
+    // listing endpoint is unavailable, createUser below remains the source of
+    // truth and still handles duplicates safely.
+    try {
+      const existingUser = await findUserByEmail(adminClient, normalizedEmail);
+      if (existingUser) {
+        const duplicateError = new Error('An account with this email already exists.');
+        duplicateError.statusCode = 409;
+        throw duplicateError;
+      }
+    } catch (preCheckError) {
+      if (preCheckError.statusCode) {
+        throw preCheckError;
+      }
+      console.error('[registerAccount] pre-check error:', preCheckError.message || preCheckError);
+    }
+
+    const { data, error } = await adminClient.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        name: String(name).trim(),
+        campus,
+        role: normalizedRole,
+        sanUsn: normalizedSanUsn,
+      },
+    });
+
+    if (!error && data?.user) {
+      createdUser = data.user;
+    } else {
+      console.error('[registerAccount] createUser error:', error?.message || error);
+
+      if (isDuplicateAuthError(error)) {
+        throw createRegistrationError(error);
+      }
+
+      // Use the public client when the admin endpoint is unavailable. This
+      // keeps registration usable on Vercel even when only the anon key is
+      // configured, while still auto-confirming when admin access exists.
+      try {
+        const fallbackClient = publicClient || adminClient;
+        const fallbackResult = await signUpWithClient({
+          authClient: fallbackClient,
+          email: normalizedEmail,
+          password,
+          name: String(name).trim(),
+          campus,
+          role: normalizedRole,
+          sanUsn: normalizedSanUsn,
+        });
+        createdUser = fallbackResult.user;
+        requiresEmailConfirmation = fallbackResult.requiresEmailConfirmation;
+
+        if (requiresEmailConfirmation && adminClient) {
+          try {
+            await confirmUserEmail(adminClient, createdUser.id);
+            requiresEmailConfirmation = false;
+          } catch (confirmError) {
+            console.warn('[registerAccount] Failed to auto-confirm fallback user:', confirmError.message);
+          }
+        }
+      } catch (fallbackError) {
+        if (fallbackError.statusCode) throw fallbackError;
+
+        console.error('[registerAccount] signUp fallback error:', fallbackError.message || fallbackError);
+        throw createRegistrationError(error || fallbackError);
+      }
+    }
+  } else {
+    const signupResult = await signUpWithClient({
+      authClient: publicClient,
+      email: normalizedEmail,
+      password,
       name: String(name).trim(),
       campus,
       role: normalizedRole,
       sanUsn: normalizedSanUsn,
-    },
-  });
-
-  if (!error && data?.user) {
-    createdUser = data.user;
-  } else {
-    console.error('[registerAccount] createUser error:', error?.message || error);
-
-    // Check for duplicate before anything else.
-    if (
-      /already|exists|duplicate|registered/i.test(error?.message || '') ||
-      error?.status === 422
-    ) {
-      const duplicateError = new Error('An account with this email already exists.');
-      duplicateError.statusCode = 409;
-      throw duplicateError;
-    }
-
-    // Fallback: Try auth.signUp if admin.createUser failed (e.g. 500 due to SMTP/trigger issues on admin endpoint)
-    try {
-      const signUpRes = await authClient.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            name: String(name).trim(),
-            campus,
-            role: normalizedRole,
-            sanUsn: normalizedSanUsn,
-          },
-        },
-      });
-
-      if (signUpRes.data?.user) {
-        createdUser = signUpRes.data.user;
-        // Attempt to auto-confirm user if needed
-        try {
-          await authClient.auth.admin.updateUserById(createdUser.id, { email_confirm: true });
-        } catch (confirmErr) {
-          console.warn('[registerAccount] Failed to auto-confirm fallback user:', confirmErr.message);
-        }
-      } else if (signUpRes.error) {
-        if (/already|exists|duplicate|registered/i.test(signUpRes.error.message || '')) {
-          const duplicateError = new Error('An account with this email already exists.');
-          duplicateError.statusCode = 409;
-          throw duplicateError;
-        }
-        throw signUpRes.error;
-      }
-    } catch (fallbackErr) {
-      if (fallbackErr.statusCode) throw fallbackErr;
-
-      console.error('[registerAccount] signUp fallback error:', fallbackErr.message || fallbackErr);
-      const serviceError = new Error(extractSupabaseMessage(error || fallbackErr));
-      serviceError.statusCode = 500;
-      throw serviceError;
-    }
+    });
+    createdUser = signupResult.user;
+    requiresEmailConfirmation = signupResult.requiresEmailConfirmation;
   }
 
   if (!createdUser) {
@@ -315,20 +396,29 @@ const registerAccount = async ({ name, email, password, campus, role, sanUsn }) 
     throw serviceError;
   }
 
+  const user = {
+    id: createdUser.id,
+    name: String(name).trim(),
+    email: normalizedEmail,
+    campus,
+    role: normalizedRole,
+    sanUsn: normalizedSanUsn,
+  };
+
   return {
-    token: generateToken({ id: createdUser.id, role: normalizedRole, sanUsn: normalizedSanUsn }),
-    user: {
-      id: createdUser.id,
-      name: String(name).trim(),
-      email: normalizedEmail,
-      campus,
-      role: normalizedRole,
-      sanUsn: normalizedSanUsn,
-    },
+    token: requiresEmailConfirmation ? null : generateToken(user),
+    user,
+    ...(requiresEmailConfirmation
+      ? {
+          requiresEmailConfirmation: true,
+          message: 'Account created. Check your email to confirm it before signing in.',
+        }
+      : {}),
   };
 };
 
-const loginAccount = async ({ email, password }) => {
+const loginAccount = async (payload = {}) => {
+  const { email, password } = payload;
   const validationErrors = validateLoginPayload({ email, password });
   if (validationErrors.length) {
     const error = new Error(validationErrors.join(', '));
@@ -348,9 +438,12 @@ const loginAccount = async ({ email, password }) => {
   // email_confirm:true), auto-confirm it with the admin API and retry once.
   if (error && /email not confirmed/i.test(error.message)) {
     try {
-      const unconfirmedUser = await findUserByEmail(authClient, normalizedEmail);
+      const adminClient = getSupabaseAdminClient();
+      const unconfirmedUser = adminClient
+        ? await findUserByEmail(adminClient, normalizedEmail)
+        : null;
       if (unconfirmedUser) {
-        await authClient.auth.admin.updateUserById(unconfirmedUser.id, { email_confirm: true });
+        await adminClient.auth.admin.updateUserById(unconfirmedUser.id, { email_confirm: true });
         const retry = await authClient.auth.signInWithPassword({
           email: normalizedEmail,
           password,
@@ -372,21 +465,18 @@ const loginAccount = async ({ email, password }) => {
   }
 
   const metadata = data.user.user_metadata || {};
+  const user = {
+    id: data.user.id,
+    name: metadata.name || normalizedEmail,
+    email: data.user.email,
+    campus: metadata.campus || 'Main Campus',
+    role: metadata.role || 'student',
+    sanUsn: metadata.sanUsn || '',
+  };
 
   return {
-    token: generateToken({
-      id: data.user.id,
-      role: metadata.role || 'student',
-      sanUsn: metadata.sanUsn || '',
-    }),
-    user: {
-      id: data.user.id,
-      name: metadata.name || normalizedEmail,
-      email: data.user.email,
-      campus: metadata.campus || 'Main Campus',
-      role: metadata.role || 'student',
-      sanUsn: metadata.sanUsn || '',
-    },
+    token: generateToken(user),
+    user,
   };
 };
 
@@ -400,7 +490,7 @@ const getCurrentUser = async (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
     const authClient = ensureSupabase();
-    return fetchUserProfileById(authClient, decoded.id, decoded);
+    return fetchUserProfileById(getSupabaseAdminClient() || authClient, decoded.id, decoded);
   } catch (jwtError) {
     const authClient = getSupabaseClient();
     if (!authClient) {

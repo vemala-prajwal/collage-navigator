@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import {
   AlertCircle,
   ChevronDown,
+  CheckCircle2,
   Eye,
   EyeOff,
   Hash,
@@ -18,6 +19,8 @@ import AuthField from '../components/auth/AuthField';
 import { useAuth } from '../context/AuthContext';
 import { fetchCampuses } from '../services/authApi';
 import { CAMPUSES } from '../lib/campuses';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const getPasswordStrength = (password) => {
   if (!password) {
@@ -57,6 +60,7 @@ function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     const loadCampuses = async () => {
@@ -79,11 +83,13 @@ function RegisterPage() {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (error) setError('');
+    if (success) setSuccess('');
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setSuccess('');
 
     if (!form.name.trim()) {
       setError('Please enter your full name.');
@@ -92,6 +98,11 @@ function RegisterPage() {
 
     if (!form.email.trim()) {
       setError('Please enter your email address.');
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(form.email.trim())) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -127,13 +138,23 @@ function RegisterPage() {
 
     setLoading(true);
     try {
-      await register({
+      const result = await register({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
         campus: form.campus,
         sanUsn: form.sanUsn.trim().toUpperCase(),
       });
+
+      if (result.requiresEmailConfirmation) {
+        setSuccess(
+          result.message ||
+            `Account created. Check ${form.email.trim().toLowerCase()} to confirm your email before signing in.`
+        );
+        toast.success('Check your email to finish signing up');
+        return;
+      }
+
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
@@ -178,6 +199,16 @@ function RegisterPage() {
           </div>
         )}
 
+        {success && (
+          <div
+            className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3"
+            role="status"
+          >
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
+            <p className="text-sm font-medium text-success">{success}</p>
+          </div>
+        )}
+
         <div className="grid gap-5 sm:grid-cols-2">
           <AuthField label="Full name" htmlFor="name" icon={<User size={16} />}>
             <input
@@ -185,6 +216,7 @@ function RegisterPage() {
               name="name"
               type="text"
               autoComplete="name"
+              required
               value={form.name}
               onChange={handleChange}
               className="input-field pl-11"
@@ -198,6 +230,7 @@ function RegisterPage() {
               name="sanUsn"
               type="text"
               autoComplete="off"
+              required
               value={form.sanUsn}
               onChange={handleChange}
               className="input-field pl-11 uppercase placeholder:normal-case"
@@ -213,6 +246,7 @@ function RegisterPage() {
             name="email"
             type="email"
             autoComplete="email"
+            required
             value={form.email}
             onChange={handleChange}
             className="input-field pl-11"
@@ -224,6 +258,7 @@ function RegisterPage() {
           <select
             id="campus"
             name="campus"
+            required
             value={form.campus}
             onChange={handleChange}
             className="input-field appearance-none pl-11 pr-10"
@@ -248,6 +283,7 @@ function RegisterPage() {
               name="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
+              required
               value={form.password}
               onChange={handleChange}
               className="input-field pr-12 pl-11"
@@ -286,6 +322,7 @@ function RegisterPage() {
             name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
             autoComplete="new-password"
+            required
             value={form.confirmPassword}
             onChange={handleChange}
             className="input-field pr-12 pl-11"
