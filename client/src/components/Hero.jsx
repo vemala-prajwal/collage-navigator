@@ -118,7 +118,7 @@ export default function Hero() {
                     key={stat.label}
                     className="flex items-center gap-2 rounded-full border border-border/50 bg-surface/70 px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-md dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                   >
-                    <RealLogo slug={stat.logo} color="2563eb" size={13} alt={`${stat.label} logo`} />
+                    <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt={`${stat.label} logo`} />
                     <span className="font-display text-sm font-bold text-foreground">{stat.value}</span>
                     <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
                       {stat.label}

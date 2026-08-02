@@ -38,7 +38,7 @@ export default function Footer() {
           <div>
             <Link to="/" className="group flex items-center gap-2.5 font-display text-xl font-bold">
               <span
-                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(37_99_235/0.35)] transition-transform duration-300 group-hover:scale-110"
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
                 style={{ background: 'var(--gradient-accent)' }}
               >
                 <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
