@@ -31,13 +31,13 @@ export default function Hero() {
         {[600, 800, 1000].map((size, i) => (
           <div
             key={size}
-            className="absolute rounded-full border border-accent/[0.06]"
+            className="hero-ring absolute rounded-full border border-accent/[0.07]"
             style={{
               width: size,
               height: size,
               top: -size / 2,
               left: -size / 2,
-              animationDuration: `${20 + i * 8}s`,
+              animationDuration: `${40 + i * 20}s`,
             }}
           />
         ))}
@@ -116,7 +116,7 @@ export default function Hero() {
                 return (
                   <div
                     key={stat.label}
-                    className="flex items-center gap-2 rounded-full border border-border/50 bg-surface/60 px-4 py-2 backdrop-blur-sm"
+                    className="flex items-center gap-2 rounded-full border border-border/50 bg-surface/70 px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-md dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                   >
                     <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt={`${stat.label} logo`} />
                     <span className="font-display text-sm font-bold text-foreground">{stat.value}</span>
@@ -137,7 +137,7 @@ export default function Hero() {
             className="relative"
           >
             {/* Floating badge — top right */}
-            <div className="absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-card backdrop-blur-xl">
+            <div className="absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_16px_40px_rgb(15_10_40/0.10)] backdrop-blur-xl dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_rgb(0_0_0/0.4)]">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg"
                     style={{ background: 'var(--gradient-accent)' }}>
                 <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
@@ -149,7 +149,7 @@ export default function Hero() {
             </div>
 
             {/* Floating badge — bottom left */}
-            <div className="absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-card backdrop-blur-xl">
+            <div className="absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_16px_40px_rgb(15_10_40/0.10)] backdrop-blur-xl dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_rgb(0_0_0/0.4)]">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/15">
                 <RealLogo slug="googlestreetview" color="10b981" size={14} alt="Street View logo" />
               </span>

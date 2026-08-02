@@ -66,8 +66,11 @@ export default function Navbar({ user, logout }) {
             to="/"
             className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
           >
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden border border-border/50 bg-surface-secondary/80 p-1.5">
-              <RealLogo slug="googlemaps" color="8b5cf6" size={18} alt="Google Maps logo" />
+            <span
+              className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+              style={{ background: 'var(--gradient-accent)' }}
+            >
+              <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
             </span>
             <span className="text-gradient">Campus Navigator</span>
           </Link>
@@ -80,7 +83,7 @@ export default function Navbar({ user, logout }) {
                 to={item.to}
                 end={item.to === '/'}
                 title={item.hint}
-                className="relative py-1.5 text-sm font-medium text-foreground-muted transition-colors duration-300 hover:text-foreground"
+                className="nav-link relative py-1.5 text-sm font-medium text-foreground-muted transition-colors duration-300 hover:text-foreground"
               >
                 {({ isActive }) => (
                   <>
@@ -157,8 +160,11 @@ export default function Navbar({ user, logout }) {
                   className="flex items-center gap-2 font-display text-lg font-bold"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/50 bg-surface-secondary/80 p-1.5">
-                    <RealLogo slug="googlemaps" color="8b5cf6" size={14} alt="Google Maps logo" />
+                  <span
+                    className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
+                    style={{ background: 'var(--gradient-accent)' }}
+                  >
+                    <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
                   </span>
                   <span className="text-gradient">Campus Nav</span>
                 </Link>
