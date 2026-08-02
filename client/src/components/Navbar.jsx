@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -33,13 +33,11 @@ const itemVariants = {
 export default function Navbar({ user, logout }) {
   const [menuOpen,  setMenuOpen]  = useState(false);
   const [scrolled,  setScrolled]  = useState(false);
-  const prevScrollY = useRef(0);
 
   useEffect(() => {
     const onScroll = () => {
       const currentY = window.scrollY;
       setScrolled(currentY > 24);
-      prevScrollY.current = currentY;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -56,14 +54,15 @@ export default function Navbar({ user, logout }) {
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
           scrolled
             ? 'glass-nav'
-            : 'border-b border-transparent bg-transparent'
+            : 'border-b border-border/20 bg-background/35 backdrop-blur-sm'
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 sm:px-8 lg:px-12">
 
           {/* ── Logo ── */}
           <Link
             to="/"
+            aria-label="Campus Navigator home"
             className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
           >
             <span
@@ -76,14 +75,20 @@ export default function Navbar({ user, logout }) {
           </Link>
 
           {/* ── Desktop nav ── */}
-          <nav className="hidden items-center gap-8 md:flex">
+          <nav className="hidden items-center gap-3 md:flex">
             {navItems.map((item) => (
               <NavLink
                 key={item.label}
                 to={item.to}
                 end={item.to === '/'}
                 title={item.hint}
-                className="nav-link relative py-1.5 text-sm font-medium text-foreground-muted transition-colors duration-300 hover:text-foreground"
+                className={({ isActive }) =>
+                  `nav-link relative py-2 text-sm font-medium transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-accent-muted/45 text-foreground'
+                      : 'text-foreground-muted hover:bg-surface-secondary/70 hover:text-foreground'
+                  }`
+                }
               >
                 {({ isActive }) => (
                   <>
@@ -118,6 +123,7 @@ export default function Navbar({ user, logout }) {
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
+              aria-expanded={menuOpen}
               className="inline-flex items-center justify-center rounded-xl border border-border/60 bg-surface-secondary/60 p-2 text-foreground backdrop-blur-sm transition-all duration-200 hover:border-accent/40 hover:bg-surface-elevated/80 md:hidden"
               aria-label="Open navigation menu"
             >
@@ -194,11 +200,10 @@ export default function Navbar({ user, logout }) {
                         className={({ isActive }) =>
                           `block rounded-xl px-4 py-3 text-base font-semibold transition-all duration-200 ${
                             isActive
-                              ? 'text-white shadow-glow'
+                              ? 'bg-accent-muted text-accent'
                               : 'text-foreground-muted hover:bg-surface-secondary hover:text-foreground'
                           }`
                         }
-                        style={({ isActive }) => isActive ? { background: 'var(--gradient-accent)' } : {}}
                       >
                         {item.label}
                       </NavLink>

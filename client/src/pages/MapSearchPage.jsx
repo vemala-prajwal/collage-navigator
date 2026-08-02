@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, X } from 'lucide-react';
 import api from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
@@ -85,17 +85,29 @@ export default function MapSearchPage() {
   ];
 
   const searchPanel = (
-    <div className="premium-card p-4">
-      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/60 px-4 py-3.5 backdrop-blur-sm">
+    <div className="premium-card p-3.5 sm:p-4">
+      <div className="relative flex items-center gap-3 rounded-xl border border-border/50 bg-background/60 px-4 py-3 backdrop-blur-sm">
         <Search className="text-accent/70" size={18} />
         <input
+          type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search locations, dining, or buildings"
-          className="w-full bg-transparent text-foreground outline-none placeholder:text-foreground-muted/50"
+          aria-label="Search campus locations"
+          className="w-full bg-transparent pr-8 text-sm text-foreground outline-none placeholder:text-foreground-muted/50"
         />
+        {query ? (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            className="absolute right-3 inline-flex rounded-md p-1 text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <X size={15} />
+          </button>
+        ) : null}
       </div>
-      <p className="mt-3 text-sm text-foreground-muted">
+      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-foreground-muted">
         {loading ? 'Searching campus data…' : `${results.length} locations found`}
       </p>
     </div>
@@ -111,31 +123,43 @@ export default function MapSearchPage() {
         {searchPanel}
       </PageHeader>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="space-y-4">
+      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="space-y-3">
           {loading ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[1, 2, 3, 4].map((item) => (
                 <SkeletonCard key={item} />
               ))}
             </div>
           ) : (
-            <motion.div initial="hidden" animate="visible" variants={listVariants} className="space-y-4">
-              {results.map((location) => {
+              <motion.div initial="hidden" animate="visible" variants={listVariants} className="space-y-3">
+              {results.length === 0 ? (
+                <div className="flat-card p-10 text-center">
+                  <Search className="mx-auto h-8 w-8 text-accent/70" />
+                  <h2 className="mt-4 font-display text-xl font-bold text-foreground">No locations found</h2>
+                  <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-foreground-muted">
+                    Try a building name, room number, or facility type.
+                  </p>
+                </div>
+              ) : null}
+              {results.map((location, index) => {
                 const status = statusMap[location?.status] || 'available';
                 const isSelected = selectedId === location?._id;
 
                 return (
-                  <motion.div key={location?._id || Math.random()} variants={itemVariants}>
+                  <motion.div
+                    key={location?._id || `${location?.name || 'location'}-${index}`}
+                    variants={itemVariants}
+                  >
                     <Link to={`/locations/${location?._id}`}>
                       <Card
-                        className={`cursor-pointer ${isSelected ? 'border-accent/40 ring-2 ring-accent/15' : ''}`}
+                        className={`group cursor-pointer ${isSelected ? 'border-accent/40 ring-2 ring-accent/15' : ''}`}
                         onMouseEnter={() => setSelectedId(location?._id)}
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="max-w-xl">
                             <p className="eyebrow text-[0.65rem]">{location?.type || 'Campus point'}</p>
-                            <h2 className="mt-2 font-display text-2xl font-bold text-foreground">{location?.name}</h2>
+                            <h2 className="mt-2 font-display text-xl font-bold text-foreground transition-colors group-hover:text-accent sm:text-2xl">{location?.name}</h2>
                             <p className="mt-2 text-sm text-foreground-muted">
                               {location?.building} • Floor {location?.floor}
                             </p>
@@ -145,10 +169,10 @@ export default function MapSearchPage() {
                           </Badge>
                         </div>
                         <div className="mt-5 flex flex-wrap gap-2 text-xs text-foreground-muted">
-                          <span className="rounded-full border border-border bg-surface-secondary px-3 py-1">
+                          <span className="data-chip">
                             ID {location?._id?.slice(-4) || '----'}
                           </span>
-                          <span className="rounded-full border border-border bg-surface-secondary px-3 py-1">
+                          <span className="data-chip">
                             {location?.building}
                           </span>
                         </div>
@@ -161,8 +185,18 @@ export default function MapSearchPage() {
           )}
         </section>
 
-        <section className="glass-panel relative overflow-hidden rounded-2xl p-6">
-          <div className="relative h-[520px] overflow-hidden rounded-xl border border-border/40 bg-surface-secondary">
+        <section className="glass-panel relative overflow-hidden rounded-2xl p-4 sm:p-5">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow text-[0.62rem]">Live map</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">Campus points in view</p>
+            </div>
+            <span className="data-chip text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Live
+            </span>
+          </div>
+          <div className="map-stage relative h-[440px] sm:h-[520px]">
             {loading ? (
               <div className="absolute inset-0 shimmer" />
             ) : (
@@ -181,7 +215,9 @@ export default function MapSearchPage() {
                       whileHover="hover"
                       whileTap="tap"
                       variants={pinVariants}
-                      className={`absolute grid h-14 w-14 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-card backdrop-blur-sm transition-all duration-300 dark:shadow-none dark:bg-surface/80 ${
+                      aria-label={`Select ${location?.name || 'location'}`}
+                      aria-pressed={isActive}
+                      className={`absolute grid h-12 w-12 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-card backdrop-blur-sm transition-all duration-300 dark:shadow-none dark:bg-surface/80 sm:h-14 sm:w-14 ${
                         isActive ? 'border-accent/50 ring-4 ring-accent/20 dark:shadow-glow' : ''
                       }`}
                       style={position}
@@ -194,7 +230,7 @@ export default function MapSearchPage() {
             )}
           </div>
 
-          <div className="relative mt-6 premium-card p-5 text-sm">
+          <div className="relative mt-4 premium-card p-5 text-sm">
             <p className="eyebrow mb-3 text-[0.65rem]">Selected location</p>
             {selectedId ? (
               <div className="space-y-2">

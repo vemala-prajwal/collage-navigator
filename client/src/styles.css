@@ -123,6 +123,7 @@ html.dark {
     font-family: var(--font-body);
     background-color: rgb(var(--color-background));
     color: rgb(var(--color-foreground));
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv11', 'ss01', 'cv02';
@@ -177,6 +178,9 @@ html.dark {
   * { box-sizing: border-box; }
 
   button, input, textarea, select { font: inherit; }
+
+  a, button, select { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
 }
 
 /* ─── COMPONENTS ──────────────────────────────────────────────────────── */
@@ -186,14 +190,14 @@ html.dark {
   }
 
   .section-gap {
-    padding-top: var(--section-gap);
-    padding-bottom: var(--section-gap);
+    padding-top: clamp(4.5rem, 8vw, 8rem);
+    padding-bottom: clamp(4.5rem, 8vw, 8rem);
   }
 
   .display-headline {
     font-family: var(--font-display);
-    font-size: clamp(2.75rem, 6vw, 5rem);
-    line-height: 1.02;
+    font-size: clamp(2.65rem, 5.5vw, 4.7rem);
+    line-height: 1.04;
     letter-spacing: -0.04em;
     font-weight: 800;
   }
@@ -260,32 +264,28 @@ html.dark {
 
   /* ── Glass / surface panels ── */
   .glass-panel {
-    @apply border border-border/50 bg-surface/70 shadow-card backdrop-blur-2xl;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), var(--shadow-card);
+    @apply border border-border/50 bg-surface/70 shadow-card backdrop-blur-xl;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 14px 34px rgb(var(--color-accent) / 0.06);
   }
 
   .glass-nav {
     background: rgb(var(--color-background) / 0.72);
     border-bottom: 1px solid rgb(var(--color-border) / 0.4);
-    backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(150%);
     box-shadow:
       inset 0 -1px 0 rgb(var(--color-border) / 0.2),
-      var(--shadow-soft);
+      0 12px 28px rgb(var(--color-accent) / 0.06);
   }
 
   /* ── Premium card ── */
   .premium-card {
     position: relative;
     overflow: hidden;
-    border-radius: 1.5rem;
+    border-radius: 1.25rem;
     border: 1px solid rgb(var(--color-border) / 0.55);
-    background: linear-gradient(
-      180deg,
-      rgb(var(--color-surface) / 0.78),
-      rgb(var(--color-surface-secondary) / 0.62)
-    );
-    backdrop-filter: blur(16px) saturate(150%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.03);
+    background: rgb(var(--color-surface) / 0.78);
+    backdrop-filter: blur(12px) saturate(125%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.03), 0 12px 30px rgb(var(--color-accent) / 0.05);
     transition: border-color 0.35s ease, box-shadow 0.35s ease;
   }
 
@@ -295,20 +295,20 @@ html.dark {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(120% 70% at 50% 0%, rgb(var(--color-accent) / 0.09) 0%, transparent 55%);
+    background: radial-gradient(100% 60% at 50% 0%, rgb(var(--color-accent) / 0.07) 0%, transparent 60%);
     opacity: 0;
     transition: opacity 0.45s ease;
     pointer-events: none;
   }
 
   .premium-card:hover::before {
-    opacity: 1;
+    opacity: 0.55;
   }
 
   .premium-card:hover {
     transform: none;
     border-color: rgb(var(--color-accent) / 0.35);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), var(--shadow-elevated);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 16px 36px rgb(var(--color-accent) / 0.09);
   }
 
   .premium-card-no-hover:hover {
@@ -324,7 +324,7 @@ html.dark {
   /* ── Flat card (No hover lift, no glare) ── */
   .flat-card {
     position: relative;
-    border-radius: 1.25rem;
+    border-radius: 1rem;
     border: 1px solid rgb(var(--color-border) / 0.5);
     background: rgb(var(--color-surface) / 0.85);
     backdrop-filter: blur(12px);
@@ -340,7 +340,7 @@ html.dark {
 
   /* ── Input ── */
   .input-field {
-    @apply w-full rounded-xl border border-border/70 bg-surface-secondary/80 px-4 py-3.5 text-foreground outline-none backdrop-blur-sm transition-all duration-300 ease-premium placeholder:text-foreground-muted/50 focus:border-accent/70 focus:bg-surface focus:ring-4 focus:ring-accent/15;
+    @apply w-full rounded-xl border border-border/70 bg-surface-secondary/80 px-4 py-3 text-foreground outline-none transition-all duration-200 ease-premium placeholder:text-foreground-muted/50 focus:border-accent/70 focus:bg-surface focus:ring-4 focus:ring-accent/15;
     box-shadow: inset 0 1px 2px rgb(15 10 40 / 0.04);
   }
 
@@ -350,7 +350,7 @@ html.dark {
 
   /* ── Eyebrow label ── */
   .eyebrow {
-    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.28em];
+    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.2em];
     color: rgb(var(--color-accent));
   }
 
@@ -366,7 +366,7 @@ html.dark {
 
   /* ── Icon well ── */
   .icon-well {
-    @apply inline-flex items-center justify-center rounded-xl border border-border/50 bg-surface/80 p-3 backdrop-blur-sm transition-all duration-300 ease-premium;
+    @apply inline-flex items-center justify-center rounded-xl border border-border/50 bg-surface/80 p-3 backdrop-blur-sm transition-all duration-200 ease-premium;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
   }
 
@@ -406,9 +406,9 @@ html.dark {
     border: none;
     background: var(--gradient-accent);
     color: #fff;
-    border-radius: 9999px;
+    border-radius: 0.75rem;
     overflow: hidden;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px rgb(109 40 217 / 0.30);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 20px rgb(var(--color-accent) / 0.24);
     transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s;
   }
 
@@ -436,8 +436,8 @@ html.dark {
   }
 
   .btn-gradient:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), var(--shadow-glow);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 12px 26px rgb(var(--color-accent) / 0.28);
   }
 
   .btn-gradient:hover::before {
@@ -446,6 +446,67 @@ html.dark {
 
   .btn-gradient:hover::after {
     animation: btn-shine 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* ── Structured page surfaces ── */
+  .page-header {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgb(var(--color-border) / 0.5);
+    border-radius: 1.25rem;
+    background: rgb(var(--color-surface-secondary) / 0.42);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 14px 32px rgb(var(--color-accent) / 0.05);
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(var(--color-accent) / 0.55), rgb(var(--color-accent2) / 0.4), transparent);
+    pointer-events: none;
+  }
+
+  .page-header__grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.34;
+    background-image:
+      linear-gradient(rgb(var(--color-accent) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--color-accent) / 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(110deg, black, transparent 72%);
+    -webkit-mask-image: linear-gradient(110deg, black, transparent 72%);
+  }
+
+  .section-rule {
+    height: 1px;
+    background: rgb(var(--color-border) / 0.45);
+  }
+
+  .map-stage {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgb(var(--color-border) / 0.55);
+    border-radius: 1rem;
+    background: rgb(var(--color-surface-secondary) / 0.82);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 12px 28px rgb(var(--color-accent) / 0.06);
+  }
+
+  .data-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgb(var(--color-border) / 0.7);
+    border-radius: 0.65rem;
+    background: rgb(var(--color-surface-secondary) / 0.72);
+    padding: 0.45rem 0.7rem;
+    color: rgb(var(--color-foreground-muted));
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
   }
 
   /* ── Section divider glow line ── */
@@ -457,14 +518,17 @@ html.dark {
   /* ── Nav link hover underline ── */
   .nav-link {
     position: relative;
+    border-radius: 0.65rem;
+    padding-inline: 0.65rem;
+    transition: color 0.2s ease, background-color 0.2s ease;
   }
 
   .nav-link::after {
     content: '';
     position: absolute;
-    left: 0;
+    left: 0.65rem;
     right: 100%;
-    bottom: -2px;
+    bottom: -0.25rem;
     height: 2px;
     border-radius: 9999px;
     background: var(--gradient-accent);
@@ -761,7 +825,9 @@ html.dark .glow-pill {
   .marquee-track,
   .shimmer::after,
   .floating-badge,
-  .floating-badge-delayed { animation: none !important; }
+  .floating-badge-delayed,
+  .hero-ring,
+  .animate-ping { animation: none !important; }
 
   .glow-pill > span,
   .btn-gradient::after,

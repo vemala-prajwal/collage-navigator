@@ -92,7 +92,7 @@ export default function FaqSection() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <div className="premium-card divide-y divide-border/30 px-6 sm:px-8">
+             <div className="premium-card divide-y divide-border/30 px-5 sm:px-7">
               {FAQ_ITEMS.map((item, index) => (
                 <FaqItem
                   key={item.question}

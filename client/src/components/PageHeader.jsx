@@ -2,22 +2,17 @@ import PropTypes from 'prop-types';
 
 export default function PageHeader({ eyebrow, title, description, children, className = '' }) {
   return (
-    <section className={`relative mb-12 overflow-hidden rounded-2xl border border-border/40 bg-surface-secondary/30 p-8 backdrop-blur-sm sm:p-10 ${className}`}>
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.5), rgb(var(--color-accent2)/0.4), transparent)' }}
-        aria-hidden="true"
-      />
-      <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/8 blur-3xl dark:bg-accent/[0.04] dark:blur-[100px]" aria-hidden="true" />
+    <section className={`page-header relative mb-10 p-7 sm:p-9 ${className}`}>
+      <div className="page-header__grid" aria-hidden="true" />
       <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
-          {eyebrow ? <p className="eyebrow mb-5">{eyebrow}</p> : null}
+          {eyebrow ? <p className="eyebrow mb-4">{eyebrow}</p> : null}
           <h1 className="font-display text-display-md font-extrabold leading-tight text-foreground">{title}</h1>
           {description ? (
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-foreground-muted">{description}</p>
+            <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-foreground-muted">{description}</p>
           ) : null}
         </div>
-        {children ? <div className="relative w-full shrink-0 lg:max-w-md">{children}</div> : null}
+        {children ? <div className="relative w-full shrink-0 lg:max-w-sm">{children}</div> : null}
       </div>
     </section>
   );
@@ -25,8 +20,8 @@ export default function PageHeader({ eyebrow, title, description, children, clas
 
 PageHeader.propTypes = {
   eyebrow: PropTypes.string,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string,
+  title: PropTypes.node.isRequired,
+  description: PropTypes.node,
   children: PropTypes.node,
   className: PropTypes.string,
 };

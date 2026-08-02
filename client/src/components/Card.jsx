@@ -13,7 +13,9 @@ export default function Card({ children, variant = 'default', hover = true, clas
   return (
     <motion.div
       className={`relative overflow-hidden rounded-2xl border p-6 transition-all duration-500 ease-premium ${
-        isPremium ? 'premium-card' : `border ${variantClasses[variant] || variantClasses.glass}`
+        isPremium
+          ? `premium-card ${hover ? '' : 'premium-card-no-hover'}`
+          : `border ${variantClasses[variant] || variantClasses.glass}`
       } ${className}`}
       {...props}
     >

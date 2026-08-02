@@ -10,8 +10,8 @@ function StatItem({ value, suffix, prefix, label }) {
     <RevealItem>
       <motion.div
         ref={ref}
-        className="stat-card-glow premium-card p-8 text-center"
-        whileHover={{ y: -6 }}
+        className="stat-card-glow premium-card p-6 text-center"
+        whileHover={{ y: -3 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       >
         <p className="display-stat text-gradient">{display}</p>
@@ -54,7 +54,7 @@ export default function StatsSection({ locationCount = 50 }) {
       />
 
       <div className="section-container relative">
-        <Reveal className="mb-16">
+          <Reveal className="mb-12">
           <p className="eyebrow mb-6">By the numbers</p>
           <h2 className="display-headline max-w-xl">
             Numbers that
@@ -62,7 +62,7 @@ export default function StatsSection({ locationCount = 50 }) {
           </h2>
         </Reveal>
 
-        <RevealStagger className="grid gap-6 sm:grid-cols-3" stagger={0.1}>
+        <RevealStagger className="grid gap-4 sm:grid-cols-3" stagger={0.1}>
           {stats.map((stat) => (
             <StatItem key={stat.label} {...stat} />
           ))}

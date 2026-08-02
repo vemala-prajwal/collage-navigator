@@ -15,7 +15,7 @@ export default function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative flex min-h-[96vh] flex-col overflow-hidden pt-12 sm:pt-16 lg:pt-24">
+    <section className="relative flex min-h-[calc(100vh-4.5rem)] flex-col overflow-hidden pt-10 sm:pt-14 lg:pt-20">
       {/* Background gradients */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -28,7 +28,7 @@ export default function Hero() {
         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         aria-hidden="true"
       >
-        {[600, 800, 1000].map((size, i) => (
+        {[520, 720, 920].map((size, i) => (
           <div
             key={size}
             className="hero-ring absolute rounded-full border border-accent/[0.07]"
@@ -44,7 +44,7 @@ export default function Hero() {
       </div>
 
       <div className="section-container relative z-10 flex flex-1 flex-col">
-        <div className="grid flex-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
+          <div className="grid flex-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
 
           {/* ── Left: Text ── */}
           <motion.div
@@ -53,7 +53,7 @@ export default function Hero() {
             variants={staggerContainer(0.1, 0.05)}
           >
             {/* Eyebrow pill */}
-            <motion.div variants={fadeUp} className="mb-8">
+              <motion.div variants={fadeUp} className="mb-7">
               <span className="glow-pill">
                 <span
                   className="inline-block h-1.5 w-1.5 rounded-full"
@@ -84,18 +84,18 @@ export default function Hero() {
             {/* Sub text */}
             <motion.p
               variants={fadeUp}
-              className="mt-8 max-w-md text-base leading-relaxed text-foreground-muted sm:text-lg"
+              className="mt-7 max-w-md text-base leading-relaxed text-foreground-muted sm:text-lg"
             >
               Search destinations, follow live routes, check canteen status,
               and leave feedback — all in one place.
             </motion.p>
 
             {/* CTA buttons */}
-            <motion.div variants={fadeUp} className="mt-12 flex flex-wrap items-center gap-5">
+            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-5">
               <Link to="/map-search">
                 <button
                   type="button"
-                  className="btn-gradient relative inline-flex items-center gap-2 overflow-hidden rounded-full px-8 py-4 text-base font-semibold text-white"
+                  className="btn-gradient relative inline-flex items-center gap-2 overflow-hidden rounded-xl px-7 py-3.5 text-base font-semibold text-white"
                 >
                   <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
                   <span className="relative z-10">Explore Campus</span>
@@ -111,7 +111,7 @@ export default function Hero() {
             </motion.div>
 
             {/* Stats pills */}
-            <motion.div variants={fadeUp} className="mt-14 flex flex-wrap gap-3">
+            <motion.div variants={fadeUp} className="mt-12 flex flex-wrap gap-3">
               {QUICK_STATS.map((stat) => {
                 return (
                   <div

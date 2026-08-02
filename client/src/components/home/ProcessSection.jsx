@@ -41,7 +41,7 @@ function ProcessStep({ step, index, total }) {
   return (
     <motion.div
       variants={fadeUp}
-      className={`process-step group grid gap-6 py-14 md:grid-cols-[auto_1fr] md:gap-16 lg:gap-24 ${
+      className={`process-step group grid gap-6 py-11 md:grid-cols-[auto_1fr] md:gap-16 lg:gap-24 ${
         index < total - 1
           ? 'border-b'
           : ''
@@ -71,7 +71,7 @@ function ProcessStep({ step, index, total }) {
         </p>
         <Link
           to={step.to}
-          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold opacity-0 transition-all duration-300 group-hover:opacity-100"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100"
           style={{ color: 'rgb(var(--color-accent))' }}
         >
           {step.cta}
@@ -105,7 +105,7 @@ export default function ProcessSection() {
         </Reveal>
 
         <motion.div
-          className="mt-20 border-t"
+          className="mt-14 border-t"
           style={{ borderColor: 'rgb(var(--color-border)/0.4)' }}
           initial={reduceMotion ? false : 'hidden'}
           whileInView={reduceMotion ? undefined : 'visible'}

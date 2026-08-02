@@ -61,15 +61,15 @@ export default function FeatureGrid() {
         </Reveal>
 
         <RevealStagger
-          className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+           className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
           stagger={0.08}
         >
           {FEATURES.map((feature) => {
             return (
               <RevealItem key={feature.title}>
                 <motion.div
-                  className="group premium-card p-7"
-                  whileHover={{ y: -6 }}
+                  className="group premium-card p-6"
+                  whileHover={{ y: -3 }}
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {/* Icon */}
@@ -91,10 +91,10 @@ export default function FeatureGrid() {
                     </span>
                   </div>
 
-                  <h3 className="mt-6 font-display text-xl font-bold text-foreground">
+                  <h3 className="mt-5 font-display text-xl font-bold text-foreground">
                     {feature.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
+                  <p className="mt-2.5 text-sm leading-relaxed text-foreground-muted">
                     {feature.description}
                   </p>
 

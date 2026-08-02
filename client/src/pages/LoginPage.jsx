@@ -127,7 +127,7 @@ function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-gradient inline-flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>

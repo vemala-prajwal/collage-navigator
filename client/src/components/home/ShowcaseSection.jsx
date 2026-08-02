@@ -38,7 +38,7 @@ function ShowcaseCard({ item, locationPreview }) {
   return (
     <RevealItem>
       <Link to={locationPreview ? `/locations/${locationPreview._id}` : item.to} className="group block h-full">
-        <motion.article className="premium-card flex h-full flex-col p-8">
+        <motion.article className="premium-card flex h-full flex-col p-7">
           <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-40`} />
 
           <div className="relative flex items-start justify-between gap-4">
@@ -48,10 +48,10 @@ function ShowcaseCard({ item, locationPreview }) {
             <ArrowUpRight size={20} className="text-foreground-muted" />
           </div>
 
-          <h3 className="relative mt-8 font-display text-2xl font-bold text-foreground">{title}</h3>
+          <h3 className="relative mt-7 font-display text-2xl font-bold text-foreground">{title}</h3>
           <p className="relative mt-3 flex-1 text-sm leading-relaxed text-foreground-muted">{subtitle}</p>
 
-          <div className="relative mt-8 h-36 overflow-hidden rounded-xl border border-border/30 bg-background/40">
+          <div className="relative mt-7 h-32 overflow-hidden rounded-xl border border-border/30 bg-background/40">
             <div className="hero-preview-grid h-full w-full opacity-30" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center">
@@ -101,7 +101,7 @@ export default function ShowcaseSection({ locations = [] }) {
           </h2>
         </Reveal>
 
-        <RevealStagger className="mt-20 grid gap-6 lg:grid-cols-3" stagger={0.1}>
+        <RevealStagger className="mt-14 grid gap-4 lg:grid-cols-3" stagger={0.1}>
           {SHOWCASE_ITEMS.map((item, index) => (
             <ShowcaseCard
               key={item.title}
@@ -112,7 +112,7 @@ export default function ShowcaseSection({ locations = [] }) {
         </RevealStagger>
 
         {safeLocations.length > 0 ? (
-          <Reveal className="mt-20" delay={0.1}>
+          <Reveal className="mt-14" delay={0.1}>
             <p className="eyebrow mb-8">Popular destinations</p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {safeLocations.slice(0, 6).map((location) => (

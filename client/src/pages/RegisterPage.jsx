@@ -304,7 +304,7 @@ function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-gradient flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-gradient flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? (
             <>
