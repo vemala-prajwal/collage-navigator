@@ -1,16 +1,47 @@
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const { CAMPUSES } = require('../constants/campuses');
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseServiceRoleKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE ||
-  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+// Load environment variables before anything reads them. In local dev the
+// server/.env file is used; on Vercel/other platforms the env vars are usually
+// already in process.env, so a missing file is a no-op. This also keeps module
+// load order irrelevant: no matter which entrypoint requires this file first,
+// the Supabase credentials are available by the time they are needed.
+const envCandidates = [
+  path.resolve(__dirname, '../.env'),
+  path.resolve(__dirname, '../../.env'),
+  path.resolve(process.cwd(), '.env'),
+];
+for (const candidate of envCandidates) {
+  if (fs.existsSync(candidate)) {
+    dotenv.config({ path: candidate });
+    break;
+  }
+}
 
-const supabase = supabaseUrl && supabaseServiceRoleKey
-  ? createClient(supabaseUrl, supabaseServiceRoleKey)
-  : null;
+let supabase = null;
+
+// Lazily create the Supabase admin client so credentials are read at call time,
+// not at module load. This makes the code robust to environment loading order
+// across the Express app and the Vercel serverless functions.
+const getSupabaseClient = () => {
+  if (supabase) return supabase;
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseServiceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE ||
+    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+  if (supabaseUrl && supabaseServiceRoleKey) {
+    supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  }
+
+  return supabase;
+};
 
 const generateToken = (user) =>
   jwt.sign(
@@ -102,13 +133,15 @@ const validateLoginPayload = ({ email, password }) => {
 };
 
 const ensureSupabase = () => {
-  if (!supabase) {
+  const authClient = getSupabaseClient();
+
+  if (!authClient) {
     const error = new Error('Supabase is not configured on the server.');
     error.statusCode = 500;
     throw error;
   }
 
-  return supabase;
+  return authClient;
 };
 
 const mapSupabaseUser = (user) => {
@@ -369,13 +402,14 @@ const getCurrentUser = async (token) => {
     const authClient = ensureSupabase();
     return fetchUserProfileById(authClient, decoded.id, decoded);
   } catch (jwtError) {
-    if (!supabase) {
+    const authClient = getSupabaseClient();
+    if (!authClient) {
       const error = new Error('Not authorized, invalid token');
       error.statusCode = 401;
       throw error;
     }
 
-    const { data, error } = await supabase.auth.getUser(token);
+    const { data, error } = await authClient.auth.getUser(token);
     if (error || !data?.user) {
       const authError = new Error('Not authorized, invalid token');
       authError.statusCode = 401;

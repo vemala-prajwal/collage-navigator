@@ -8,6 +8,21 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Fall back to other locations so the app also picks up env vars when run
+// from a different working directory or inside a serverless bundle.
+if (!process.env.SUPABASE_URL) {
+  const altCandidates = [
+    path.resolve(__dirname, '../.env'),
+    path.resolve(process.cwd(), '.env'),
+  ];
+  for (const candidate of altCandidates) {
+    if (fs.existsSync(candidate)) {
+      dotenv.config({ path: candidate });
+      break;
+    }
+  }
+}
+
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const locationRoutes = require('./routes/locationRoutes');
