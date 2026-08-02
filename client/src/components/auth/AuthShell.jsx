@@ -27,7 +27,7 @@ export default function AuthShell({ eyebrow, title, description, children, foote
     <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 py-10 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:py-14">
       {/* ── Brand panel (desktop only) ── */}
       <aside className="relative hidden lg:flex lg:flex-col">
-        <div className="relative flex flex-1 flex-col overflow-hidden rounded-3xl border border-border/50 bg-surface/50 p-9 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgb(109_40_217/0.10)] backdrop-blur-xl">
+        <div className="relative flex flex-1 flex-col overflow-hidden rounded-3xl border border-border/50 bg-surface/50 p-9 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgb(37_99_235/0.10)] backdrop-blur-xl">
           <div
             className="hero-preview-grid pointer-events-none absolute inset-0 opacity-40"
             aria-hidden="true"
@@ -49,7 +49,7 @@ export default function AuthShell({ eyebrow, title, description, children, foote
               className="group inline-flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
             >
               <span
-                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(37_99_235/0.35)] transition-transform duration-300 group-hover:scale-110"
                 style={{ background: 'var(--gradient-accent)' }}
               >
                 <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Campus Navigator logo" />
