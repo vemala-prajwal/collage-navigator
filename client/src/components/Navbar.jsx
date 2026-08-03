@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { House, Map, Menu, ShieldCheck, UtensilsCrossed, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import Button from './Button';
 import RealLogo from './RealLogo';
@@ -9,10 +9,10 @@ import RealLogo from './RealLogo';
 const MotionLink = motion(Link);
 
 const navItems = [
-  { label: 'Home',     to: '/' },
-  { label: 'Map',      to: '/map-search' },
-  { label: 'Canteen',  to: '/canteen' },
-  { label: 'Admin',    to: '/admin' },
+  { label: 'Home', to: '/', icon: House },
+  { label: 'Map', to: '/map-search', icon: Map },
+  { label: 'Canteen', to: '/canteen', icon: UtensilsCrossed },
+  { label: 'Admin', to: '/admin', icon: ShieldCheck },
 ];
 
 const overlayVariants = {
@@ -66,8 +66,8 @@ export default function Navbar({ user, logout }) {
             className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
           >
             <span
-              className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
-              style={{ background: 'var(--gradient-accent)' }}
+              className="brand-mark relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+                style={{ background: 'rgb(var(--ui-accent))' }}
             >
               <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
             </span>
@@ -76,14 +76,13 @@ export default function Navbar({ user, logout }) {
 
           {/* ── Desktop nav ── */}
           <nav className="hidden items-center gap-3 md:flex">
-            {navItems.map((item) => (
+            {navItems.map(({ label, to, icon: Icon }) => (
               <NavLink
-                key={item.label}
-                to={item.to}
-                end={item.to === '/'}
-                title={item.hint}
+                key={label}
+                to={to}
+                end={to === '/'}
                 className={({ isActive }) =>
-                  `nav-link relative py-2 text-sm font-medium transition-colors duration-200 ${
+                  `nav-link relative inline-flex items-center gap-2 py-2 text-sm font-medium transition-colors duration-200 ${
                     isActive
                       ? 'bg-accent-muted/45 text-foreground'
                       : 'text-foreground-muted hover:bg-surface-secondary/70 hover:text-foreground'
@@ -92,12 +91,13 @@ export default function Navbar({ user, logout }) {
               >
                 {({ isActive }) => (
                   <>
-                    {item.label}
+                    <Icon size={15} strokeWidth={1.8} aria-hidden="true" />
+                    <span>{label}</span>
                     {isActive ? (
                       <motion.span
                         layoutId="nav-underline"
                         className="nav-active-pill"
-                        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                       />
                     ) : null}
                   </>
@@ -124,7 +124,7 @@ export default function Navbar({ user, logout }) {
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-expanded={menuOpen}
-              className="inline-flex items-center justify-center rounded-xl border border-border/60 bg-surface-secondary/60 p-2 text-foreground backdrop-blur-sm transition-all duration-200 hover:border-accent/40 hover:bg-surface-elevated/80 md:hidden"
+              className="mobile-menu-trigger ui-button-secondary inline-flex items-center justify-center rounded-xl border border-border/60 bg-surface-secondary/60 p-2 text-foreground backdrop-blur-sm transition-all duration-200 hover:border-accent/40 hover:bg-surface-elevated/80 md:hidden"
               aria-label="Open navigation menu"
             >
               <Menu size={20} />
@@ -155,10 +155,10 @@ export default function Navbar({ user, logout }) {
               exit="closed"
               variants={menuVariants}
               transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-[min(88vw,340px)] flex-col border-l border-border/50 bg-surface/90 px-6 py-6 shadow-elevated backdrop-blur-2xl"
+              className="fixed right-0 top-0 z-50 flex h-full w-[min(88vw,340px)] flex-col border-l border-border/50 bg-surface/90 px-6 py-6 shadow-elevated backdrop-blur-2xl mobile-nav-drawer"
             >
               {/* gradient top accent bar */}
-              <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: 'var(--gradient-accent)' }} />
+              <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: 'rgb(var(--ui-accent))' }} />
 
               <div className="flex items-center justify-between">
                 <Link
@@ -167,8 +167,8 @@ export default function Navbar({ user, logout }) {
                   onClick={() => setMenuOpen(false)}
                 >
                   <span
-                    className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
-                    style={{ background: 'var(--gradient-accent)' }}
+                    className="brand-mark flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
+                    style={{ background: 'rgb(var(--ui-accent))' }}
                   >
                     <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
                   </span>
@@ -177,7 +177,7 @@ export default function Navbar({ user, logout }) {
                 <button
                   type="button"
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-xl border border-border/60 bg-surface-secondary p-2 text-foreground transition-colors hover:bg-surface-elevated"
+                  className="mobile-menu-close ui-button-secondary rounded-xl border border-border/60 bg-surface-secondary p-2 text-foreground transition-colors hover:bg-surface-elevated"
                   aria-label="Close navigation menu"
                 >
                   <X size={20} />
@@ -191,21 +191,22 @@ export default function Navbar({ user, logout }) {
                 variants={{ visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } } }}
               >
                 <ul className="space-y-1.5">
-                  {navItems.map((item) => (
-                    <motion.li key={item.label} variants={itemVariants}>
+                  {navItems.map(({ label, to, icon: Icon }) => (
+                    <motion.li key={label} variants={itemVariants}>
                       <NavLink
-                        to={item.to}
-                        end={item.to === '/'}
+                        to={to}
+                        end={to === '/'}
                         onClick={() => setMenuOpen(false)}
                         className={({ isActive }) =>
-                          `block rounded-xl px-4 py-3 text-base font-semibold transition-all duration-200 ${
+                          `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition-all duration-200 ${
                             isActive
                               ? 'bg-accent-muted text-accent'
                               : 'text-foreground-muted hover:bg-surface-secondary hover:text-foreground'
                           }`
                         }
                       >
-                        {item.label}
+                        <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+                        <span>{label}</span>
                       </NavLink>
                     </motion.li>
                   ))}

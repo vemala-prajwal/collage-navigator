@@ -15,7 +15,7 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
       whileHover={reduceMotion ? undefined : { y: -1 }}
       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border/60 bg-surface-secondary/70 px-3 py-2 text-foreground backdrop-blur-sm transition-all duration-300 hover:border-accent/50 hover:bg-surface-elevated/80 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
+      className={`ui-button-secondary inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border/60 bg-surface-secondary/70 px-3 py-2 text-foreground backdrop-blur-sm transition-all duration-300 hover:border-accent/50 hover:bg-surface-elevated/80 focus:outline-none focus:ring-2 focus:ring-accent/30 ${className}`}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {/* Icon track */}

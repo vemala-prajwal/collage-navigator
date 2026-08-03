@@ -15,12 +15,12 @@ const listVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const pinVariants = {
-  hover: { scale: 1.08 },
-  tap: { scale: 0.94 },
+  hover: { scale: 1.03 },
+  tap: { scale: 0.98 },
 };
 
 const statusMap = {
@@ -85,37 +85,48 @@ export default function MapSearchPage() {
   ];
 
   const searchPanel = (
-    <div className="premium-card p-3.5 sm:p-4">
-      <div className="relative flex items-center gap-3 rounded-xl border border-border/50 bg-background/60 px-4 py-3 backdrop-blur-sm">
-        <Search className="text-accent/70" size={18} />
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search locations, dining, or buildings"
-          aria-label="Search campus locations"
-          className="w-full bg-transparent pr-8 text-sm text-foreground outline-none placeholder:text-foreground-muted/50"
-        />
-        {query ? (
-          <button
-            type="button"
-            onClick={() => setQuery('')}
-            className="absolute right-3 inline-flex rounded-md p-1 text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
-            aria-label="Clear search"
-          >
-            <X size={15} />
-          </button>
-        ) : null}
+    <div className="card-surface premium-card card-static search-panel">
+      <div className="card-header">
+        <div className="card-header__main">
+          <span className="card-header__icon" aria-hidden="true">
+            <Search size={16} strokeWidth={1.8} />
+          </span>
+          <span className="card-title">Search campus locations</span>
+        </div>
       </div>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-foreground-muted">
-        {loading ? 'Searching campus data…' : `${results.length} locations found`}
-      </p>
+      <div className="card-body">
+        <div className="search-field relative flex items-center gap-3 rounded-lg border border-border/50 bg-surface-secondary px-4 py-3">
+          <Search className="text-accent/70" size={18} />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search locations, dining, or buildings"
+            aria-label="Search campus locations"
+            className="w-full bg-transparent pr-8 text-sm text-foreground outline-none placeholder:text-foreground-muted/50"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="absolute right-3 inline-flex rounded-md p-1 text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X size={15} />
+            </button>
+          ) : null}
+        </div>
+        <p className="card-label">
+          {loading ? 'Searching campus data…' : `${results.length} locations found`}
+        </p>
+      </div>
     </div>
   );
 
   return (
-    <div>
+    <div className="map-page">
       <PageHeader
+        icon={MapPin}
         eyebrow="Map search"
         title="Search campus locations with a live map and instant results."
         description="Browse every building, classroom, and dining point on the campus map while results update in real time."
@@ -123,7 +134,7 @@ export default function MapSearchPage() {
         {searchPanel}
       </PageHeader>
 
-      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="space-y-3">
           {loading ? (
             <div className="space-y-3">
@@ -134,12 +145,20 @@ export default function MapSearchPage() {
           ) : (
               <motion.div initial="hidden" animate="visible" variants={listVariants} className="space-y-3">
               {results.length === 0 ? (
-                <div className="flat-card p-10 text-center">
-                  <Search className="mx-auto h-8 w-8 text-accent/70" />
-                  <h2 className="mt-4 font-display text-xl font-bold text-foreground">No locations found</h2>
-                  <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-foreground-muted">
-                    Try a building name, room number, or facility type.
-                  </p>
+                <div className="card-surface flat-card empty-state">
+                  <div className="card-header">
+                    <div className="card-header__main">
+                      <span className="card-header__icon" aria-hidden="true">
+                        <Search size={16} strokeWidth={1.8} />
+                      </span>
+                      <h2 className="card-title">No locations found</h2>
+                    </div>
+                  </div>
+                  <div className="card-body">
+                    <p className="max-w-sm text-sm leading-relaxed text-foreground-muted">
+                      Try a building name, room number, or facility type.
+                    </p>
+                  </div>
                 </div>
               ) : null}
               {results.map((location, index) => {
@@ -153,28 +172,32 @@ export default function MapSearchPage() {
                   >
                     <Link to={`/locations/${location?._id}`}>
                       <Card
-                        className={`group cursor-pointer ${isSelected ? 'border-accent/40 ring-2 ring-accent/15' : ''}`}
-                        onMouseEnter={() => setSelectedId(location?._id)}
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div className="max-w-xl">
-                            <p className="eyebrow text-[0.65rem]">{location?.type || 'Campus point'}</p>
-                            <h2 className="mt-2 font-display text-xl font-bold text-foreground transition-colors group-hover:text-accent sm:text-2xl">{location?.name}</h2>
-                            <p className="mt-2 text-sm text-foreground-muted">
-                              {location?.building} • Floor {location?.floor}
-                            </p>
-                          </div>
+                        icon={MapPin}
+                        title={location?.name || 'Campus location'}
+                        status={
                           <Badge status={status}>
                             {status === 'available' ? 'Open now' : status === 'limited' ? 'Limited' : 'Closed'}
                           </Badge>
-                        </div>
-                        <div className="mt-5 flex flex-wrap gap-2 text-xs text-foreground-muted">
-                          <span className="data-chip">
-                            ID {location?._id?.slice(-4) || '----'}
-                          </span>
-                          <span className="data-chip">
-                            {location?.building}
-                          </span>
+                        }
+                        className={`cursor-pointer location-result ${isSelected ? 'card-selected' : ''}`}
+                        onMouseEnter={() => setSelectedId(location?._id)}
+                      >
+                        <div className="flex flex-col gap-3">
+                          <span className="card-label">{location?.type || 'Campus point'}</span>
+                          <div className="card-data-grid card-data-grid--two">
+                            <div className="card-data-item">
+                              <span className="card-label">Building</span>
+                              <span className="card-value text-base">{location?.building || 'Unassigned'}</span>
+                            </div>
+                            <div className="card-data-item">
+                              <span className="card-label">Floor</span>
+                              <span className="card-value">{location?.floor ?? '—'}</span>
+                            </div>
+                          </div>
+                          <div className="card-meta-row">
+                            <span className="card-label">Record</span>
+                            <span>{location?._id?.slice(-4) || '----'}</span>
+                          </div>
                         </div>
                       </Card>
                     </Link>
@@ -185,68 +208,82 @@ export default function MapSearchPage() {
           )}
         </section>
 
-        <section className="glass-panel relative overflow-hidden rounded-2xl p-4 sm:p-5">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow text-[0.62rem]">Live map</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">Campus points in view</p>
+        <section className="card-surface glass-panel map-shell relative">
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon" aria-hidden="true">
+                <MapPin size={16} strokeWidth={1.8} />
+              </span>
+              <div>
+                <p className="eyebrow">Live map</p>
+                <p className="card-title">Campus points in view</p>
+              </div>
             </div>
-            <span className="data-chip text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              Live
-            </span>
+            <Badge status="available">Live</Badge>
           </div>
-          <div className="map-stage relative h-[440px] sm:h-[520px]">
-            {loading ? (
-              <div className="absolute inset-0 shimmer" />
-            ) : (
-              <div className="relative h-full">
-                <div className="hero-preview-grid absolute inset-0 opacity-40" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/40" />
-                {pinLayout.slice(0, Math.min(results.length, pinLayout.length)).map((position, index) => {
-                  const location = results[index] || results[0];
-                  const isActive = selectedId === location?._id;
+          <div className="card-body">
+            <div className="map-stage relative h-[440px] sm:h-[520px]">
+              {loading ? (
+                <div className="absolute inset-0 shimmer" />
+              ) : (
+                <div className="relative h-full">
+                  {pinLayout.slice(0, Math.min(results.length, pinLayout.length)).map((position, index) => {
+                    const location = results[index] || results[0];
+                    const isActive = selectedId === location?._id;
 
-                  return (
-                    <motion.button
-                      key={`${position.left}-${position.top}`}
-                      type="button"
-                      onClick={() => setSelectedId(location?._id)}
-                      whileHover="hover"
-                      whileTap="tap"
-                      variants={pinVariants}
-                      aria-label={`Select ${location?.name || 'location'}`}
-                      aria-pressed={isActive}
-                      className={`absolute grid h-12 w-12 place-items-center rounded-full border border-border/50 bg-surface/90 text-foreground shadow-card backdrop-blur-sm transition-all duration-300 dark:shadow-none dark:bg-surface/80 sm:h-14 sm:w-14 ${
-                        isActive ? 'border-accent/50 ring-4 ring-accent/20 dark:shadow-glow' : ''
-                      }`}
-                      style={position}
-                    >
-                      <MapPin className="h-6 w-6 text-accent" />
-                    </motion.button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    return (
+                      <motion.button
+                        key={`${position.left}-${position.top}`}
+                        type="button"
+                        onClick={() => setSelectedId(location?._id)}
+                        whileHover="hover"
+                        whileTap="tap"
+                        variants={pinVariants}
+                        aria-label={`Select ${location?.name || 'location'}`}
+                        aria-pressed={isActive}
+                        className={`map-pin absolute grid h-12 w-12 place-items-center rounded-full border border-border/50 bg-surface text-foreground transition-all duration-300 sm:h-14 sm:w-14 ${
+                          isActive ? 'is-active border-accent/50 ring-4 ring-accent/20' : ''
+                        }`}
+                        style={position}
+                      >
+                        <MapPin className="h-6 w-6 text-accent" />
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-          <div className="relative mt-4 premium-card p-5 text-sm">
-            <p className="eyebrow mb-3 text-[0.65rem]">Selected location</p>
-            {selectedId ? (
-              <div className="space-y-2">
-                <p className="text-base font-semibold text-foreground">
-                  {results.find((location) => location?._id === selectedId)?.name || 'Campus location'}
-                </p>
-                <p className="text-sm text-foreground-muted">
-                  Open the location page to leave feedback and see full details.
-                </p>
-                <Link to={`/locations/${selectedId}`} className="inline-block text-sm font-semibold text-accent hover:underline">
-                  View details →
-                </Link>
+            <div className="card-surface premium-card card-static selected-location text-sm">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true">
+                    <MapPin size={16} strokeWidth={1.8} />
+                  </span>
+                  <span className="card-title">Selected location</span>
+                </div>
               </div>
-            ) : (
-              <p className="text-sm text-foreground-muted">Tap a pin to highlight a location on the map.</p>
-            )}
+              {selectedId ? (
+                <div className="card-body">
+                  <div className="card-data-item">
+                    <span className="card-label">Destination</span>
+                    <span className="card-value text-base">
+                      {results.find((location) => location?._id === selectedId)?.name || 'Campus location'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground-muted">
+                    Open the location page to leave feedback and see full details.
+                  </p>
+                  <Link to={`/locations/${selectedId}`} className="text-sm font-semibold text-accent hover:underline">
+                    View details →
+                  </Link>
+                </div>
+              ) : (
+                <div className="card-body">
+                  <p className="text-sm text-foreground-muted">Tap a pin to highlight a location on the map.</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>

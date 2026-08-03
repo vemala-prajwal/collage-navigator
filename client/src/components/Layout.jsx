@@ -15,7 +15,13 @@ export default function Layout({ children }) {
     <div className="relative min-h-screen bg-background text-foreground transition-colors duration-300">
       <AmbientBackground />
       <Navbar user={user} logout={handleLogout} />
-      <main className={isHome ? 'relative pt-[4.5rem]' : 'relative mx-auto max-w-6xl px-4 pb-12 pt-[4.5rem] md:px-6'}>
+      <main
+        className={
+          isHome
+            ? 'main--home relative pt-[4.5rem]'
+            : 'main--page relative mx-auto max-w-6xl px-4 pb-12 pt-[4.5rem] md:px-6'
+        }
+      >
         {children}
       </main>
       {isHome ? <Footer /> : null}

@@ -73,10 +73,10 @@ function LoginPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleSubmit} className="auth-form space-y-3" noValidate>
         {error && (
           <div
-            className="flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
+            className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
             role="alert"
           >
             <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
@@ -123,6 +123,15 @@ function LoginPage() {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </AuthField>
+
+        <div className="-mt-2 flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-semibold text-accent transition-colors hover:text-accent-strong"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"

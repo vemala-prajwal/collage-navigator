@@ -29,7 +29,7 @@ export default function StarRating({ value, onChange }) {
             onMouseEnter={() => setHoverValue(star)}
             onMouseLeave={() => setHoverValue(0)}
             onClick={() => onChange(star)}
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface-secondary text-foreground-muted transition-colors duration-200 hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+            className="rating-star relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface-secondary text-foreground-muted transition-colors duration-200 hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
             aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
           >
             <motion.span

@@ -188,10 +188,10 @@ function RegisterPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleSubmit} className="auth-form space-y-3" noValidate>
         {error && (
           <div
-            className="flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
+            className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
             role="alert"
           >
             <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
@@ -209,7 +209,7 @@ function RegisterPage() {
           </div>
         )}
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <AuthField label="Full name" htmlFor="name" icon={<User size={16} />}>
             <input
               id="name"

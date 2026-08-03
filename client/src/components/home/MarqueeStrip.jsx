@@ -18,7 +18,7 @@ export default function MarqueeStrip({ items = DEFAULT_ITEMS, stats = null }) {
   return (
     <section
       id="discover"
-      className="relative overflow-hidden py-8"
+      className="marquee-strip relative overflow-hidden py-8"
       style={{
         background: 'rgb(var(--color-surface-secondary)/0.4)',
         borderTop:    '1px solid rgb(var(--color-border)/0.3)',
@@ -28,7 +28,7 @@ export default function MarqueeStrip({ items = DEFAULT_ITEMS, stats = null }) {
       {/* Top gradient line */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: 'var(--gradient-accent)' }}
+        style={{ background: 'rgb(var(--ui-accent))' }}
         aria-hidden="true"
       />
 

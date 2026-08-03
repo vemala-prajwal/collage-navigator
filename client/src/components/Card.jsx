@@ -2,24 +2,42 @@ import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 
 const variantClasses = {
-  default: '',
-  glass: 'border-border/40 bg-surface/60 backdrop-blur-xl',
-  elevated: 'border-border/50 bg-surface-elevated/80 shadow-soft',
+  default: 'ui-card--primary',
+  glass: 'ui-card--quiet',
+  elevated: 'ui-card--raised',
 };
 
-export default function Card({ children, variant = 'default', hover = true, className = '', ...props }) {
-  const isPremium = variant === 'default';
-
+export default function Card({
+  children,
+  variant = 'default',
+  hover = true,
+  icon: Icon,
+  title,
+  status,
+  className = '',
+  ...props
+}) {
   return (
     <motion.div
-      className={`relative overflow-hidden rounded-2xl border p-6 transition-all duration-500 ease-premium ${
-        isPremium
-          ? `premium-card ${hover ? '' : 'premium-card-no-hover'}`
-          : `border ${variantClasses[variant] || variantClasses.glass}`
-      } ${className}`}
+      className={`ui-card card-surface ${
+        variantClasses[variant] || variantClasses.glass
+      } ${hover ? 'card-interactive' : 'card-static'} ${className}`}
       {...props}
     >
-      {children}
+      {title || Icon || status ? (
+        <div className="card-header">
+          <div className="card-header__main">
+            {Icon ? (
+              <span className="card-header__icon" aria-hidden="true">
+                <Icon size={16} strokeWidth={1.8} />
+              </span>
+            ) : null}
+            {title ? <h2 className="card-title">{title}</h2> : null}
+          </div>
+          {status ? <div className="card-header__status">{status}</div> : null}
+        </div>
+      ) : null}
+      <div className="card-body">{children}</div>
     </motion.div>
   );
 }
@@ -28,5 +46,8 @@ Card.propTypes = {
   children: PropTypes.node.isRequired,
   variant: PropTypes.oneOf(['default', 'glass', 'elevated']),
   hover: PropTypes.bool,
+  icon: PropTypes.elementType,
+  title: PropTypes.node,
+  status: PropTypes.node,
   className: PropTypes.string,
 };

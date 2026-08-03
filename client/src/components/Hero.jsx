@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import HeroPreview from './home/HeroPreview';
 import RealLogo from './RealLogo';
+import Badge from './Badge';
 import { premiumTransition, staggerContainer, fadeUp } from '../lib/motion';
 
 const QUICK_STATS = [
@@ -15,7 +16,7 @@ export default function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative flex min-h-[calc(100vh-4.5rem)] flex-col overflow-hidden pt-10 sm:pt-14 lg:pt-20">
+    <section className="hero-section relative flex min-h-[calc(100vh-4.5rem)] flex-col overflow-hidden pt-10 sm:pt-14 lg:pt-20">
       {/* Background gradients */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -51,20 +52,21 @@ export default function Hero() {
             initial={reduceMotion ? false : 'hidden'}
             animate="visible"
             variants={staggerContainer(0.1, 0.05)}
+            className="hero-copy"
           >
             {/* Eyebrow pill */}
-              <motion.div variants={fadeUp} className="mb-7">
-              <span className="glow-pill">
+              <motion.div variants={fadeUp} className="hero-kicker-wrap mb-7">
+              <span className="hero-kicker">
                 <span
                   className="inline-block h-1.5 w-1.5 rounded-full"
-                  style={{ background: 'var(--gradient-accent)' }}
+                  style={{ background: 'rgb(var(--ui-accent))' }}
                 />
                 Campus navigation, reimagined
               </span>
             </motion.div>
 
             {/* Headline */}
-            <motion.h1 variants={fadeUp} className="display-headline">
+            <motion.h1 variants={fadeUp} className="hero-title display-headline">
               <span className="text-foreground">Find your way</span>
               <br />
               <span className="text-gradient relative inline-block">
@@ -72,7 +74,7 @@ export default function Hero() {
                 {/* Underline beam */}
                 <span
                   className="absolute -bottom-2 left-0 h-1 w-full rounded-full opacity-50"
-                  style={{ background: 'var(--gradient-accent)' }}
+                  style={{ background: 'rgb(var(--ui-accent))' }}
                 />
               </span>
               <br />
@@ -91,7 +93,7 @@ export default function Hero() {
             </motion.p>
 
             {/* CTA buttons */}
-            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-5">
+            <motion.div variants={fadeUp} className="hero-actions mt-10 flex flex-wrap items-center gap-5">
               <Link to="/map-search">
                 <button
                   type="button"
@@ -111,18 +113,25 @@ export default function Hero() {
             </motion.div>
 
             {/* Stats pills */}
-            <motion.div variants={fadeUp} className="mt-12 flex flex-wrap gap-3">
+            <motion.div variants={fadeUp} className="hero-stats mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {QUICK_STATS.map((stat) => {
                 return (
                   <div
                     key={stat.label}
-                    className="flex items-center gap-2 rounded-full border border-border/50 bg-surface/70 px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-md dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    className="card-surface card-static hero-stat"
                   >
-                    <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt={`${stat.label} logo`} />
-                    <span className="font-display text-sm font-bold text-foreground">{stat.value}</span>
-                    <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
-                      {stat.label}
-                    </span>
+                    <div className="card-header">
+                      <div className="card-header__main">
+                        <span className="card-header__icon" aria-hidden="true">
+                          <RealLogo slug={stat.logo} color="8b5cf6" size={13} alt="" />
+                        </span>
+                        <span className="card-title">{stat.label}</span>
+                      </div>
+                    </div>
+                    <div className="card-data-item">
+                      <span className="card-label">Current value</span>
+                      <span className="card-value">{stat.value}</span>
+                    </div>
                   </div>
                 );
               })}
@@ -134,28 +143,38 @@ export default function Hero() {
             initial={reduceMotion ? false : { opacity: 0, x: 48, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ ...premiumTransition(0.8), delay: 0.15 }}
-            className="relative"
+            className="hero-visual relative"
           >
             {/* Floating badge — top right */}
-            <div className="absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_16px_40px_rgb(15_10_40/0.10)] backdrop-blur-xl dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_rgb(0_0_0/0.4)]">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg"
-                    style={{ background: 'var(--gradient-accent)' }}>
-                <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
-              </span>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Status</p>
-                <p className="text-xs font-bold text-foreground">Live Updates</p>
+            <div className="card-surface card-static hero-live-card hero-float-card absolute -right-4 -top-4 z-20">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true">
+                    <RealLogo slug="googlemaps" color="8b5cf6" size={14} alt="" />
+                  </span>
+                  <span className="card-title">Status</span>
+                </div>
+                <Badge status="available">Live</Badge>
+              </div>
+              <div className="card-data-item">
+                <span className="card-label">Current state</span>
+                <span className="card-value text-sm">Live updates</span>
               </div>
             </div>
 
             {/* Floating badge — bottom left */}
-            <div className="absolute -bottom-4 -left-4 z-20 flex items-center gap-2 rounded-2xl border border-border/50 bg-surface/90 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_16px_40px_rgb(15_10_40/0.10)] backdrop-blur-xl dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_rgb(0_0_0/0.4)]">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/15">
-                <RealLogo slug="googlestreetview" color="10b981" size={14} alt="Street View logo" />
-              </span>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Rating</p>
-                <p className="text-xs font-bold text-foreground">4.9 / 5.0</p>
+            <div className="card-surface card-static hero-rating-card hero-float-card absolute -bottom-4 -left-4 z-20">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true">
+                    <RealLogo slug="googlestreetview" color="10b981" size={14} alt="" />
+                  </span>
+                  <span className="card-title">Rating</span>
+                </div>
+              </div>
+              <div className="card-data-item">
+                <span className="card-label">Average score</span>
+                <span className="card-value text-sm">4.9 / 5.0</span>
               </div>
             </div>
 
@@ -165,9 +184,9 @@ export default function Hero() {
 
         {/* ── Scroll cue ── */}
         {!reduceMotion ? (
-          <a
-            href="#discover"
-            className="mt-12 flex flex-col items-center gap-2 self-center text-foreground-muted hover:text-foreground lg:mt-8"
+            <a
+              href="#discover"
+              className="hero-scroll-cue mt-12 flex flex-col items-center gap-2 self-center text-foreground-muted hover:text-foreground lg:mt-8"
             aria-label="Scroll to discover more"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.28em]">Discover</span>

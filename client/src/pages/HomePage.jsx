@@ -52,7 +52,7 @@ export default function HomePage() {
   }, [locations]);
 
   return (
-    <div>
+    <div className="home-page">
       <Hero />
       <MarqueeStrip items={marqueeData.items} stats={marqueeData.stats} />
       <ProcessSection />

@@ -3,6 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import LocationDetailPage from './pages/LocationDetailPage';
 import CanteenPage from './pages/CanteenPage';
 import MapSearchPage from './pages/MapSearchPage';
@@ -22,6 +24,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/map-search" element={<MapSearchPage />} />
               <Route path="/locations/:id" element={<LocationDetailPage />} />
               <Route path="/canteen" element={<CanteenPage />} />
@@ -31,7 +35,7 @@ function App() {
             <Toaster
               position="top-right"
               toastOptions={{
-                className: '!bg-surface !text-foreground !border !border-border !shadow-elevated',
+                 className: 'toast-surface !border !shadow-elevated',
               }}
             />
           </Layout>

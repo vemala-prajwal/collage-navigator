@@ -21,6 +21,12 @@ import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import Badge from '../components/Badge';
 
+const canteenStatusLabel = {
+  available: 'Available',
+  limited: 'Limited',
+  soldOut: 'Sold out',
+};
+
 export default function AdminPage() {
   // Password protection state
   const [isAdminAuth, setIsAdminAuth] = useState(() => {
@@ -149,23 +155,26 @@ export default function AdminPage() {
   // If not authenticated, render password lock screen
   if (!isAdminAuth) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center py-12 px-4">
+      <div className="admin-page flex min-h-[70vh] items-center justify-center py-12 px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flat-card w-full max-w-md p-8 sm:p-10 shadow-elevated"
+          className="card-surface flat-card admin-lock-card w-full max-w-md"
         >
-          <div className="flex flex-col items-center text-center">
-            <div className="icon-well text-accent mb-4 p-4 rounded-2xl bg-accent/10 border-accent/20">
-              <Lock size={32} />
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon admin-lock-icon text-accent" aria-hidden="true">
+                <Lock size={16} strokeWidth={1.8} />
+              </span>
+              <h2 className="card-title">Admin Portal Access</h2>
             </div>
-            <h2 className="font-display text-2xl font-bold text-foreground">Admin Portal Access</h2>
-            <p className="mt-2 text-sm text-foreground-muted">
+          </div>
+          <div className="card-body">
+            <p className="text-sm text-foreground-muted">
               Enter your credentials to unlock campus management tools.
             </p>
-          </div>
 
-          <form onSubmit={handleAdminLogin} className="mt-8 space-y-5">
+          <form onSubmit={handleAdminLogin} className="flex flex-col gap-3">
             {authError && (
               <div className="flex items-center gap-2 rounded-xl border border-error/30 bg-error/10 p-3 text-xs font-semibold text-error">
                 <AlertCircle size={16} />
@@ -219,6 +228,7 @@ export default function AdminPage() {
               Authenticate Portal
             </Button>
           </form>
+          </div>
         </motion.div>
       </div>
     );
@@ -330,9 +340,10 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="space-y-10 pb-16">
+    <div className="admin-page space-y-10 pb-16">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader
+          icon={ShieldCheck}
           eyebrow="Admin Dashboard"
           title="Campus Control Panel"
           description="Manage campus locations, map markers, canteen live menu items, and view system status."
@@ -340,77 +351,69 @@ export default function AdminPage() {
       </div>
 
       {/* Overview Metric Cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flat-card p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-              Locations Mapped
-            </span>
-            <div className="icon-well text-accent">
-              <MapPin size={18} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="card-surface flat-card admin-metric">
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon" aria-hidden="true"><MapPin size={16} strokeWidth={1.8} /></span>
+              <span className="card-title">Locations mapped</span>
             </div>
           </div>
-          <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {safeLocations.length}
-          </p>
-          <p className="mt-1 text-xs text-foreground-muted">Verified campus points</p>
+          <div className="card-data-item">
+            <span className="card-label">Verified campus points</span>
+            <span className="card-value">{safeLocations.length}</span>
+          </div>
         </div>
 
-        <div className="flat-card p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-              Canteen Items
-            </span>
-            <div className="icon-well text-accent2">
-              <UtensilsCrossed size={18} />
+        <div className="card-surface flat-card admin-metric">
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon" aria-hidden="true"><UtensilsCrossed size={16} strokeWidth={1.8} /></span>
+              <span className="card-title">Canteen items</span>
             </div>
           </div>
-          <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {safeCanteenItems.length}
-          </p>
-          <p className="mt-1 text-xs text-foreground-muted">Live menu items</p>
+          <div className="card-data-item">
+            <span className="card-label">Live menu items</span>
+            <span className="card-value">{safeCanteenItems.length}</span>
+          </div>
         </div>
 
-        <div className="flat-card p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-              Buildings Covered
-            </span>
-            <div className="icon-well text-success">
-              <Building size={18} />
+        <div className="card-surface flat-card admin-metric">
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon" aria-hidden="true"><Building size={16} strokeWidth={1.8} /></span>
+              <span className="card-title">Buildings covered</span>
             </div>
           </div>
-          <p className="mt-4 font-display text-3xl font-bold text-foreground">
-            {new Set(safeLocations.map((l) => l?.building).filter(Boolean)).size || 0}
-          </p>
-          <p className="mt-1 text-xs text-foreground-muted">Unique campus structures</p>
+          <div className="card-data-item">
+            <span className="card-label">Unique campus structures</span>
+            <span className="card-value">{new Set(safeLocations.map((l) => l?.building).filter(Boolean)).size || 0}</span>
+          </div>
         </div>
 
-        <div className="flat-card p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-              System Health
-            </span>
-            <div className="icon-well text-emerald-400">
-              <ShieldCheck size={18} />
+        <div className="card-surface flat-card admin-metric">
+          <div className="card-header">
+            <div className="card-header__main">
+              <span className="card-header__icon" aria-hidden="true"><ShieldCheck size={16} strokeWidth={1.8} /></span>
+              <span className="card-title">System health</span>
             </div>
+            <Badge status="available">Operational</Badge>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-display text-xl font-bold text-emerald-500">Operational</span>
+          <div className="card-data-item">
+            <span className="card-label">Sync rate</span>
+            <span className="card-value">100%</span>
           </div>
-          <p className="mt-1 text-xs text-foreground-muted">100% sync rate</p>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/40 pb-4">
+      <div className="admin-tabs flex flex-wrap items-center justify-between gap-4 border-b border-border/40 pb-4">
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('locations')}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
               activeTab === 'locations'
-                ? 'bg-accent text-white shadow-glow'
+                ? 'admin-tab-active bg-accent text-white shadow-glow'
                 : 'border border-border/50 bg-surface-secondary/40 text-foreground-muted hover:text-foreground'
             }`}
           >
@@ -422,7 +425,7 @@ export default function AdminPage() {
             onClick={() => setActiveTab('canteen')}
             className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
               activeTab === 'canteen'
-                ? 'bg-accent text-white shadow-glow'
+                ? 'admin-tab-active bg-accent text-white shadow-glow'
                 : 'border border-border/50 bg-surface-secondary/40 text-foreground-muted hover:text-foreground'
             }`}
           >
@@ -455,15 +458,17 @@ export default function AdminPage() {
 
       {/* TAB 1: LOCATIONS MANAGEMENT */}
       {activeTab === 'locations' && (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {/* Add Location Form */}
-          <div className="flat-card p-6 lg:col-span-1 h-fit">
-            <div className="flex items-center gap-2 text-accent font-bold text-lg mb-4">
-              <Plus size={20} />
-              <span>Add New Location</span>
+          <div className="card-surface flat-card admin-form-card lg:col-span-1 h-fit">
+            <div className="card-header">
+              <div className="card-header__main">
+                <span className="card-header__icon" aria-hidden="true"><Plus size={16} strokeWidth={1.8} /></span>
+                <span className="card-title">Add new location</span>
+              </div>
             </div>
 
-            <form onSubmit={handleAddLocation} className="space-y-4 text-sm">
+            <form onSubmit={handleAddLocation} className="card-body text-sm">
               <div>
                 <label className="block font-medium text-foreground-muted mb-1">
                   Location Name *
@@ -546,35 +551,47 @@ export default function AdminPage() {
               />
             </div>
 
-            <div className="divide-y divide-border/40 rounded-2xl border border-border/50 bg-surface/60 backdrop-blur-md overflow-hidden">
+            <div className="card-surface admin-list flex flex-col gap-3">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true"><MapPin size={16} strokeWidth={1.8} /></span>
+                  <span className="card-title">Mapped locations</span>
+                </div>
+              </div>
               {filteredLocations.length === 0 ? (
-                <div className="p-8 text-center text-foreground-muted">
+                <div className="p-4 text-center text-sm text-foreground-muted">
                   No locations found matching your filter.
                 </div>
               ) : (
                 filteredLocations.map((location) => (
                   <div
                     key={location._id}
-                    className="flex flex-wrap items-center justify-between gap-4 p-4 hover:bg-surface-secondary/50 transition"
+                    className="card-surface admin-list-row flex flex-wrap items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="icon-well text-accent shrink-0">
-                        <MapPin size={18} />
-                      </div>
-                      <div>
-                        <h4 className="font-display font-bold text-foreground">
-                          {location.name}
-                        </h4>
-                        <p className="text-xs text-foreground-muted">
-                          {location.building} · Floor {location.floor} · Type: {location.type}
-                        </p>
+                    <div className="card-header__main">
+                      <span className="card-header__icon text-accent" aria-hidden="true">
+                        <MapPin size={16} strokeWidth={1.8} />
+                      </span>
+                      <div className="card-data-item">
+                        <h4 className="card-title">{location.name}</h4>
+                        <div className="card-meta-row">
+                          <span className="card-label">Building</span>
+                          <span>{location.building || 'Unassigned'}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="card-label">Floor</span>
+                          <span>{location.floor ?? '—'}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="card-label">Type</span>
+                          <span>{location.type || 'Other'}</span>
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="rounded-lg bg-surface-secondary px-2.5 py-1 text-xs font-semibold text-foreground-muted border border-border/40">
-                        ({location.coordinates?.x || 0}, {location.coordinates?.y || 0})
-                      </span>
+                      <div className="card-data-item">
+                        <span className="card-label">Coordinates</span>
+                        <span className="card-value text-sm">({location.coordinates?.x || 0}, {location.coordinates?.y || 0})</span>
+                      </div>
                       <button
                         onClick={() => handleDeleteLocation(location._id, location.name)}
                         className="rounded-xl border border-error/30 p-2 text-error hover:bg-error/10 transition"
@@ -593,15 +610,17 @@ export default function AdminPage() {
 
       {/* TAB 2: CANTEEN MENU MANAGEMENT */}
       {activeTab === 'canteen' && (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {/* Add Canteen Item Form */}
-          <div className="flat-card p-6 lg:col-span-1 h-fit">
-            <div className="flex items-center gap-2 text-accent2 font-bold text-lg mb-4">
-              <Plus size={20} />
-              <span>Add Canteen Item</span>
+          <div className="card-surface flat-card admin-form-card lg:col-span-1 h-fit">
+            <div className="card-header">
+              <div className="card-header__main">
+                <span className="card-header__icon" aria-hidden="true"><Plus size={16} strokeWidth={1.8} /></span>
+                <span className="card-title">Add canteen item</span>
+              </div>
             </div>
 
-            <form onSubmit={handleAddCanteenItem} className="space-y-4 text-sm">
+            <form onSubmit={handleAddCanteenItem} className="card-body text-sm">
               <div>
                 <label className="block font-medium text-foreground-muted mb-1">
                   Item Name *
@@ -667,26 +686,36 @@ export default function AdminPage() {
 
           {/* Canteen List */}
           <div className="space-y-4 lg:col-span-2">
-            <div className="divide-y divide-border/40 rounded-2xl border border-border/50 bg-surface/60 backdrop-blur-md overflow-hidden">
+            <div className="card-surface admin-list flex flex-col gap-3">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true"><UtensilsCrossed size={16} strokeWidth={1.8} /></span>
+                  <span className="card-title">Live canteen menu</span>
+                </div>
+              </div>
               {safeCanteenItems.length === 0 ? (
-                <div className="p-8 text-center text-foreground-muted">
+                <div className="p-4 text-center text-sm text-foreground-muted">
                   No menu items found. Add your first item using the form.
                 </div>
               ) : (
                 safeCanteenItems.map((item) => (
                   <div
                     key={item._id}
-                    className="flex flex-wrap items-center justify-between gap-4 p-4 hover:bg-surface-secondary/50 transition"
+                    className="card-surface admin-list-row flex flex-wrap items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="icon-well text-accent2 shrink-0">
-                        <UtensilsCrossed size={18} />
-                      </div>
-                      <div>
-                        <h4 className="font-display font-bold text-foreground">{item.name}</h4>
-                        <p className="text-xs text-foreground-muted">
-                          {item.category} · <span className="font-bold text-foreground">₹{item.price}</span>
-                        </p>
+                    <div className="card-header__main">
+                      <span className="card-header__icon text-accent" aria-hidden="true">
+                        <UtensilsCrossed size={16} strokeWidth={1.8} />
+                      </span>
+                      <div className="card-data-item">
+                        <h4 className="card-title">{item.name}</h4>
+                        <div className="card-meta-row">
+                          <span className="card-label">Category</span>
+                          <span>{item.category || 'Campus menu'}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="card-label">Price</span>
+                          <span className="font-semibold text-foreground">₹{item.price}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -696,7 +725,7 @@ export default function AdminPage() {
                         className="cursor-pointer"
                         title="Click to toggle status"
                       >
-                        <Badge status={item.status}>{item.status}</Badge>
+                        <Badge status={item.status}>{canteenStatusLabel[item.status] || 'Available'}</Badge>
                       </button>
 
                       <button

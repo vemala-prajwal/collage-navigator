@@ -1,15 +1,27 @@
 import PropTypes from 'prop-types';
 
-export default function PageHeader({ eyebrow, title, description, children, className = '' }) {
+export default function PageHeader({ eyebrow, title, description, children, icon: Icon, status, className = '' }) {
   return (
-    <section className={`page-header relative mb-10 p-7 sm:p-9 ${className}`}>
-      <div className="page-header__grid" aria-hidden="true" />
-      <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+    <section className={`card-surface page-header relative mb-10 ${className}`}>
+      <span className="page-header__serial" aria-hidden="true">CN / FIELD 01</span>
+      <div className="page-header__layout relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
-          {eyebrow ? <p className="eyebrow mb-4">{eyebrow}</p> : null}
-          <h1 className="font-display text-display-md font-extrabold leading-tight text-foreground">{title}</h1>
+          <div className="card-header page-header__header">
+            <div className="card-header__main">
+              {Icon ? (
+                <span className="card-header__icon" aria-hidden="true">
+                  <Icon size={18} strokeWidth={1.8} />
+                </span>
+              ) : null}
+              <div>
+                {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+                <h1 className="font-display text-display-md font-extrabold leading-tight text-foreground">{title}</h1>
+              </div>
+            </div>
+            {status ? <div className="card-header__status">{status}</div> : null}
+          </div>
           {description ? (
-            <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-foreground-muted">{description}</p>
+            <p className="max-w-xl text-[0.95rem] leading-relaxed text-foreground-muted">{description}</p>
           ) : null}
         </div>
         {children ? <div className="relative w-full shrink-0 lg:max-w-sm">{children}</div> : null}
@@ -23,5 +35,7 @@ PageHeader.propTypes = {
   title: PropTypes.node.isRequired,
   description: PropTypes.node,
   children: PropTypes.node,
+  icon: PropTypes.elementType,
+  status: PropTypes.node,
   className: PropTypes.string,
 };

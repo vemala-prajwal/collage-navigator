@@ -19,12 +19,17 @@ export function SkeletonText({ lines = 3, className = '' }) {
 
 export function SkeletonCard({ className = '' }) {
   return (
-    <div className={`glass-panel rounded-xl p-6 ${className}`} aria-hidden="true">
-      <Skeleton className="mb-4 h-5 w-2/5" />
-      <Skeleton className="mb-3 h-4 w-3/4" />
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Skeleton className="h-10 rounded-xl" />
-        <Skeleton className="h-10 rounded-xl" />
+    <div className={`card-surface skeleton-card ${className}`} aria-hidden="true">
+      <div className="card-header">
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-4 w-2/5" />
+      </div>
+      <div className="card-body">
+        <Skeleton className="h-4 w-3/4" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Skeleton className="h-10 rounded-md" />
+          <Skeleton className="h-10 rounded-md" />
+        </div>
       </div>
     </div>
   );

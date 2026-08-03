@@ -2,12 +2,11 @@ import PropTypes from 'prop-types';
 import { motion, useReducedMotion } from 'framer-motion';
 
 const variantStyles = {
-  primary:
-    'btn-gradient relative overflow-hidden text-white focus:ring-accent/40',
+  primary: 'ui-button-primary text-white focus:ring-accent/40',
   secondary:
-    'border border-border/70 bg-surface-secondary/60 text-foreground backdrop-blur-sm hover:border-accent/50 hover:bg-surface-elevated/80 focus:ring-accent/30',
+    'ui-button-secondary focus:ring-accent/30',
   ghost:
-    'bg-transparent text-foreground ring-1 ring-border/60 hover:bg-surface-secondary/60 focus:ring-accent/30',
+    'ui-button-ghost focus:ring-accent/30',
 };
 
 export default function Button({
@@ -21,7 +20,7 @@ export default function Button({
 }) {
   const reduceMotion = useReducedMotion();
   const baseClasses =
-    'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 ease-premium focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60';
+    'ui-button inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 ease-premium focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60';
 
   const combined = `${baseClasses} ${variantStyles[variant] || variantStyles.primary} ${className}`;
 
@@ -30,7 +29,7 @@ export default function Button({
     : {
         whileHover: { y: -1 },
         whileTap: { scale: 0.985 },
-        transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
+         transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
       };
 
   const inner = (

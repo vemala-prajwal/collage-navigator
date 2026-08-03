@@ -13,12 +13,12 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative overflow-hidden border-t border-border/30 py-16">
+    <footer className="site-footer relative overflow-hidden border-t border-border/30 py-16">
       {/* Top gradient line */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.5), rgb(var(--color-accent2)/0.4), transparent)',
+           background: 'rgb(var(--ui-accent))',
         }}
         aria-hidden="true"
       />
@@ -38,8 +38,8 @@ export default function Footer() {
           <div>
             <Link to="/" className="group flex items-center gap-2.5 font-display text-xl font-bold">
               <span
-                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
-                style={{ background: 'var(--gradient-accent)' }}
+                className="brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+                style={{ background: 'rgb(var(--ui-accent))' }}
               >
                 <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
               </span>

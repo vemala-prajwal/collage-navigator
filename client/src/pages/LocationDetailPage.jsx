@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Building2, MapPin, MessageSquare, Star } from 'lucide-react';
 import api from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -10,7 +11,13 @@ import { Skeleton, SkeletonCard } from '../components/Skeleton';
 
 const feedbackVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const statusMap = {
+  available: 'available',
+  limited: 'limited',
+  soldOut: 'soldOut',
 };
 
 export default function LocationDetailPage() {
@@ -52,6 +59,8 @@ export default function LocationDetailPage() {
     [data?.feedbacks]
   );
 
+  const locationStatus = statusMap[data?.location?.status];
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!rating) return;
@@ -77,58 +86,85 @@ export default function LocationDetailPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-48 w-full rounded-3xl" />
+      <div className="location-page space-y-6">
+        <Skeleton className="h-48 w-full rounded-lg" />
         <SkeletonCard />
       </div>
     );
   }
 
   return (
-    <div>
-      <section className="glass-panel mb-10 rounded-3xl p-8 sm:p-10">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div className="location-page">
+      <section className="card-surface glass-panel location-hero mb-10">
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="eyebrow">Location details</p>
-            <h1 className="mt-3 font-display text-display-md font-extrabold text-foreground">
-              {data?.location?.name}
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-foreground-muted">
+            <div className="card-header">
+              <div className="card-header__main">
+                <span className="card-header__icon" aria-hidden="true">
+                  <MapPin size={18} strokeWidth={1.8} />
+                </span>
+                <div>
+                  <p className="eyebrow">Location details</p>
+                  <h1 className="font-display text-display-md font-extrabold text-foreground">
+                    {data?.location?.name}
+                  </h1>
+                </div>
+              </div>
+              {locationStatus ? (
+                <Badge status={locationStatus}>
+                  {locationStatus === 'available' ? 'Open now' : locationStatus === 'limited' ? 'Limited' : 'Closed'}
+                </Badge>
+              ) : null}
+            </div>
+            <p className="max-w-2xl text-base leading-7 text-foreground-muted">
               {data?.location?.description}
             </p>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-surface-secondary p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted">Building</p>
-                <p className="mt-3 text-lg font-semibold text-foreground">{data?.location?.building}</p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="card-surface location-meta">
+                <div className="card-header">
+                  <div className="card-header__main">
+                    <span className="card-header__icon" aria-hidden="true">
+                      <Building2 size={16} strokeWidth={1.8} />
+                    </span>
+                    <span className="card-title">Building</span>
+                  </div>
+                </div>
+                <div className="card-data-item">
+                  <span className="card-label">Assigned building</span>
+                  <span className="card-value">{data?.location?.building}</span>
+                </div>
               </div>
-              <div className="rounded-xl border border-border bg-surface-secondary p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground-muted">
-                  Average rating
-                </p>
-                <p className="mt-3 text-lg font-semibold text-foreground">{data?.averageRating} / 5</p>
+              <div className="card-surface location-meta">
+                <div className="card-header">
+                  <div className="card-header__main">
+                    <span className="card-header__icon" aria-hidden="true">
+                      <Star size={16} strokeWidth={1.8} />
+                    </span>
+                    <span className="card-title">Average rating</span>
+                  </div>
+                </div>
+                <div className="card-data-item">
+                  <span className="card-label">Community score</span>
+                  <span className="card-value">{data?.averageRating} / 5</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <Card variant="elevated" hover={false}>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <p className="eyebrow text-[0.65rem]">Share your experience</p>
-                <p className="mt-2 text-sm leading-6 text-foreground-muted">
-                  Rate the location and leave a comment to help fellow students and staff.
-                </p>
+          <Card variant="elevated" hover={false} icon={MessageSquare} title="Share your experience">
+            <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+              <p className="text-sm leading-6 text-foreground-muted">
+                Rate the location and leave a comment to help fellow students and staff.
+              </p>
+
+              <div className="card-data-item">
+                <p className="card-label">Your rating</p>
+                <StarRating value={rating} onChange={setRating} />
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-foreground">Your rating</p>
-                <div className="mt-4">
-                  <StarRating value={rating} onChange={setRating} />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="feedback-comment" className="block text-sm font-semibold text-foreground">
+              <div className="card-data-item">
+                <label htmlFor="feedback-comment" className="card-label text-foreground">
                   Your feedback
                 </label>
                 <textarea
@@ -137,7 +173,7 @@ export default function LocationDetailPage() {
                   onChange={(event) => setComment(event.target.value)}
                   placeholder="Share what you liked or what could improve"
                   rows={5}
-                  className="input-field mt-3 resize-y"
+                  className="input-field resize-y"
                 />
               </div>
 
@@ -152,21 +188,15 @@ export default function LocationDetailPage() {
       <section className="space-y-6">
         <h2 className="font-display text-2xl font-bold text-foreground">Recent feedback</h2>
         {sortedFeedback.length ? (
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             {sortedFeedback.map((feedback) => (
               <motion.div key={feedback._id} initial="hidden" animate="visible" variants={feedbackVariants}>
-                <Card variant="glass">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 text-sm text-foreground-muted">
-                        <span>{feedback.userId?.name || 'Anonymous'}</span>
-                        <span>•</span>
-                        <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div className="mt-3 flex items-center gap-1 text-accent">
-                        {'★'.repeat(feedback.rating)}
-                      </div>
-                    </div>
+                <Card
+                  variant="glass"
+                  hover={false}
+                  icon={MessageSquare}
+                  title={feedback.userId?.name || 'Anonymous'}
+                  status={
                     <Badge
                       status={
                         feedback.rating >= 4 ? 'available' : feedback.rating === 3 ? 'limited' : 'soldOut'
@@ -178,8 +208,19 @@ export default function LocationDetailPage() {
                           ? 'Needs attention'
                           : 'Improve this place'}
                     </Badge>
+                  }
+                >
+                  <div className="card-data-grid card-data-grid--two">
+                    <div className="card-data-item">
+                      <span className="card-label">Posted</span>
+                      <span className="card-value text-base">{new Date(feedback.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="card-data-item">
+                      <span className="card-label">Rating</span>
+                      <span className="card-value text-accent">{'★'.repeat(feedback.rating)}</span>
+                    </div>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-foreground-muted">
+                  <p className="text-sm leading-6 text-foreground-muted">
                     {feedback.comment || 'No comment provided.'}
                   </p>
                 </Card>
@@ -187,7 +228,7 @@ export default function LocationDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-foreground-muted">No feedback yet. Be the first to leave a review.</p>
+          <p className="feedback-empty text-foreground-muted">No feedback yet. Be the first to leave a review.</p>
         )}
       </section>
     </div>

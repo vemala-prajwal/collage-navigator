@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import { motion, useReducedMotion } from 'framer-motion';
+import { MapPinned } from 'lucide-react';
+import Badge from '../Badge';
 
 const routePath = 'M 48 180 Q 120 140 180 120 T 300 80 T 420 100 T 520 60';
 
@@ -8,11 +10,18 @@ export default function HeroPreview({ className = '' }) {
 
   return (
     <div
-      className={`premium-card relative aspect-[4/3] overflow-hidden bg-surface/80 dark:bg-surface/60 ${className}`}
+      className={`card-surface premium-card premium-card--static relative aspect-[4/3] ${className}`}
       aria-hidden="true"
     >
-      <div className="hero-preview-grid absolute inset-0 opacity-50" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent dark:from-background/95 dark:via-transparent" />
+      <div className="card-header relative z-10">
+        <div className="card-header__main">
+          <span className="card-header__icon" aria-hidden="true">
+            <MapPinned size={16} strokeWidth={1.8} />
+          </span>
+          <span className="card-title">Live route</span>
+        </div>
+        <Badge status="available">Active</Badge>
+      </div>
 
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice">
         <defs>
@@ -65,20 +74,34 @@ export default function HeroPreview({ className = '' }) {
         >
           <span className="relative">
             <span className="absolute inset-0 animate-ping rounded-full bg-accent/40" style={{ animationDuration: '2s' }} />
-            <span className="relative block h-3 w-3 rounded-full border-2 border-accent bg-background shadow-[0_0_16px_rgb(var(--color-accent)/0.6)]" />
+            <span className="relative block h-3 w-3 rounded-full border-2 border-accent bg-background" />
           </span>
-          <span className="rounded-lg border border-border/40 bg-background/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground-muted backdrop-blur-md">
+          <span className="map-preview-pin-label rounded-md border border-border/40 bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
             {pin.label}
           </span>
         </motion.div>
       ))}
 
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-xl border border-border/40 bg-background/85 px-4 py-3.5 backdrop-blur-xl">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent/80">Live route</p>
-          <p className="mt-0.5 text-sm font-semibold text-foreground">Main Gate → Science Block</p>
+      <div className="card-surface card-static route-summary absolute bottom-4 left-4 right-4">
+        <div className="card-header">
+          <div className="card-header__main">
+            <span className="card-header__icon" aria-hidden="true">
+              <MapPinned size={14} strokeWidth={1.8} />
+            </span>
+            <span className="card-title">Route information</span>
+          </div>
+          <Badge status="available">Live</Badge>
         </div>
-        <span className="rounded-full bg-accent/20 px-3.5 py-1 text-xs font-bold text-accent">4 min</span>
+        <div className="card-data-grid card-data-grid--two">
+          <div className="card-data-item">
+            <span className="card-label">Route</span>
+            <span className="card-value text-sm">Main Gate → Science Block</span>
+          </div>
+          <div className="card-data-item">
+            <span className="card-label">ETA</span>
+            <span className="card-value">4 min</span>
+          </div>
+        </div>
       </div>
     </div>
   );

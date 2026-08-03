@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
+import { Activity } from 'lucide-react';
 import { Reveal, RevealItem, RevealStagger } from '../Reveal';
 import { useCountUp } from '../../lib/useCountUp';
 
@@ -10,15 +11,20 @@ function StatItem({ value, suffix, prefix, label }) {
     <RevealItem>
       <motion.div
         ref={ref}
-        className="stat-card-glow premium-card p-6 text-center"
-        whileHover={{ y: -3 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="card-surface card-static stat-card-glow text-center"
       >
-        <p className="display-stat text-gradient">{display}</p>
-        <div className="mx-auto mt-4 h-0.5 w-12 rounded-full" style={{ background: 'var(--gradient-accent)' }} />
-        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-foreground-muted">
-          {label}
-        </p>
+        <div className="card-header justify-center">
+          <div className="card-header__main">
+            <span className="card-header__icon" aria-hidden="true">
+              <Activity size={16} strokeWidth={1.8} />
+            </span>
+            <span className="card-title">{label}</span>
+          </div>
+        </div>
+        <div className="card-data-item items-center">
+          <p className="display-stat text-gradient">{display}</p>
+          <span className="card-label">Current total</span>
+        </div>
       </motion.div>
     </RevealItem>
   );
@@ -50,7 +56,7 @@ export default function StatsSection({ locationCount = 50 }) {
       />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.4), transparent)' }}
+        style={{ background: 'rgb(var(--ui-accent) / 0.35)' }}
       />
 
       <div className="section-container relative">

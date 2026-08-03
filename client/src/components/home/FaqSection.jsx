@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { HelpCircle, Plus } from 'lucide-react';
 import { Reveal } from '../Reveal';
 import { premiumTransition } from '../../lib/motion';
 
@@ -40,7 +40,7 @@ function FaqItem({ item, isOpen, onToggle }) {
       <button
         type="button"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between gap-6 py-6 text-left transition-colors duration-300 ${
+        className={`flex w-full items-center justify-between gap-3 py-3 text-left transition-colors duration-300 ${
           isOpen ? 'text-accent' : 'hover:text-accent'
         }`}
         aria-expanded={isOpen}
@@ -63,7 +63,7 @@ function FaqItem({ item, isOpen, onToggle }) {
             transition={premiumTransition(0.35)}
             className="overflow-hidden"
           >
-            <p className="pb-7 pr-12 text-base leading-relaxed text-foreground-muted">{item.answer}</p>
+            <p className="pb-3 pr-12 text-base leading-relaxed text-foreground-muted">{item.answer}</p>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -78,7 +78,7 @@ export default function FaqSection() {
     <section className="section-gap relative overflow-hidden">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.4), transparent)' }}
+        style={{ background: 'rgb(var(--ui-accent) / 0.35)' }}
       />
       <div className="section-container">
         <div className="grid gap-16 lg:grid-cols-[1fr_1.4fr] lg:gap-24">
@@ -92,7 +92,16 @@ export default function FaqSection() {
           </Reveal>
 
           <Reveal delay={0.08}>
-             <div className="premium-card divide-y divide-border/30 px-5 sm:px-7">
+            <div className="card-surface card-static faq-panel">
+              <div className="card-header">
+                <div className="card-header__main">
+                  <span className="card-header__icon" aria-hidden="true">
+                    <HelpCircle size={16} strokeWidth={1.8} />
+                  </span>
+                  <span className="card-title">Campus questions</span>
+                </div>
+              </div>
+              <div className="faq-panel__items">
               {FAQ_ITEMS.map((item, index) => (
                 <FaqItem
                   key={item.question}
@@ -101,6 +110,7 @@ export default function FaqSection() {
                   onToggle={() => setOpenIndex(openIndex === index ? -1 : index)}
                 />
               ))}
+              </div>
             </div>
           </Reveal>
         </div>

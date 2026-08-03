@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Reveal } from '../Reveal';
-import { fadeUp, premiumTransition, scaleFade, staggerContainer } from '../../lib/motion';
+import { fadeUp, staggerContainer } from '../../lib/motion';
 
 const STEPS = [
   {
@@ -35,43 +35,28 @@ const STEPS = [
   },
 ];
 
-function ProcessStep({ step, index, total }) {
-  const reduceMotion = useReducedMotion();
-
+function ProcessStep({ step }) {
   return (
     <motion.div
       variants={fadeUp}
-      className={`process-step group grid gap-6 py-11 md:grid-cols-[auto_1fr] md:gap-16 lg:gap-24 ${
-        index < total - 1
-          ? 'border-b'
-          : ''
-      }`}
-      style={{ borderColor: 'rgb(var(--color-border)/0.4)' }}
+      className="card-surface card-static process-step group"
     >
-      {/* Big number */}
-      <div className="overflow-hidden">
-        <motion.span
-          className="process-number block"
-          initial={reduceMotion ? false : scaleFade.hidden}
-          whileInView={reduceMotion ? undefined : scaleFade.visible}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={premiumTransition(0.6)}
-        >
-          {step.number}
-        </motion.span>
+      <div className="card-header">
+        <div className="card-header__main">
+          <span className="card-header__icon process-step__number" aria-hidden="true">
+            {step.number}
+          </span>
+          <h3 className="card-title">{step.title}</h3>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="md:pt-4">
-        <h3 className="font-display text-display-sm font-bold text-foreground">
-          {step.title}
-        </h3>
-        <p className="mt-4 max-w-lg text-base leading-relaxed text-foreground-muted">
+      <div className="card-body">
+        <p className="max-w-lg text-base leading-relaxed text-foreground-muted">
           {step.description}
         </p>
         <Link
           to={step.to}
-          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100"
+          className="mt-0 inline-flex items-center gap-1.5 text-sm font-semibold opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100"
           style={{ color: 'rgb(var(--color-accent))' }}
         >
           {step.cta}
@@ -92,7 +77,7 @@ export default function ProcessSection() {
     <section className="section-gap relative overflow-hidden">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--color-accent)/0.35), transparent)' }}
+        style={{ background: 'rgb(var(--ui-accent) / 0.35)' }}
       />
       <div className="section-container">
         <Reveal>
@@ -105,15 +90,14 @@ export default function ProcessSection() {
         </Reveal>
 
         <motion.div
-          className="mt-14 border-t"
-          style={{ borderColor: 'rgb(var(--color-border)/0.4)' }}
+          className="mt-14 grid items-stretch gap-4"
           initial={reduceMotion ? false : 'hidden'}
           whileInView={reduceMotion ? undefined : 'visible'}
           viewport={{ once: true, amount: 0.08 }}
           variants={staggerContainer(0.12, 0.05)}
         >
-          {STEPS.map((step, index) => (
-            <ProcessStep key={step.number} step={step} index={index} total={STEPS.length} />
+          {STEPS.map((step) => (
+            <ProcessStep key={step.number} step={step} />
           ))}
         </motion.div>
       </div>

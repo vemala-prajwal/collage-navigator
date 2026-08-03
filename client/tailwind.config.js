@@ -43,7 +43,6 @@ export default {
       boxShadow: {
         soft: 'var(--shadow-soft)',
         elevated: 'var(--shadow-elevated)',
-        card: 'var(--shadow-card)',
         glow: 'var(--shadow-glow)',
         glow2: 'var(--shadow-glow2)',
       },
