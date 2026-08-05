@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import RealLogo from '../RealLogo';
+import CampusLogoIcon from '../CampusLogo';
 
 const FOOTER_LINKS = [
   { label: 'Home',       to: '/' },
@@ -41,7 +41,7 @@ export default function Footer() {
                 className="brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
                 style={{ background: 'rgb(var(--ui-accent))' }}
               >
-                <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
+                <CampusLogoIcon />
               </span>
               <span className="text-gradient">Campus Navigator</span>
             </Link>

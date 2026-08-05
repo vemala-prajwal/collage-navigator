@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, LogIn } from 'lucide-react';
-import RealLogo from '../RealLogo';
+import CampusLogoIcon from '../CampusLogo';
 
 export default function AuthShell({ eyebrow, title, description, children, footer }) {
   return (
@@ -13,7 +13,7 @@ export default function AuthShell({ eyebrow, title, description, children, foote
               className="brand-mark auth-mark flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl shadow-[0_5px_12px_rgb(var(--ui-accent)/0.18)] transition-transform duration-160 group-hover:-translate-y-0.5"
               style={{ background: 'rgb(var(--ui-accent))' }}
             >
-              <RealLogo slug="googlemaps" color="ffffff" size={21} alt="Campus Navigator logo" />
+              <CampusLogoIcon />
             </span>
             <span className="text-gradient font-display text-lg font-bold tracking-tight">Campus Navigator</span>
           </Link>

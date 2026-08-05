@@ -4,7 +4,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { House, Map, Menu, ShieldCheck, UtensilsCrossed, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import Button from './Button';
-import RealLogo from './RealLogo';
+import CampusLogoIcon from './CampusLogo';
 
 const MotionLink = motion(Link);
 
@@ -69,7 +69,7 @@ export default function Navbar({ user, logout }) {
               className="brand-mark relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
                 style={{ background: 'rgb(var(--ui-accent))' }}
             >
-              <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
+              <CampusLogoIcon />
             </span>
             <span className="text-gradient">Campus Navigator</span>
           </Link>
@@ -170,7 +170,7 @@ export default function Navbar({ user, logout }) {
                     className="brand-mark flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
                     style={{ background: 'rgb(var(--ui-accent))' }}
                   >
-                    <RealLogo slug="googlemaps" color="ffffff" size={14} alt="Google Maps logo" />
+                    <CampusLogoIcon />
                   </span>
                   <span className="text-gradient">Campus Nav</span>
                 </Link>
