@@ -1,4 +1,4 @@
-import CampusLogo from '../assets/campus-logo.svg';
+import CampusLogo from '../assets/campus-logo.jpeg';
 
 export default function CampusLogoIcon({ className = '' }) {
   return (
