@@ -5,6 +5,52 @@ import Badge from '../Badge';
 
 const routePath = 'M 48 180 Q 120 140 180 120 T 300 80 T 420 100 T 520 60';
 
+const TREES = [
+  { x: 30, y: 52, s: 0.85, o: 0.72 },
+  { x: 66, y: 92, s: 0.68, o: 0.6 },
+  { x: 36, y: 132, s: 0.98, o: 0.8 },
+  { x: 100, y: 122, s: 0.74, o: 0.68 },
+  { x: 62, y: 196, s: 1.02, o: 0.82 },
+  { x: 118, y: 216, s: 0.86, o: 0.7 },
+  { x: 158, y: 174, s: 0.72, o: 0.64 },
+  { x: 196, y: 222, s: 0.94, o: 0.76 },
+  { x: 240, y: 172, s: 0.8, o: 0.66 },
+  { x: 288, y: 226, s: 1.02, o: 0.8 },
+  { x: 342, y: 200, s: 0.82, o: 0.7 },
+  { x: 388, y: 224, s: 0.94, o: 0.76 },
+  { x: 430, y: 196, s: 0.76, o: 0.64 },
+  { x: 474, y: 224, s: 1.02, o: 0.8 },
+  { x: 512, y: 196, s: 0.82, o: 0.7 },
+  { x: 532, y: 128, s: 0.8, o: 0.68 },
+  { x: 512, y: 74, s: 0.68, o: 0.6 },
+  { x: 466, y: 40, s: 0.92, o: 0.72 },
+  { x: 408, y: 30, s: 0.76, o: 0.62 },
+  { x: 346, y: 40, s: 0.88, o: 0.7 },
+  { x: 292, y: 34, s: 0.72, o: 0.6 },
+  { x: 234, y: 30, s: 0.82, o: 0.68 },
+  { x: 176, y: 46, s: 0.94, o: 0.74 },
+  { x: 126, y: 84, s: 0.82, o: 0.7 },
+  { x: 84, y: 30, s: 0.74, o: 0.6 },
+  { x: 210, y: 92, s: 0.72, o: 0.6 },
+];
+
+function MapTree({ x, y, s, o }) {
+  return (
+    <motion.g
+      transform={`translate(${x} ${y}) scale(${s})`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: o }}
+      transition={{ delay: 0.6 + ((x + y) % 20) * 0.04, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <ellipse cx="0" cy="15" rx="13" ry="2.6" fill="rgb(var(--color-foreground) / 0.07)" />
+      <rect x="-1.5" y="8" width="3" height="6.5" rx="1.2" fill="rgb(var(--color-canopy-trunk))" />
+      <circle cx="0" cy="-1" r="9.5" fill="rgb(var(--color-canopy))" />
+      <circle cx="-6.8" cy="3.4" r="6.4" fill="rgb(var(--color-canopy-deep))" />
+      <circle cx="6.8" cy="3.4" r="6.2" fill="rgb(var(--color-canopy))" opacity="0.85" />
+    </motion.g>
+  );
+}
+
 export default function HeroPreview({ className = '' }) {
   const reduceMotion = useReducedMotion();
 
@@ -33,6 +79,10 @@ export default function HeroPreview({ className = '' }) {
             </feMerge>
           </filter>
         </defs>
+
+        {TREES.map((tree, index) => (
+          <MapTree key={index} x={tree.x} y={tree.y} s={tree.s} o={tree.o} />
+        ))}
 
         <motion.path
           d={routePath}
@@ -106,6 +156,13 @@ export default function HeroPreview({ className = '' }) {
     </div>
   );
 }
+
+MapTree.propTypes = {
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  s: PropTypes.number.isRequired,
+  o: PropTypes.number.isRequired,
+};
 
 HeroPreview.propTypes = {
   className: PropTypes.string,
