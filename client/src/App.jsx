@@ -9,6 +9,7 @@ import LocationDetailPage from './pages/LocationDetailPage';
 import CanteenPage from './pages/CanteenPage';
 import MapSearchPage from './pages/MapSearchPage';
 import AdminPage from './pages/AdminPage';
+import EmergencyContactsPage from './pages/EmergencyContactsPage';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
@@ -30,6 +31,7 @@ function App() {
               <Route path="/locations/:id" element={<LocationDetailPage />} />
               <Route path="/canteen" element={<CanteenPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/emergency-contacts" element={<EmergencyContactsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <Toaster
