@@ -63,15 +63,15 @@ export default function Navbar({ user, logout }) {
           <Link
             to="/"
             aria-label="Campus Navigator home"
-            className="group flex items-center gap-2.5 font-display text-base font-bold tracking-tight"
+            className="group flex items-center gap-3 font-display text-lg font-bold tracking-tight"
           >
             <span
-              className="brand-mark relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
-                style={{ background: 'rgb(var(--ui-accent))' }}
+              className="brand-mark relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+              style={{ background: 'rgb(var(--ui-accent))' }}
             >
               <CampusLogoIcon />
             </span>
-            <span className="text-gradient">Campus Navigator</span>
+            <span className="text-gradient text-xl">Campus Navigator</span>
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -167,12 +167,12 @@ export default function Navbar({ user, logout }) {
                   onClick={() => setMenuOpen(false)}
                 >
                   <span
-                    className="brand-mark flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
+                    className="brand-mark flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
                     style={{ background: 'rgb(var(--ui-accent))' }}
                   >
                     <CampusLogoIcon />
                   </span>
-                  <span className="text-gradient">Campus Nav</span>
+                  <span className="text-gradient text-xl">Campus Nav</span>
                 </Link>
                 <button
                   type="button"
