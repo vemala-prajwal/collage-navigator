@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
-import { House, Map, Menu, ShieldCheck, UtensilsCrossed, X } from 'lucide-react';
+import { AlertTriangle, House, Map, Menu, ShieldCheck, UtensilsCrossed, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import Button from './Button';
 import CampusLogoIcon from './CampusLogo';
@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Home', to: '/', icon: House },
   { label: 'Map', to: '/map-search', icon: Map },
   { label: 'Canteen', to: '/canteen', icon: UtensilsCrossed },
+  { label: 'Emergency', to: '/emergency-contacts', icon: AlertTriangle },
   { label: 'Admin', to: '/admin', icon: ShieldCheck },
 ];
 
