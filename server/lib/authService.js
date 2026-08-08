@@ -510,11 +510,68 @@ const getCurrentUser = async (token) => {
   }
 };
 
+const requestPasswordReset = async (payload = {}) => {
+  const { email, redirectTo } = payload;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+    const error = new Error('A valid email is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const { admin: adminClient, public: publicClient } = getSupabaseClients();
+
+  // Use the public (anon) client for sending password reset emails when
+  // possible. The public client is the same client that would be used by
+  // the browser and avoids hitting service-role/admin email-send quotas or
+  // different behaviour that can lead to unexpected rate-limit errors.
+  const authClient = publicClient || adminClient;
+
+  if (!authClient) {
+    ensureSupabase();
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const targetRedirectTo =
+    redirectTo ||
+    process.env.CLIENT_URL ||
+    process.env.VITE_SITE_URL ||
+    'http://localhost:5173/reset-password';
+
+  const { error } = await authClient.auth.resetPasswordForEmail(normalizedEmail, {
+    redirectTo: targetRedirectTo,
+  });
+
+  if (error) {
+    const isRateLimit =
+      error.status === 429 ||
+      /rate limit/i.test(error.message || '') ||
+      /over_email_send_rate_limit/i.test(error.code || '');
+
+    if (isRateLimit) {
+      const rateLimitError = new Error(
+        'Too many password reset requests. Please wait 60 seconds before requesting another link.'
+      );
+      rateLimitError.statusCode = 429;
+      throw rateLimitError;
+    }
+
+    const serviceError = new Error(extractSupabaseMessage(error));
+    serviceError.statusCode = error.status || 500;
+    throw serviceError;
+  }
+
+  return {
+    message: 'Password reset link sent successfully.',
+  };
+};
+
 module.exports = {
   CAMPUSES,
   registerAccount,
   loginAccount,
   getCurrentUser,
+  requestPasswordReset,
   validateRegisterPayload,
   validateLoginPayload,
 };
+
