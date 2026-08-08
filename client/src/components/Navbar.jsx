@@ -64,7 +64,7 @@ export default function Navbar({ user, logout }) {
           <Link
             to="/"
             aria-label="Campus Navigator home"
-            className="group flex items-center gap-3 font-display text-lg font-bold tracking-tight"
+            className="group flex items-center gap-3 font-display text-lg font-semibold tracking-tight"
           >
             <span
               className="brand-mark relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
@@ -72,7 +72,10 @@ export default function Navbar({ user, logout }) {
             >
               <CampusLogoIcon />
             </span>
-            <span className="text-gradient text-xl">Campus Navigator</span>
+            <span className="brand-wordmark">
+              <span className="inline-block text-xl leading-none">Campus</span>
+              <span className="inline-block text-sm leading-none text-foreground-muted">Navigator</span>
+            </span>
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -164,7 +167,7 @@ export default function Navbar({ user, logout }) {
               <div className="flex items-center justify-between">
                 <Link
                   to="/"
-                  className="flex items-center gap-2 font-display text-lg font-bold"
+                  className="flex items-center gap-2 font-display text-lg font-semibold"
                   onClick={() => setMenuOpen(false)}
                 >
                   <span
@@ -173,7 +176,10 @@ export default function Navbar({ user, logout }) {
                   >
                     <CampusLogoIcon />
                   </span>
-                  <span className="text-gradient text-xl">Campus Nav</span>
+                  <span className="brand-wordmark">
+                    <span className="inline-block text-base leading-none">Campus</span>
+                    <span className="inline-block text-xs leading-none text-foreground-muted">Nav</span>
+                  </span>
                 </Link>
                 <button
                   type="button"

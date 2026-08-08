@@ -233,6 +233,37 @@ html.dark {
     -webkit-text-fill-color: transparent;
   }
 
+  .brand-wordmark {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1.05;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 18px rgb(139 92 246 / 0.18);
+  }
+
+  .brand-wordmark::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.16rem;
+    width: 100%;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgb(139 92 246 / 0.9), rgb(56 189 248 / 0.9));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 280ms ease;
+  }
+
+  .group:hover .brand-wordmark::after,
+  .group:focus-within .brand-wordmark::after {
+    transform: scaleX(1);
+  }
+
   /* ── Editorial serif-italic accents ── */
   .text-serif {
     font-family: var(--font-serif);
