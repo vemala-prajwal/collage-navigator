@@ -101,10 +101,20 @@ export async function registerUser(payload) {
   }
 }
 
-/** Sign in via the backend API. */
+/** Sign in via the backend API. Supports email or phone + password. */
 export async function loginUser(payload) {
   try {
     const { data } = await client.post('/login', payload);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+/** Verify phone registration OTP code to activate account and sign in. */
+export async function verifyRegistrationOtp(phone, otp) {
+  try {
+    const { data } = await client.post('/verify-registration-otp', { phone, otp });
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));

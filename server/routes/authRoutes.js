@@ -1,7 +1,12 @@
 const express = require('express');
 const {
   registerUser,
+  verifyRegistrationOtp,
   loginUser,
+  forgotPassword,
+  forgotPasswordPhone,
+  verifyOtp,
+  resetPasswordToken,
   registerValidators,
   loginValidators,
   getCampuses,
@@ -12,7 +17,12 @@ const router = express.Router();
 
 router.get('/campuses', getCampuses);
 router.post('/register', registerValidators, registerUser);
+router.post('/verify-registration-otp', verifyRegistrationOtp);
 router.post('/login', loginValidators, loginUser);
+router.post('/forgot-password', forgotPassword);
+router.post('/forgot-password-phone', forgotPasswordPhone);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password-with-token', resetPasswordToken);
 router.get('/me', async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || '';
