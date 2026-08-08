@@ -519,12 +519,9 @@ const requestPasswordReset = async (payload = {}) => {
   }
 
   const { admin: adminClient, public: publicClient } = getSupabaseClients();
-
-  // Use the public (anon) client for sending password reset emails when
-  // possible. The public client is the same client that would be used by
-  // the browser and avoids hitting service-role/admin email-send quotas or
-  // different behaviour that can lead to unexpected rate-limit errors.
-  const authClient = publicClient || adminClient;
+  // Prefer the admin client — it is not subject to the restrictive per-IP
+  // rate limits that Supabase applies to public (anon) client email requests.
+  const authClient = adminClient || publicClient;
 
   if (!authClient) {
     ensureSupabase();
@@ -537,32 +534,64 @@ const requestPasswordReset = async (payload = {}) => {
     process.env.VITE_SITE_URL ||
     'http://localhost:5173/reset-password';
 
+  console.info('[requestPasswordReset] sending reset email to:', normalizedEmail);
+
   const { error } = await authClient.auth.resetPasswordForEmail(normalizedEmail, {
     redirectTo: targetRedirectTo,
   });
 
   if (error) {
+    // Log the raw Supabase error so it is visible in server/Vercel logs.
+    console.warn('[requestPasswordReset] Supabase error:', {
+      status: error.status,
+      code: error.code,
+      message: error.message,
+    });
+
     const isRateLimit =
       error.status === 429 ||
-      /rate limit/i.test(error.message || '') ||
+      /rate.?limit|too.?many|over_email/i.test(error.message || '') ||
       /over_email_send_rate_limit/i.test(error.code || '');
 
     if (isRateLimit) {
+      // Supabase often encodes the exact retry window in its message, e.g.:
+      // "For security purposes, you can only request this after 54 seconds."
+      const rawMsg = error.message || '';
+      const secondsMatch = rawMsg.match(/after\s+(\d+)\s+second/i);
+      const retryAfterSeconds = secondsMatch ? parseInt(secondsMatch[1], 10) : null;
+
+      console.warn('[requestPasswordReset] rate limit hit:', {
+        email: normalizedEmail,
+        retryAfterSeconds,
+        rawMsg,
+      });
+
       const rateLimitError = new Error(
-        'Too many password reset requests. Please wait 60 seconds before requesting another link.'
+        retryAfterSeconds
+          ? `Please wait ${retryAfterSeconds} seconds before requesting another reset link.`
+          : 'Too many password reset requests. Please try again in a few minutes.'
       );
       rateLimitError.statusCode = 429;
+      // Expose the real retry window to the client so the UI can show an
+      // accurate countdown instead of a hardcoded 60 seconds.
+      rateLimitError.retryAfterSeconds = retryAfterSeconds;
       throw rateLimitError;
     }
 
-    const serviceError = new Error(extractSupabaseMessage(error));
+    // Use a password-reset–specific fallback message — not the registration
+    // one from extractSupabaseMessage.
+    const rawMsg = error.message || '';
+    const serviceError = new Error(
+      rawMsg && !rawMsg.toLowerCase().includes('server error')
+        ? rawMsg
+        : 'We could not send the reset link. Please try again.'
+    );
     serviceError.statusCode = error.status || 500;
     throw serviceError;
   }
 
-  return {
-    message: 'Password reset link sent successfully.',
-  };
+  console.info('[requestPasswordReset] reset email sent successfully to:', normalizedEmail);
+  return { message: 'Password reset link sent successfully.' };
 };
 
 module.exports = {

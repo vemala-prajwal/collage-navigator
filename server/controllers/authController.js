@@ -3,6 +3,7 @@ const {
   CAMPUSES,
   registerAccount,
   loginAccount,
+  requestPasswordReset,
 } = require('../lib/authService');
 
 const formatValidationErrors = (errors) => errors.array().map((error) => error.msg).join(', ');
@@ -58,8 +59,44 @@ const loginValidators = [
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: formatValidationErrors(errors) });
+    }
+
+    const result = await requestPasswordReset(req.body);
+    res.json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      // Forward retryAfterSeconds (if present) so the client UI can display
+      // an accurate countdown derived from Supabase's actual rate-limit window.
+      const body = { message: error.message };
+      if (error.retryAfterSeconds != null) {
+        body.retryAfterSeconds = error.retryAfterSeconds;
+      }
+      return res.status(error.statusCode).json(body);
+    }
+    next(error);
+  }
+};
+
+const forgotPasswordValidators = [
+  body('email').isEmail().normalizeEmail().withMessage('A valid email is required'),
+];
+
 const getCampuses = (req, res) => {
   res.json({ campuses: CAMPUSES });
 };
 
-module.exports = { registerUser, loginUser, registerValidators, loginValidators, getCampuses };
+module.exports = {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  registerValidators,
+  loginValidators,
+  forgotPasswordValidators,
+  getCampuses,
+};
+

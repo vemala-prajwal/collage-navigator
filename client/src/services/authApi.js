@@ -72,6 +72,12 @@ const getErrorMessage = (error) => {
     return 'Auth service is unavailable. Please try again shortly.';
   }
 
+  if (status === 429) {
+    // Pass the backend's message through directly — it contains the real
+    // Supabase rate-limit details (e.g. actual retry-after seconds).
+    return responseData?.message || 'Too many requests. Please try again in a few minutes.';
+  }
+
   if (status === 500 || status === 502 || status === 503) {
     return 'The server is temporarily unavailable. Please try again in a moment.';
   }
@@ -108,6 +114,22 @@ export async function loginUser(payload) {
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
+  }
+}
+
+/** Request password reset email via the backend API. */
+export async function requestPasswordReset(email, redirectTo) {
+  try {
+    const { data } = await client.post('/forgot-password', { email, redirectTo });
+    return data;
+  } catch (axiosError) {
+    const message = getErrorMessage(axiosError);
+    const err = new Error(message);
+    // Surface retryAfterSeconds (from backend's 429 body) so the UI can
+    // show an accurate countdown — not the hardcoded 60s we used before.
+    const retryAfter = axiosError?.response?.data?.retryAfterSeconds;
+    if (retryAfter != null) err.retryAfterSeconds = retryAfter;
+    throw err;
   }
 }
 

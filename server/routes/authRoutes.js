@@ -2,8 +2,10 @@ const express = require('express');
 const {
   registerUser,
   loginUser,
+  forgotPassword,
   registerValidators,
   loginValidators,
+  forgotPasswordValidators,
   getCampuses,
 } = require('../controllers/authController');
 const { getCurrentUser } = require('../lib/authService');
@@ -13,6 +15,7 @@ const router = express.Router();
 router.get('/campuses', getCampuses);
 router.post('/register', registerValidators, registerUser);
 router.post('/login', loginValidators, loginUser);
+router.post('/forgot-password', forgotPasswordValidators, forgotPassword);
 router.get('/me', async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || '';

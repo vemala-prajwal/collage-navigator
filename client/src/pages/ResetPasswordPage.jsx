@@ -26,24 +26,39 @@ function ResetPasswordPage() {
     }
 
     let active = true;
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
+    // Track whether the PASSWORD_RECOVERY event has already fired so we know
+    // not to flip hasRecoverySession to false from getSession().
+    let recoveryFired = false;
 
-      setHasRecoverySession(Boolean(data.session));
-      setCheckingSession(false);
-    };
-
+    // Register the auth state listener FIRST so we never miss the
+    // PASSWORD_RECOVERY event that Supabase emits synchronously when it
+    // detects a valid recovery token in the URL hash.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
 
       if (event === 'PASSWORD_RECOVERY' && session) {
+        recoveryFired = true;
         setHasRecoverySession(true);
         setCheckingSession(false);
       }
     });
+
+    // Fall back to getSession() for cases where the browser already exchanged
+    // the URL token for a session before this component mounted (e.g. hard
+    // refresh on the /reset-password page while a session is still alive).
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+
+      // Only update state from getSession() if the auth state listener did
+      // not already handle the PASSWORD_RECOVERY event.
+      if (!recoveryFired) {
+        setHasRecoverySession(Boolean(data.session));
+        setCheckingSession(false);
+      }
+    };
 
     checkSession();
 

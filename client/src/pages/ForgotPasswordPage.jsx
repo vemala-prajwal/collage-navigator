@@ -1,18 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
+import { requestPasswordReset as apiRequestPasswordReset } from '../services/authApi';
 import { supabase } from '../lib/supabaseClient';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const COOLDOWN_SECONDS = 60;
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -30,32 +41,98 @@ function ForgotPasswordPage() {
       return;
     }
 
-    if (!supabase) {
-      setError('Password recovery is temporarily unavailable. Please try again later.');
+    // Only block if there is an active client-side cooldown (set after a
+    // *successful* send). A rate-limit error from Supabase does NOT set this
+    // cooldown, so the user is free to try again after the real quota resets.
+    if (cooldown > 0) {
+      setError(`Please wait ${cooldown} seconds before sending another link.`);
       return;
     }
 
     setLoading(true);
+
+    const siteUrl =
+      import.meta.env.VITE_SITE_URL ||
+      import.meta.env.NEXT_PUBLIC_SITE_URL ||
+      window.location.origin;
+    const targetRedirectTo = `${siteUrl}/reset-password`;
+
+    let success = false;
+    let errorMessage = '';
+    // retryAfterSeconds is the real value Supabase returns (e.g. 54 seconds).
+    // null means Supabase gave no specific window — likely a project-level
+    // hourly quota exhaustion, not a per-user/per-IP limit.
+    let retryAfterSeconds = null;
+
+    // Primary: backend API (uses admin client, better rate-limit handling).
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      await apiRequestPasswordReset(normalizedEmail, targetRedirectTo);
+      success = true;
+    } catch (apiErr) {
+      const errText = apiErr?.message || '';
+      // apiErr is a plain Error wrapped by authApi — it has no .response.
+      // Rate-limit detection: rely on the retryAfterSeconds property that
+      // authApi attaches from the backend 429 body, or the message text.
+      retryAfterSeconds = apiErr?.retryAfterSeconds ?? null;
 
-      if (resetError) {
-        throw resetError;
+      const isRateLimitErr =
+        retryAfterSeconds != null ||
+        /rate.?limit|too.?many/i.test(errText);
+
+      if (!isRateLimitErr) {
+        // Non-rate-limit backend failure → try direct Supabase client as fallback.
+        if (supabase) {
+          try {
+            const { error: sbErr } = await supabase.auth.resetPasswordForEmail(
+              normalizedEmail,
+              { redirectTo: targetRedirectTo }
+            );
+            if (!sbErr) {
+              success = true;
+            } else {
+              const isSbRateLimit =
+                sbErr.status === 429 ||
+                /rate.?limit|too.?many|over_email/i.test(sbErr.message || '') ||
+                /over_email_send_rate_limit/i.test(sbErr.code || '');
+
+              if (isSbRateLimit) {
+                // Try to parse Supabase's "after X seconds" message.
+                const m = (sbErr.message || '').match(/after\s+(\d+)\s+second/i);
+                retryAfterSeconds = m ? parseInt(m[1], 10) : null;
+                errorMessage = retryAfterSeconds
+                  ? `Please wait ${retryAfterSeconds} seconds before requesting another link.`
+                  : 'Our email service has reached its sending limit. Please try again in a few minutes.';
+              } else {
+                errorMessage = sbErr.message || 'We could not send the reset link. Please try again.';
+              }
+            }
+          } catch (sbThrown) {
+            errorMessage = sbThrown?.message || 'We could not send the reset link. Please try again.';
+          }
+        } else {
+          errorMessage = errText || 'We could not send the reset link. Please try again.';
+        }
+      } else {
+        // Rate limit from backend API path.
+        errorMessage = retryAfterSeconds
+          ? `Please wait ${retryAfterSeconds} seconds before requesting another link.`
+          : 'Our email service has reached its sending limit. Please try again in a few minutes.';
       }
+    }
 
+    setLoading(false);
+
+    if (success) {
       setSent(true);
+      // Cooldown ONLY fires on success — prevents double-clicking, but never
+      // traps the user if Supabase itself is rate-limiting at the project level.
+      setCooldown(COOLDOWN_SECONDS);
       toast.success('Reset link sent');
-    } catch (resetError) {
-      const message =
-        resetError?.message?.toLowerCase().includes('rate limit')
-          ? 'Too many requests. Please wait a moment and try again.'
-          : 'We could not send the reset link. Please try again.';
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
+    } else {
+      setError(errorMessage || 'We could not send the reset link. Please try again.');
+      toast.error(errorMessage || 'We could not send the reset link. Please try again.');
+      // Do NOT start the cooldown on error — the user should be free to retry
+      // (or try a different email) once the real Supabase quota resets.
     }
   };
 
@@ -95,10 +172,11 @@ function ForgotPasswordPage() {
 
           <button
             type="button"
+            disabled={cooldown > 0}
             onClick={() => setSent(false)}
-            className="inline-flex w-full items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 px-4 py-3.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/40 hover:bg-surface"
+            className="inline-flex w-full items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 px-4 py-3.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/40 hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Send another link
+            {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Send another link'}
           </button>
         </div>
       ) : (
@@ -132,7 +210,7 @@ function ForgotPasswordPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || cooldown > 0}
             className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
@@ -140,6 +218,8 @@ function ForgotPasswordPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sending reset link...
               </>
+            ) : cooldown > 0 ? (
+              `Please wait ${cooldown}s`
             ) : (
               'Send reset link'
             )}
@@ -151,3 +231,4 @@ function ForgotPasswordPage() {
 }
 
 export default ForgotPasswordPage;
+
