@@ -5,6 +5,7 @@ import api from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
+import CanteenLogo from '../assets/canteen-logo.jpeg';
 import { SkeletonCard } from '../components/Skeleton';
 
 const listVariants = {
@@ -71,7 +72,13 @@ export default function CanteenPage() {
         eyebrow="Canteen menu"
         title="Fresh campus food, status-first."
         description="Scan the live menu, see availability instantly, and spot the fastest line with confidence."
-      />
+      >
+        <img
+          src={CanteenLogo}
+          alt="Campus canteen logo"
+          className="h-40 w-full rounded-2xl object-cover ring-1 ring-border"
+        />
+      </PageHeader>
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[

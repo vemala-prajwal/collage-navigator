@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import RealLogo from '../RealLogo';
+import CampusLogoIcon from '../CampusLogo';
 
 const FOOTER_LINKS = [
-  { label: 'Home',       to: '/' },
-  { label: 'Map Search', to: '/map-search' },
-  { label: 'Canteen',    to: '/canteen' },
-  { label: 'Login',      to: '/login' },
+  { label: 'Home', to: '/' },
+  { label: 'How to Use', to: '/how-to-use' },
+  { label: 'Navigate', to: '/navigate' },
+  { label: 'Canteen', to: '/canteen' },
+  { label: 'Feedback', to: '/feedback' },
+  { label: 'About', to: '/about' },
 ];
 
 export default function Footer() {
@@ -36,14 +38,14 @@ export default function Footer() {
         <div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
           {/* Brand */}
           <div>
-            <Link to="/" className="group flex items-center gap-2.5 font-display text-xl font-bold">
+            <Link to="/" className="group flex items-center gap-3 font-display text-xl font-bold">
               <span
-                className="brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
+                className="brand-mark flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(109_40_217/0.35)] transition-transform duration-300 group-hover:scale-110"
                 style={{ background: 'rgb(var(--ui-accent))' }}
               >
-                <RealLogo slug="googlemaps" color="ffffff" size={18} alt="Google Maps logo" />
+                <CampusLogoIcon />
               </span>
-              <span className="text-gradient">Campus Navigator</span>
+              <span className="text-gradient text-xl">Campus Navigator</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-foreground-muted">
               Navigate smarter. Eat faster. Speak up.

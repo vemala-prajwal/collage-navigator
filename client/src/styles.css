@@ -54,6 +54,11 @@
   --color-shimmer-base: 200 190 240;
   --color-shimmer-highlight: 255 255 255;
   --section-gap: clamp(6rem, 12vw, 10rem);
+
+  /* Map trees */
+  --color-canopy: 146 145 102;
+  --color-canopy-deep: 120 122 80;
+  --color-canopy-trunk: 96 86 66;
 }
 
 /* ─── DARK THEME ──────────────────────────────────────────────────────── */
@@ -102,6 +107,11 @@ html.dark {
 
   --color-shimmer-base: 50 40 100;
   --color-shimmer-highlight: 139 92 246;
+
+  /* Map trees */
+  --color-canopy: 116 132 88;
+  --color-canopy-deep: 88 104 64;
+  --color-canopy-trunk: 118 108 84;
 }
 
 /* ─── BASE ────────────────────────────────────────────────────────────── */
