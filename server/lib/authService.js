@@ -594,13 +594,158 @@ const requestPasswordReset = async (payload = {}) => {
   return { message: 'Password reset link sent successfully.' };
 };
 
+const findUserByPhone = async (authClient, phone) => {
+  const normalizedDigits = String(phone).replace(/\D/g, '');
+  if (!normalizedDigits) return null;
+
+  let page = 1;
+  const perPage = 200;
+
+  while (page <= 25) {
+    const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
+
+    if (error) {
+      console.error('[findUserByPhone] listUsers error:', error.message || error);
+      return null;
+    }
+
+    const match = data?.users?.find((user) => {
+      const userPhone = String(user.phone || user.user_metadata?.phone || '').replace(/\D/g, '');
+      return userPhone && (userPhone === normalizedDigits || userPhone.endsWith(normalizedDigits));
+    });
+
+    if (match) {
+      return match;
+    }
+
+    if (!data?.users?.length || data.users.length < perPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+};
+
+const requestPhonePasswordReset = async (payload = {}) => {
+  const { sendSms } = require('./smsService');
+  const { createPhoneOtp } = require('./otpService');
+
+  const { phone } = payload;
+  const rawPhone = String(phone || '').trim();
+  const digitsOnly = rawPhone.replace(/\D/g, '');
+
+  if (!rawPhone || digitsOnly.length < 7 || digitsOnly.length > 15) {
+    const error = new Error('A valid phone number is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const { admin: adminClient } = getSupabaseClients();
+  const authClient = adminClient || getSupabaseClient();
+
+  let targetUser = null;
+  if (adminClient) {
+    try {
+      targetUser = await findUserByPhone(adminClient, rawPhone);
+    } catch (findErr) {
+      console.warn('[requestPhonePasswordReset] search error:', findErr.message);
+    }
+  }
+
+  // Create hashed OTP & enforce 60s cooldown limit
+  const { plainOtp, normalizedPhone } = createPhoneOtp(rawPhone);
+
+  // Send SMS if user exists OR in fallback mode
+  const smsMessage = `Your Campus Navigator password reset code is: ${plainOtp}. This code expires in 10 minutes.`;
+  await sendSms({ to: normalizedPhone, message: smsMessage });
+
+  // Mask phone for security feedback e.g. +1 ********90
+  const lastFour = normalizedPhone.slice(-4);
+  const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
+
+  return {
+    message: "If an account exists for this phone number, you'll receive a verification code shortly.",
+    maskedPhone,
+    phone: normalizedPhone,
+  };
+};
+
+const verifyPhonePasswordResetOtp = async (payload = {}) => {
+  const { verifyPhoneOtp } = require('./otpService');
+  const { phone, otp } = payload;
+
+  if (!phone || !otp) {
+    const error = new Error('Phone number and 6-digit verification code are required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const result = verifyPhoneOtp(phone, otp);
+  return {
+    message: 'Verification successful.',
+    resetToken: result.resetToken,
+  };
+};
+
+const resetPasswordWithToken = async (payload = {}) => {
+  const { verifyResetToken, invalidateResetToken } = require('./otpService');
+  const { resetToken, newPassword } = payload;
+
+  if (!newPassword || String(newPassword).length < 8) {
+    const error = new Error('Password must be at least 8 characters');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Verify and decode resetToken
+  const tokenData = verifyResetToken(resetToken);
+  const phone = tokenData.phone;
+
+  const { admin: adminClient } = getSupabaseClients();
+  const authClient = adminClient || getSupabaseClient();
+
+  if (!authClient) {
+    ensureSupabase();
+  }
+
+  let user = null;
+  if (adminClient) {
+    user = await findUserByPhone(adminClient, phone);
+  }
+
+  if (user && adminClient) {
+    const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
+      password: newPassword,
+    });
+    if (updateError) {
+      console.error('[resetPasswordWithToken] Supabase update error:', updateError);
+      const error = new Error(extractSupabaseMessage(updateError));
+      error.statusCode = updateError.status || 500;
+      throw error;
+    }
+  }
+
+  // Invalidate single-use token
+  invalidateResetToken(resetToken);
+
+  return {
+    message: 'Your password has been reset successfully. Please sign in with your new password.',
+  };
+};
+
 module.exports = {
   CAMPUSES,
   registerAccount,
   loginAccount,
   getCurrentUser,
   requestPasswordReset,
+  requestPhonePasswordReset,
+  verifyPhonePasswordResetOtp,
+  resetPasswordWithToken,
   validateRegisterPayload,
   validateLoginPayload,
 };
+
 

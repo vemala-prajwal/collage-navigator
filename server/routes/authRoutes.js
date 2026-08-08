@@ -3,6 +3,9 @@ const {
   registerUser,
   loginUser,
   forgotPassword,
+  forgotPasswordPhone,
+  verifyOtp,
+  resetPasswordToken,
   registerValidators,
   loginValidators,
   forgotPasswordValidators,
@@ -16,6 +19,9 @@ router.get('/campuses', getCampuses);
 router.post('/register', registerValidators, registerUser);
 router.post('/login', loginValidators, loginUser);
 router.post('/forgot-password', forgotPasswordValidators, forgotPassword);
+router.post('/forgot-password-phone', forgotPasswordPhone);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password-with-token', resetPasswordToken);
 router.get('/me', async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || '';

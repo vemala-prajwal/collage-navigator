@@ -125,11 +125,48 @@ export async function requestPasswordReset(email, redirectTo) {
   } catch (axiosError) {
     const message = getErrorMessage(axiosError);
     const err = new Error(message);
-    // Surface retryAfterSeconds (from backend's 429 body) so the UI can
-    // show an accurate countdown — not the hardcoded 60s we used before.
     const retryAfter = axiosError?.response?.data?.retryAfterSeconds;
     if (retryAfter != null) err.retryAfterSeconds = retryAfter;
     throw err;
+  }
+}
+
+/** Request password reset OTP via SMS for phone number. */
+export async function requestPhonePasswordReset(phone) {
+  try {
+    const { data } = await client.post('/forgot-password-phone', { phone });
+    return data;
+  } catch (axiosError) {
+    const message = getErrorMessage(axiosError);
+    const err = new Error(message);
+    const retryAfter = axiosError?.response?.data?.retryAfterSeconds;
+    if (retryAfter != null) err.retryAfterSeconds = retryAfter;
+    throw err;
+  }
+}
+
+/** Verify 6-digit phone OTP code. */
+export async function verifyPhoneOtp(phone, otp) {
+  try {
+    const { data } = await client.post('/verify-otp', { phone, otp });
+    return data;
+  } catch (axiosError) {
+    const message = getErrorMessage(axiosError);
+    const err = new Error(message);
+    const remaining = axiosError?.response?.data?.remainingAttempts;
+    if (remaining != null) err.remainingAttempts = remaining;
+    throw err;
+  }
+}
+
+/** Reset password using short-lived verified token (phone flow). */
+export async function resetPasswordWithToken(resetToken, newPassword) {
+  try {
+    const { data } = await client.post('/reset-password-with-token', { resetToken, newPassword });
+    return data;
+  } catch (axiosError) {
+    const message = getErrorMessage(axiosError);
+    throw new Error(message);
   }
 }
 

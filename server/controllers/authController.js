@@ -4,6 +4,9 @@ const {
   registerAccount,
   loginAccount,
   requestPasswordReset,
+  requestPhonePasswordReset,
+  verifyPhonePasswordResetOtp,
+  resetPasswordWithToken,
 } = require('../lib/authService');
 
 const formatValidationErrors = (errors) => errors.array().map((error) => error.msg).join(', ');
@@ -82,6 +85,50 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
+const forgotPasswordPhone = async (req, res, next) => {
+  try {
+    const result = await requestPhonePasswordReset(req.body);
+    res.json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      const body = { message: error.message };
+      if (error.retryAfterSeconds != null) {
+        body.retryAfterSeconds = error.retryAfterSeconds;
+      }
+      return res.status(error.statusCode).json(body);
+    }
+    next(error);
+  }
+};
+
+const verifyOtp = async (req, res, next) => {
+  try {
+    const result = await verifyPhonePasswordResetOtp(req.body);
+    res.json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      const body = { message: error.message };
+      if (error.remainingAttempts != null) {
+        body.remainingAttempts = error.remainingAttempts;
+      }
+      return res.status(error.statusCode).json(body);
+    }
+    next(error);
+  }
+};
+
+const resetPasswordToken = async (req, res, next) => {
+  try {
+    const result = await resetPasswordWithToken(req.body);
+    res.json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    next(error);
+  }
+};
+
 const forgotPasswordValidators = [
   body('email').isEmail().normalizeEmail().withMessage('A valid email is required'),
 ];
@@ -94,9 +141,13 @@ module.exports = {
   registerUser,
   loginUser,
   forgotPassword,
+  forgotPasswordPhone,
+  verifyOtp,
+  resetPasswordToken,
   registerValidators,
   loginValidators,
   forgotPasswordValidators,
   getCampuses,
 };
+
 
