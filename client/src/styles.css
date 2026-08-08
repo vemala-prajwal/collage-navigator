@@ -11,6 +11,8 @@
   --font-body: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
 
+  --font-brand: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+
   --color-background: 249 248 255;
   --color-background-secondary: 241 239 255;
   --color-surface: 255 255 255;
@@ -25,6 +27,9 @@
   --color-accent-strong: 79 20 180;
   --color-accent-muted: 237 233 254;
   --color-on-accent: 255 255 255;
+
+  --color-brand: 79 38 180;
+  --color-brand-soft: 237 233 254;
 
   /* Secondary accent: fuchsia-pink */
   --color-accent2: 217 70 239;
@@ -278,9 +283,9 @@ html.dark {
   .ui-card {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgb(var(--ui-border) / 0.58);
+    border: 1px solid rgb(var(--color-border) / 0.24);
     border-radius: 10px;
-    background: rgb(var(--ui-surface));
+    background: rgb(var(--color-background-secondary));
     background-image: none;
     box-shadow: none;
     backdrop-filter: none;
@@ -293,8 +298,7 @@ html.dark {
   }
 
   .card-interactive:hover {
-    border-color: rgb(var(--ui-accent)) !important;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.25) !important;
+    border-color: rgb(var(--color-accent)) !important;
     transform: translateY(-2px);
   }
 
@@ -337,10 +341,10 @@ html.dark {
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgb(var(--ui-border) / 0.58);
+    border: 1px solid rgb(var(--color-border) / 0.32);
     border-radius: 8px;
-    background: rgb(var(--ui-surface-2));
-    color: rgb(var(--ui-accent));
+    background: rgb(var(--color-surface) / 0.92);
+    color: rgb(var(--color-accent));
   }
 
   .card-header__status {
@@ -928,9 +932,9 @@ html.dark {
 .flat-card,
 .glass-panel,
 .ui-card {
-  border: 1px solid rgb(var(--ui-border) / 0.58) !important;
+  border: 1px solid rgb(var(--color-border) / 0.24) !important;
   border-radius: 10px !important;
-  background: rgb(var(--ui-surface)) !important;
+  background: rgb(var(--color-background-secondary)) !important;
   background-image: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
@@ -941,14 +945,13 @@ html.dark {
 .premium-card.card-interactive,
 .ui-card.card-interactive {
   cursor: pointer;
-  transition: border-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out;
+  transition: border-color 150ms ease-out, transform 150ms ease-out;
 }
 
 .card-surface.card-interactive:hover,
 .premium-card.card-interactive:hover,
 .ui-card.card-interactive:hover {
-  border-color: rgb(var(--ui-accent)) !important;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.25) !important;
+  border-color: rgb(var(--color-accent)) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -970,12 +973,52 @@ html.dark {
 }
 
 .brand-mark {
-  box-shadow: 0 5px 12px rgb(var(--ui-accent) / 0.18) !important;
+  box-shadow: 0 0 0 transparent !important;
   transition: transform 160ms ease !important;
+  border: 1px solid rgb(var(--color-border) / 0.22);
+  background: rgb(var(--color-accent) / 0.1);
+  color: rgb(var(--color-accent));
 }
 
 .brand-mark:hover {
   transform: translateY(-1px);
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-brand);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground));
+}
+
+.brand-logo__name {
+  display: inline-flex;
+  align-items: baseline;
+  letter-spacing: 0.1em;
+}
+
+.brand-logo__mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: rgb(var(--color-accent) / 0.14);
+  border: 1px solid rgb(var(--color-border) / 0.24);
+  color: rgb(var(--color-accent));
+}
+
+.brand-logo__mark svg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 /* Keep foreground text and action color independent from the purple canvas. */
@@ -1179,6 +1222,25 @@ header.glass-nav {
   font-size: 0.62rem !important;
   letter-spacing: 0.08em !important;
 }
+
+.status-badge__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+}
+
+.status-badge__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-badge--available { color: rgb(var(--color-success)); }
+.status-badge--available .status-badge__dot { background: rgb(var(--color-success)); }
+.status-badge--limited   { color: rgb(var(--color-warning)); }
+.status-badge--limited   .status-badge__dot { background: rgb(var(--color-warning)); }
+.status-badge--soldOut   { color: rgb(var(--color-error)); }
+.status-badge--soldOut   .status-badge__dot { background: rgb(var(--color-error)); }
 
 .rating-star {
   border-color: rgb(var(--ui-border)) !important;

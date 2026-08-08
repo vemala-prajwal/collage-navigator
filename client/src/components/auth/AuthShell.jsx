@@ -8,14 +8,11 @@ export default function AuthShell({ eyebrow, title, description, children, foote
     <div className="auth-page-shell relative mx-auto w-full py-10 sm:py-14">
       <div className="auth-form-column relative mx-auto w-full max-w-[30rem]">
         <div className="auth-identity mb-8">
-          <Link to="/" className="group inline-flex items-center gap-3">
-            <span
-              className="brand-mark auth-mark flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl shadow-[0_5px_12px_rgb(var(--ui-accent)/0.18)] transition-transform duration-160 group-hover:-translate-y-0.5"
-              style={{ background: 'rgb(var(--ui-accent))' }}
-            >
+          <Link to="/" className="brand-logo">
+            <span className="brand-logo__mark auth-mark">
               <CampusLogoIcon />
             </span>
-            <span className="text-gradient font-display text-2xl font-bold tracking-tight">Campus Navigator</span>
+            <span className="brand-logo__name">Campus Navigator</span>
           </Link>
           <span className="auth-identity__rule" aria-hidden="true" />
           <span className="auth-identity__context">Campus navigation / Account access</span>
