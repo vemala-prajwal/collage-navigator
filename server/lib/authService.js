@@ -777,19 +777,32 @@ const requestPhonePasswordReset = async ({ phone } = {}) => {
   }
 
   const normalizedPhone = normalizePhoneNumber(phone);
+  const { admin: adminClient } = getSupabaseClients();
 
-  const { plainOtp } = createPhoneOtp(normalizedPhone);
+  if (!adminClient) {
+    const error = new Error('Service unavailable. Please try again later.');
+    error.statusCode = 500;
+    throw error;
+  }
 
-  const smsMessage = `Your Campus Navigator password reset code is: ${plainOtp}. Valid for 10 minutes.`;
-  await sendSms({ to: normalizedPhone, message: smsMessage });
+  // Silently look up the user — respond generically regardless of result
+  const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
+
+  if (matchedUser) {
+    // Only send OTP if user exists — but don't reveal this to caller
+    const { plainOtp } = await createPhoneOtp(adminClient, matchedUser, 'reset');
+    const smsMessage = `Your Campus Navigator password reset code is: ${plainOtp}. Valid for 10 minutes. Do not share this code.`;
+    await sendSms({ to: normalizedPhone, message: smsMessage });
+  }
 
   const lastFour = normalizedPhone.slice(-4);
   const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
 
+  // Generic response — identical whether phone exists or not
   return {
     maskedPhone,
     phone: normalizedPhone,
-    message: `Verification code sent to ${maskedPhone}.`,
+    message: `If this number is registered, you'll receive a code shortly.`,
   };
 };
 
@@ -797,15 +810,34 @@ const verifyPhonePasswordResetOtp = async ({ phone, otp } = {}) => {
   const { verifyPhoneOtp, issueResetToken } = require('./otpService');
 
   if (!phone || !otp) {
-    const error = new Error('Phone number and OTP are required.');
+    const error = new Error('Phone number and verification code are required.');
     error.statusCode = 400;
     throw error;
   }
 
   const normalizedPhone = normalizePhoneNumber(phone);
-  verifyPhoneOtp(normalizedPhone, otp);
+  const { admin: adminClient } = getSupabaseClients();
 
-  const resetToken = issueResetToken(normalizedPhone);
+  if (!adminClient) {
+    const error = new Error('Service unavailable. Please try again later.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
+  if (!matchedUser) {
+    // Don't reveal whether the phone is registered — generic error
+    const error = new Error('Incorrect code. Please try again.');
+    error.statusCode = 400;
+    error.remainingAttempts = 0;
+    throw error;
+  }
+
+  // This throws with statusCode + remainingAttempts on failure
+  await verifyPhoneOtp(adminClient, matchedUser, otp);
+
+  // OTP verified — issue short-lived single-use reset token
+  const resetToken = issueResetToken(matchedUser);
   return { resetToken };
 };
 
@@ -824,25 +856,17 @@ const resetPasswordWithToken = async ({ token, password } = {}) => {
     throw error;
   }
 
-  const { phone } = consumeResetToken(token);
-
   const { admin: adminClient } = getSupabaseClients();
   if (!adminClient) {
-    const error = new Error('Server configuration error: Admin client required for password reset.');
+    const error = new Error('Service unavailable. Please try again later.');
     error.statusCode = 500;
     throw error;
   }
 
-  const matchedUser = await findUserByPhone(adminClient, phone);
-  if (!matchedUser) {
-    const error = new Error('Account not found. Please try again.');
-    error.statusCode = 404;
-    throw error;
-  }
+  // consumeResetToken verifies JWT, checks single-use flag in Supabase, marks used
+  const { userId } = await consumeResetToken(adminClient, token);
 
-  const { error: updateError } = await adminClient.auth.admin.updateUserById(matchedUser.id, {
-    password,
-  });
+  const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, { password });
 
   if (updateError) {
     console.error('[resetPasswordWithToken] update error:', updateError.message);

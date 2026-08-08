@@ -12,10 +12,9 @@ const client = axios.create({
 });
 
 /**
- * Extracts a human-readable error message from an Axios error.
- * All auth is routed through the backend — no client-side Supabase fallback.
+ * Creates an Error with attached response details (remainingAttempts, retryAfterSeconds, etc).
  */
-const getErrorMessage = (error) => {
+const createCustomError = (error) => {
   const responseData = error?.response?.data;
 
   const parseMessage = (val) => {
@@ -32,63 +31,41 @@ const getErrorMessage = (error) => {
     return typeof str === 'string' ? str : '';
   };
 
+  let message = '';
   if (typeof responseData === 'string' && responseData.trim()) {
-    const parsed = parseMessage(responseData);
-    if (parsed) return parsed;
-  }
-
-  if (responseData?.message) {
-    const msg = parseMessage(responseData.message);
-    if (msg && msg !== '{}') return msg;
-  }
-
-  if (responseData?.error) {
-    const msg = parseMessage(responseData.error);
-    if (msg && msg !== '{}') return msg;
-  }
-
-  if (responseData?.errors?.length) {
-    return responseData.errors
+    message = parseMessage(responseData);
+  } else if (responseData?.message) {
+    message = parseMessage(responseData.message);
+  } else if (responseData?.error) {
+    message = parseMessage(responseData.error);
+  } else if (responseData?.errors?.length) {
+    message = responseData.errors
       .map((item) => item.msg || item.message || item)
       .filter(Boolean)
       .join(', ');
   }
 
   const status = error?.response?.status;
-
-  if (status === 401) {
-    return 'Invalid email or password.';
+  if (!message) {
+    if (status === 401) message = 'Invalid credentials or password.';
+    else if (status === 409) message = 'An account with this email or phone already exists.';
+    else if (status === 400) message = 'Please check your details and try again.';
+    else if (status === 404 || status === 405) message = 'Auth service is unavailable. Please try again shortly.';
+    else if (status === 500 || status === 502 || status === 503) message = 'The server is temporarily unavailable. Please try again in a moment.';
+    else if (error?.code === 'ECONNABORTED') message = 'The request timed out. Please check your connection and try again.';
+    else if (error?.message === 'Network Error' || !error?.response) message = 'Unable to reach the server. Make sure you are online.';
+    else message = error?.message || 'Something went wrong. Please try again.';
   }
 
-  if (status === 409) {
-    return 'An account with this email already exists.';
+  const customError = new Error(message);
+  if (responseData?.remainingAttempts !== undefined) {
+    customError.remainingAttempts = responseData.remainingAttempts;
   }
-
-  if (status === 400) {
-    return responseData?.message || 'Please check your details and try again.';
+  if (responseData?.retryAfterSeconds !== undefined) {
+    customError.retryAfterSeconds = responseData.retryAfterSeconds;
   }
-
-  if (status === 404 || status === 405) {
-    return 'Auth service is unavailable. Please try again shortly.';
-  }
-
-  if (status === 500 || status === 502 || status === 503) {
-    return 'The server is temporarily unavailable. Please try again in a moment.';
-  }
-
-  if (error?.code === 'ECONNABORTED') {
-    return 'The request timed out. Please check your connection and try again.';
-  }
-
-  if (error?.message === 'Network Error' || !error?.response) {
-    return 'Unable to reach the server. Make sure you are online and the backend is running.';
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  return 'Something went wrong. Please try again.';
+  customError.status = status;
+  return customError;
 };
 
 /** Register a new account via the backend API. */
@@ -97,7 +74,7 @@ export async function registerUser(payload) {
     const { data } = await client.post('/register', payload);
     return data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
+    throw createCustomError(error);
   }
 }
 
@@ -107,7 +84,7 @@ export async function loginUser(payload) {
     const { data } = await client.post('/login', payload);
     return data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
+    throw createCustomError(error);
   }
 }
 
@@ -117,14 +94,52 @@ export async function verifyRegistrationOtp(phone, otp) {
     const { data } = await client.post('/verify-registration-otp', { phone, otp });
     return data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
+    throw createCustomError(error);
+  }
+}
+
+/** Request password reset via Email */
+export async function requestPasswordReset(email) {
+  try {
+    const { data } = await client.post('/forgot-password', { email });
+    return data;
+  } catch (error) {
+    throw createCustomError(error);
+  }
+}
+
+/** Request password reset OTP via Phone */
+export async function requestPhonePasswordReset(phone) {
+  try {
+    const { data } = await client.post('/forgot-password-phone', { phone });
+    return data;
+  } catch (error) {
+    throw createCustomError(error);
+  }
+}
+
+/** Verify Phone Password Reset OTP */
+export async function verifyPhoneOtp(phone, otp) {
+  try {
+    const { data } = await client.post('/verify-otp', { phone, otp });
+    return data;
+  } catch (error) {
+    throw createCustomError(error);
+  }
+}
+
+/** Reset password using the verification token issued after OTP verification */
+export async function resetPasswordWithToken(token, password) {
+  try {
+    const { data } = await client.post('/reset-password-with-token', { token, password });
+    return data;
+  } catch (error) {
+    throw createCustomError(error);
   }
 }
 
 /**
  * Validate an existing session token against the backend.
- * Returns null (without throwing) if the token is invalid/expired so the
- * AuthProvider can clear the session silently.
  */
 export async function fetchCurrentUser(token) {
   if (!token) return null;
@@ -134,7 +149,6 @@ export async function fetchCurrentUser(token) {
     });
     return data.user || null;
   } catch {
-    // Token is invalid or backend is unreachable — clear the session.
     return null;
   }
 }
