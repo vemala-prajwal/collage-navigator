@@ -4,3 +4,10 @@ node_modules
 .env
 client/.env
 server/.env
+
+# Vercel env export file
+vercel-env.txt
+
+# Ignore local build output
+client/dist/
+server/dist/
