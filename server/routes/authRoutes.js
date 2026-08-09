@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   registerUser,
+  verifyRegistrationOtp,
   loginUser,
   forgotPassword,
   forgotPasswordPhone,
@@ -17,8 +18,13 @@ const router = express.Router();
 
 router.get('/campuses', getCampuses);
 router.post('/register', registerValidators, registerUser);
+router.post('/verify-registration-otp', verifyRegistrationOtp);
 router.post('/login', loginValidators, loginUser);
+<<<<<<< HEAD
 router.post('/forgot-password', forgotPasswordValidators, forgotPassword);
+=======
+router.post('/forgot-password', forgotPassword);
+>>>>>>> prajwal
 router.post('/forgot-password-phone', forgotPasswordPhone);
 router.post('/verify-otp', verifyOtp);
 router.post('/reset-password-with-token', resetPasswordToken);

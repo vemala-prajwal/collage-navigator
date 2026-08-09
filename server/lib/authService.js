@@ -3,6 +3,7 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const { verifyFirebaseIdToken } = require('./firebaseAdmin');
 const { CAMPUSES } = require('../constants/campuses');
 
 // Load environment variables before anything reads them. In local dev the
@@ -110,15 +111,49 @@ const extractSupabaseMessage = (error) => {
   return 'Account creation failed. Please try again.';
 };
 
-const validateRegisterPayload = ({ name, email, password, campus, sanUsn } = {}) => {
+/**
+ * Normalizes phone numbers to standard E.164 format.
+ * Defaults to +91 (India) if a 10-digit number is provided without a country code.
+ */
+const normalizePhoneNumber = (phone) => {
+  if (!phone) return '';
+  let str = String(phone).trim().replace(/[\s()-]/g, '');
+  if (!str) return '';
+  if (str.startsWith('+')) {
+    return str;
+  }
+  if (/^\d{10}$/.test(str)) {
+    return `+91${str}`;
+  }
+  if (/^0\d{10}$/.test(str)) {
+    return `+91${str.slice(1)}`;
+  }
+  return `+${str}`;
+};
+
+const validateRegisterPayload = ({ name, email, phone, password, campus, sanUsn } = {}) => {
   const errors = [];
 
   if (!name || !String(name).trim()) {
     errors.push('Full name is required');
   }
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
-    errors.push('A valid email is required');
+  const rawEmail = String(email || '').trim();
+  const rawPhone = String(phone || '').trim();
+
+  if (!rawEmail && !rawPhone) {
+    errors.push('Either an email address or phone number is required');
+  } else {
+    if (rawEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+      errors.push('Please enter a valid email address');
+    }
+    if (rawPhone) {
+      const normalized = normalizePhoneNumber(rawPhone);
+      const digitsOnly = normalized.replace(/\D/g, '');
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        errors.push('Please enter a valid phone number (e.g. +91 9876543210)');
+      }
+    }
   }
 
   if (!password || String(password).length < 8) {
@@ -139,11 +174,12 @@ const validateRegisterPayload = ({ name, email, password, campus, sanUsn } = {})
   return errors;
 };
 
-const validateLoginPayload = ({ email, password } = {}) => {
+const validateLoginPayload = ({ email, phone, identifier, password } = {}) => {
   const errors = [];
+  const target = String(identifier || email || phone || '').trim();
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
-    errors.push('A valid email is required');
+  if (!target) {
+    errors.push('Email address or phone number is required');
   }
 
   if (!password) {
@@ -170,8 +206,10 @@ const mapSupabaseUser = (user) => {
 
   return {
     id: user.id,
-    name: metadata.name || user.email,
-    email: user.email,
+    name: metadata.name || user.email || metadata.phone || 'User',
+    email: user.email || metadata.email || '',
+    phone: user.phone || metadata.phone || '',
+    phoneVerified: Boolean(metadata.phone_verified || metadata.phoneVerified),
     campus: metadata.campus || 'Main Campus',
     role: metadata.role || 'student',
     sanUsn: metadata.sanUsn || '',
@@ -237,6 +275,35 @@ const findUserByEmail = async (authClient, email) => {
   return null;
 };
 
+const findUserByPhone = async (authClient, phone) => {
+  let page = 1;
+  const perPage = 200;
+
+  while (page <= 25) {
+    const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
+
+    if (error) {
+      console.error('[findUserByPhone] listUsers error:', error.message || error);
+      return null;
+    }
+
+    const match = data?.users?.find((user) => {
+      const meta = user.user_metadata || {};
+      return (
+        user.phone === phone ||
+        meta.phone === phone
+      );
+    });
+
+    if (match) return match;
+
+    if (!data?.users?.length || data.users.length < perPage) break;
+    page += 1;
+  }
+
+  return null;
+};
+
 const confirmUserEmail = async (authClient, userId) => {
   await authClient.auth.admin.updateUserById(userId, { email_confirm: true });
 };
@@ -282,9 +349,152 @@ const signUpWithClient = async ({ authClient, email, password, name, campus, rol
   };
 };
 
+const pendingRegistrations = new Map();
+
+const requestPhoneRegistration = async (payload = {}) => {
+  const { name, phone, password, campus, sanUsn } = payload;
+  const validationErrors = validateRegisterPayload({ name, phone, password, campus, sanUsn });
+  if (validationErrors.length) {
+    const error = new Error(validationErrors.join(', '));
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const normalizedPhone = normalizePhoneNumber(phone);
+  const { admin: adminClient } = getSupabaseClients();
+
+  // Check duplicate phone registration
+  if (adminClient) {
+    const existing = await findUserByPhone(adminClient, normalizedPhone);
+    if (existing) {
+      const duplicateError = new Error('An account with this phone number is already registered.');
+      duplicateError.statusCode = 409;
+      throw duplicateError;
+    }
+  }
+
+  // Store pending registration details
+  pendingRegistrations.set(normalizedPhone, {
+    name: String(name).trim(),
+    phone: normalizedPhone,
+    password,
+    campus,
+    sanUsn: String(sanUsn).trim().toUpperCase(),
+    role: 'student',
+  });
+
+  const lastFour = normalizedPhone.slice(-4);
+  const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
+
+  return {
+    requiresOtp: true,
+    maskedPhone,
+    phone: normalizedPhone,
+    message: `Verification code will be sent to ${maskedPhone} via SMS.`,
+  };
+};
+
+const verifyPhoneRegistrationOtp = async ({ phone, otp, firebaseToken } = {}) => {
+  if (!phone || !firebaseToken) {
+    const error = new Error('Phone number and Firebase verification token are required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
+  const normalizedPhone = normalizePhoneNumber(phone);
+  if (!decodedToken.phone_number || decodedToken.phone_number !== normalizedPhone) {
+    const error = new Error('Firebase token does not match the provided phone number.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const pending = pendingRegistrations.get(normalizedPhone);
+  if (!pending) {
+    const error = new Error('Registration session expired. Please register again.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const { admin: adminClient, public: publicClient } = getSupabaseClients();
+  const authClient = adminClient || publicClient;
+  if (!authClient) ensureSupabase();
+
+  let createdUser = null;
+  // Generate synthetic email for Supabase auth if only phone provided
+  const syntheticEmail = `${normalizedPhone.replace(/\+/g, '')}@phone.campusnavigator.internal`;
+
+  if (adminClient) {
+    const { data, error } = await adminClient.auth.admin.createUser({
+      email: syntheticEmail,
+      phone: normalizedPhone,
+      password: pending.password,
+      email_confirm: true,
+      phone_confirm: true,
+      user_metadata: {
+        name: pending.name,
+        campus: pending.campus,
+        role: pending.role,
+        sanUsn: pending.sanUsn,
+        phone: normalizedPhone,
+        phone_verified: true,
+      },
+    });
+
+    if (!error && data?.user) {
+      createdUser = data.user;
+    } else {
+      console.error('[verifyPhoneRegistrationOtp] createUser error:', error);
+      throw createRegistrationError(error || new Error('Failed to create account'));
+    }
+  } else {
+    const { data, error } = await publicClient.auth.signUp({
+      email: syntheticEmail,
+      password: pending.password,
+      options: {
+        data: {
+          name: pending.name,
+          campus: pending.campus,
+          role: pending.role,
+          sanUsn: pending.sanUsn,
+          phone: normalizedPhone,
+          phone_verified: true,
+        },
+      },
+    });
+    if (error || !data?.user) throw createRegistrationError(error || new Error('Failed to create account'));
+    createdUser = data.user;
+  }
+
+  // Clear pending
+  pendingRegistrations.delete(normalizedPhone);
+
+  const user = {
+    id: createdUser.id,
+    name: pending.name,
+    email: '',
+    phone: normalizedPhone,
+    phoneVerified: true,
+    campus: pending.campus,
+    role: pending.role,
+    sanUsn: pending.sanUsn,
+  };
+
+  return {
+    token: generateToken(user),
+    user,
+  };
+};
+
 const registerAccount = async (payload = {}) => {
-  const { name, email, password, campus, sanUsn } = payload;
-  const validationErrors = validateRegisterPayload({ name, email, password, campus, sanUsn });
+  const { name, email, phone, password, campus, sanUsn } = payload;
+
+  // Route to phone registration flow if phone provided and no email
+  if (phone && !email) {
+    return requestPhoneRegistration(payload);
+  }
+
+  const validationErrors = validateRegisterPayload({ name, email, phone, password, campus, sanUsn });
   if (validationErrors.length) {
     const error = new Error(validationErrors.join(', '));
     error.statusCode = 400;
@@ -298,7 +508,7 @@ const registerAccount = async (payload = {}) => {
   }
 
   const normalizedEmail = String(email).trim().toLowerCase();
-  // Public registration must never be able to assign an elevated role.
+  const normalizedPhone = phone ? normalizePhoneNumber(phone) : '';
   const normalizedRole = 'student';
   const normalizedSanUsn = String(sanUsn || '').trim().toUpperCase();
 
@@ -306,9 +516,6 @@ const registerAccount = async (payload = {}) => {
   let requiresEmailConfirmation = false;
 
   if (adminClient) {
-    // Check for an existing account before attempting creation. If the admin
-    // listing endpoint is unavailable, createUser below remains the source of
-    // truth and still handles duplicates safely.
     try {
       const existingUser = await findUserByEmail(adminClient, normalizedEmail);
       if (existingUser) {
@@ -317,14 +524,13 @@ const registerAccount = async (payload = {}) => {
         throw duplicateError;
       }
     } catch (preCheckError) {
-      if (preCheckError.statusCode) {
-        throw preCheckError;
-      }
+      if (preCheckError.statusCode) throw preCheckError;
       console.error('[registerAccount] pre-check error:', preCheckError.message || preCheckError);
     }
 
     const { data, error } = await adminClient.auth.admin.createUser({
       email: normalizedEmail,
+      phone: normalizedPhone || undefined,
       password,
       email_confirm: true,
       user_metadata: {
@@ -332,6 +538,8 @@ const registerAccount = async (payload = {}) => {
         campus,
         role: normalizedRole,
         sanUsn: normalizedSanUsn,
+        phone: normalizedPhone,
+        phone_verified: false,
       },
     });
 
@@ -339,14 +547,8 @@ const registerAccount = async (payload = {}) => {
       createdUser = data.user;
     } else {
       console.error('[registerAccount] createUser error:', error?.message || error);
+      if (isDuplicateAuthError(error)) throw createRegistrationError(error);
 
-      if (isDuplicateAuthError(error)) {
-        throw createRegistrationError(error);
-      }
-
-      // Use the public client when the admin endpoint is unavailable. This
-      // keeps registration usable on Vercel even when only the anon key is
-      // configured, while still auto-confirming when admin access exists.
       try {
         const fallbackClient = publicClient || adminClient;
         const fallbackResult = await signUpWithClient({
@@ -360,19 +562,8 @@ const registerAccount = async (payload = {}) => {
         });
         createdUser = fallbackResult.user;
         requiresEmailConfirmation = fallbackResult.requiresEmailConfirmation;
-
-        if (requiresEmailConfirmation && adminClient) {
-          try {
-            await confirmUserEmail(adminClient, createdUser.id);
-            requiresEmailConfirmation = false;
-          } catch (confirmError) {
-            console.warn('[registerAccount] Failed to auto-confirm fallback user:', confirmError.message);
-          }
-        }
       } catch (fallbackError) {
         if (fallbackError.statusCode) throw fallbackError;
-
-        console.error('[registerAccount] signUp fallback error:', fallbackError.message || fallbackError);
         throw createRegistrationError(error || fallbackError);
       }
     }
@@ -400,6 +591,8 @@ const registerAccount = async (payload = {}) => {
     id: createdUser.id,
     name: String(name).trim(),
     email: normalizedEmail,
+    phone: normalizedPhone,
+    phoneVerified: false,
     campus,
     role: normalizedRole,
     sanUsn: normalizedSanUsn,
@@ -418,8 +611,10 @@ const registerAccount = async (payload = {}) => {
 };
 
 const loginAccount = async (payload = {}) => {
-  const { email, password } = payload;
-  const validationErrors = validateLoginPayload({ email, password });
+  const { identifier, email, phone, password } = payload;
+  const targetInput = String(identifier || email || phone || '').trim();
+
+  const validationErrors = validateLoginPayload({ identifier: targetInput, password });
   if (validationErrors.length) {
     const error = new Error(validationErrors.join(', '));
     error.statusCode = 400;
@@ -427,25 +622,49 @@ const loginAccount = async (payload = {}) => {
   }
 
   const authClient = ensureSupabase();
-  const normalizedEmail = String(email).trim().toLowerCase();
+  const isPhone = !targetInput.includes('@') && /^[\d\s()+-]+$/.test(targetInput);
+
+  let loginEmail = targetInput.toLowerCase();
+
+  if (isPhone) {
+    const normalizedPhone = normalizePhoneNumber(targetInput);
+    const { admin: adminClient } = getSupabaseClients();
+    if (!adminClient) {
+      const error = new Error('Server configuration error: Admin client required for phone login.');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
+    if (!matchedUser) {
+      const authError = new Error('Invalid phone number or password.');
+      authError.statusCode = 401;
+      throw authError;
+    }
+
+    const metadata = matchedUser.user_metadata || {};
+    if (metadata.phone_verified === false) {
+      const unverifiedError = new Error('Your phone number is not verified. Please verify your phone number to sign in.');
+      unverifiedError.statusCode = 403;
+      throw unverifiedError;
+    }
+
+    loginEmail = matchedUser.email;
+  }
 
   let { data, error } = await authClient.auth.signInWithPassword({
-    email: normalizedEmail,
+    email: loginEmail,
     password,
   });
 
-  // If Supabase reports the email is unconfirmed (e.g. old account created without
-  // email_confirm:true), auto-confirm it with the admin API and retry once.
   if (error && /email not confirmed/i.test(error.message)) {
     try {
       const adminClient = getSupabaseAdminClient();
-      const unconfirmedUser = adminClient
-        ? await findUserByEmail(adminClient, normalizedEmail)
-        : null;
+      const unconfirmedUser = adminClient ? await findUserByEmail(adminClient, loginEmail) : null;
       if (unconfirmedUser) {
         await adminClient.auth.admin.updateUserById(unconfirmedUser.id, { email_confirm: true });
         const retry = await authClient.auth.signInWithPassword({
-          email: normalizedEmail,
+          email: loginEmail,
           password,
         });
         if (!retry.error) {
@@ -454,12 +673,12 @@ const loginAccount = async (payload = {}) => {
         }
       }
     } catch {
-      // Fall through to the error handler below.
+      // Fall through to error handler
     }
   }
 
   if (error) {
-    const authError = new Error('Invalid email or password.');
+    const authError = new Error('Invalid email/phone or password.');
     authError.statusCode = 401;
     throw authError;
   }
@@ -467,8 +686,10 @@ const loginAccount = async (payload = {}) => {
   const metadata = data.user.user_metadata || {};
   const user = {
     id: data.user.id,
-    name: metadata.name || normalizedEmail,
-    email: data.user.email,
+    name: metadata.name || loginEmail,
+    email: data.user.email || '',
+    phone: metadata.phone || data.user.phone || '',
+    phoneVerified: Boolean(metadata.phone_verified),
     campus: metadata.campus || 'Main Campus',
     role: metadata.role || 'student',
     sanUsn: metadata.sanUsn || '',
@@ -510,14 +731,23 @@ const getCurrentUser = async (token) => {
   }
 };
 
+<<<<<<< HEAD
 const requestPasswordReset = async (payload = {}) => {
   const { email, redirectTo } = payload;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
     const error = new Error('A valid email is required');
+=======
+// ─── Password Reset Service Functions ────────────────────────────────────────
+
+const requestPasswordReset = async ({ email, redirectTo } = {}) => {
+  if (!email) {
+    const error = new Error('Email address is required.');
+>>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
+<<<<<<< HEAD
   const { admin: adminClient, public: publicClient } = getSupabaseClients();
   // Prefer the admin client — it is not subject to the restrictive per-IP
   // rate limits that Supabase applies to public (anon) client email requests.
@@ -638,10 +868,42 @@ const requestPhonePasswordReset = async (payload = {}) => {
 
   if (!rawPhone || digitsOnly.length < 7 || digitsOnly.length > 15) {
     const error = new Error('A valid phone number is required');
+=======
+  const authClient = getSupabaseClient();
+  if (!authClient) {
+    const error = new Error('Email reset is not available right now.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const { error: sbError } = await authClient.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo,
+  });
+
+  if (sbError) {
+    // Rate-limit detection
+    if (/rate.?limit|too.?many/i.test(sbError.message)) {
+      const rateLimitError = new Error('Too many requests. Please wait before requesting another reset link.');
+      rateLimitError.statusCode = 429;
+      rateLimitError.retryAfterSeconds = 60;
+      throw rateLimitError;
+    }
+    console.error('[requestPasswordReset] Supabase error:', sbError.message);
+  }
+
+  // Always respond generically to avoid account enumeration
+  return { message: 'If an account exists for this email, a reset link has been sent.' };
+};
+
+const requestPhonePasswordReset = async ({ phone } = {}) => {
+  if (!phone) {
+    const error = new Error('Phone number is required.');
+>>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
+<<<<<<< HEAD
   const { admin: adminClient } = getSupabaseClients();
   const authClient = adminClient || getSupabaseClient();
 
@@ -678,10 +940,41 @@ const verifyPhonePasswordResetOtp = async (payload = {}) => {
 
   if (!phone || !otp) {
     const error = new Error('Phone number and 6-digit verification code are required.');
+=======
+  const normalizedPhone = normalizePhoneNumber(phone);
+  const { admin: adminClient } = getSupabaseClients();
+
+  if (!adminClient) {
+    const error = new Error('Service unavailable. Please try again later.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  // Silently look up the user — respond generically regardless of result
+  await findUserByPhone(adminClient, normalizedPhone);
+
+  const lastFour = normalizedPhone.slice(-4);
+  const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
+
+  // Generic response — identical whether phone exists or not
+  return {
+    maskedPhone,
+    phone: normalizedPhone,
+    message: `If this number is registered, you'll receive a code shortly.`,
+  };
+};
+
+const verifyPhonePasswordResetOtp = async ({ phone, otp, firebaseToken } = {}) => {
+  const { issueResetToken } = require('./otpService');
+
+  if (!phone || !otp) {
+    const error = new Error('Phone number and verification code are required.');
+>>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
+<<<<<<< HEAD
   const result = verifyPhoneOtp(phone, otp);
   return {
     message: 'Verification successful.',
@@ -695,10 +988,15 @@ const resetPasswordWithToken = async (payload = {}) => {
 
   if (!newPassword || String(newPassword).length < 8) {
     const error = new Error('Password must be at least 8 characters');
+=======
+  if (!firebaseToken) {
+    const error = new Error('Firebase verification token is required for phone OTP flow.');
+>>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
+<<<<<<< HEAD
   // Verify and decode resetToken
   const tokenData = verifyResetToken(resetToken);
   const phone = tokenData.phone;
@@ -735,9 +1033,80 @@ const resetPasswordWithToken = async (payload = {}) => {
   };
 };
 
+=======
+  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
+  const normalizedPhone = normalizePhoneNumber(phone);
+  if (!decodedToken.phone_number || decodedToken.phone_number !== normalizedPhone) {
+    const error = new Error('Firebase token does not match the provided phone number.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const { admin: adminClient } = getSupabaseClients();
+
+  if (!adminClient) {
+    const error = new Error('Service unavailable. Please try again later.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
+  if (!matchedUser) {
+    // Don't reveal whether the phone is registered — generic error
+    const error = new Error('Incorrect code. Please try again.');
+    error.statusCode = 400;
+    error.remainingAttempts = 0;
+    throw error;
+  }
+
+  const resetToken = issueResetToken(matchedUser);
+  return { resetToken };
+};
+
+const resetPasswordWithToken = async ({ token, password } = {}) => {
+  const { consumeResetToken } = require('./otpService');
+
+  if (!token || !password) {
+    const error = new Error('Reset token and new password are required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (String(password).length < 8) {
+    const error = new Error('Password must be at least 8 characters.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const { admin: adminClient } = getSupabaseClients();
+  if (!adminClient) {
+    const error = new Error('Service unavailable. Please try again later.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  // consumeResetToken verifies JWT, checks single-use flag in Supabase, marks used
+  const { userId } = await consumeResetToken(adminClient, token);
+
+  const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, { password });
+
+  if (updateError) {
+    console.error('[resetPasswordWithToken] update error:', updateError.message);
+    const error = new Error('Failed to update password. Please try again.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  return { message: 'Password has been reset successfully.' };
+};
+
+// ─── Exports ─────────────────────────────────────────────────────────────────
+
+>>>>>>> prajwal
 module.exports = {
   CAMPUSES,
   registerAccount,
+  verifyPhoneRegistrationOtp,
   loginAccount,
   getCurrentUser,
   requestPasswordReset,
@@ -746,6 +1115,10 @@ module.exports = {
   resetPasswordWithToken,
   validateRegisterPayload,
   validateLoginPayload,
+  normalizePhoneNumber,
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> prajwal

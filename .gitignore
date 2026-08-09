@@ -1,6 +1,21 @@
 node_modules
+<<<<<<< HEAD
 dist
 client/dist
 .env
 client/.env
 server/.env
+=======
+
+# Local environment files
+.env
+client/.env
+server/.env
+
+# Vercel env export file
+vercel-env.txt
+
+# Ignore local build output
+client/dist/
+server/dist/
+>>>>>>> prajwal
