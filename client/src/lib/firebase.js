@@ -11,7 +11,16 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth = getAuth(firebaseApp);
+
+let _firebaseAuth = null;
+const getFirebaseAuth = () => {
+  if (_firebaseAuth) return _firebaseAuth;
+  if (typeof window === 'undefined') {
+    throw new Error('getFirebaseAuth requires a browser environment.');
+  }
+  _firebaseAuth = getAuth(firebaseApp);
+  return _firebaseAuth;
+};
 
 const getRecaptchaVerifier = (containerId = 'recaptcha-container') => {
   if (typeof window === 'undefined') {
@@ -23,7 +32,7 @@ const getRecaptchaVerifier = (containerId = 'recaptcha-container') => {
     return win.firebaseRecaptchaVerifier;
   }
 
-  win.firebaseRecaptchaVerifier = new RecaptchaVerifier(containerId, { size: 'invisible' }, firebaseAuth);
+  win.firebaseRecaptchaVerifier = new RecaptchaVerifier(containerId, { size: 'invisible' }, getFirebaseAuth());
   return win.firebaseRecaptchaVerifier;
 };
 
@@ -35,9 +44,11 @@ export function normalizePhoneNumber(phoneNumber) {
 
 export function sendPhoneOtp(phoneNumber, containerId = 'recaptcha-container') {
   const verifier = getRecaptchaVerifier(containerId);
-  return signInWithPhoneNumber(firebaseAuth, phoneNumber, verifier);
+  return signInWithPhoneNumber(getFirebaseAuth(), phoneNumber, verifier);
 }
 
 export function confirmPhoneOtp(confirmationResult, code) {
   return confirmationResult.confirm(code);
 }
+
+export { getFirebaseAuth };

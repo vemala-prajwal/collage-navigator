@@ -10,8 +10,17 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
 };
 
-export const firebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth = getAuth(firebaseApp);
+export const firebaseApp = initializeApp(firebaseConfig); 
+
+let _firebaseAuth: ReturnType<typeof getAuth> | null = null;
+const getFirebaseAuth = () => {
+  if (_firebaseAuth) return _firebaseAuth;
+  if (typeof window === 'undefined') {
+    throw new Error('getFirebaseAuth requires a browser environment.');
+  }
+  _firebaseAuth = getAuth(firebaseApp);
+  return _firebaseAuth;
+};
 
 const getRecaptchaVerifier = (containerId = 'recaptcha-container'): RecaptchaVerifier => {
   if (typeof window === 'undefined') {
@@ -32,9 +41,11 @@ export function sendPhoneOtp(
   containerId = 'recaptcha-container'
 ): Promise<ConfirmationResult> {
   const verifier = getRecaptchaVerifier(containerId);
-  return signInWithPhoneNumber(firebaseAuth, phoneNumber, verifier);
+  return signInWithPhoneNumber(getFirebaseAuth(), phoneNumber, verifier);
 }
 
 export function confirmPhoneOtp(confirmationResult: ConfirmationResult, code: string) {
   return confirmationResult.confirm(code);
 }
+
+export { getFirebaseAuth };
