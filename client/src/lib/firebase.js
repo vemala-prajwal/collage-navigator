@@ -27,6 +27,12 @@ const getRecaptchaVerifier = (containerId = 'recaptcha-container') => {
   return win.firebaseRecaptchaVerifier;
 };
 
+export function normalizePhoneNumber(phoneNumber) {
+  if (!phoneNumber) return '';
+  const digits = phoneNumber.toString().replace(/\D/g, '');
+  return digits.startsWith('0') ? `+91${digits.slice(1)}` : digits.startsWith('+') ? `+${digits.replace(/[^\d]/g, '')}` : `+91${digits}`;
+}
+
 export function sendPhoneOtp(phoneNumber, containerId = 'recaptcha-container') {
   const verifier = getRecaptchaVerifier(containerId);
   return signInWithPhoneNumber(firebaseAuth, phoneNumber, verifier);
