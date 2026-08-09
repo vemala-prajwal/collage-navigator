@@ -3,6 +3,7 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const { verifyFirebaseIdToken } = require('./firebaseAdmin');
 const { CAMPUSES } = require('../constants/campuses');
 
 // Load environment variables before anything reads them. In local dev the
@@ -351,9 +352,6 @@ const signUpWithClient = async ({ authClient, email, password, name, campus, rol
 const pendingRegistrations = new Map();
 
 const requestPhoneRegistration = async (payload = {}) => {
-  const { sendSms } = require('./smsService');
-  const { createPhoneOtp } = require('./otpService');
-
   const { name, phone, password, campus, sanUsn } = payload;
   const validationErrors = validateRegisterPayload({ name, phone, password, campus, sanUsn });
   if (validationErrors.length) {
@@ -375,9 +373,6 @@ const requestPhoneRegistration = async (payload = {}) => {
     }
   }
 
-  // Create OTP
-  const { plainOtp } = createPhoneOtp(normalizedPhone);
-
   // Store pending registration details
   pendingRegistrations.set(normalizedPhone, {
     name: String(name).trim(),
@@ -388,9 +383,6 @@ const requestPhoneRegistration = async (payload = {}) => {
     role: 'student',
   });
 
-  const smsMessage = `Your Campus Navigator registration code is: ${plainOtp}. Valid for 10 minutes.`;
-  await sendSms({ to: normalizedPhone, message: smsMessage });
-
   const lastFour = normalizedPhone.slice(-4);
   const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
 
@@ -398,16 +390,24 @@ const requestPhoneRegistration = async (payload = {}) => {
     requiresOtp: true,
     maskedPhone,
     phone: normalizedPhone,
-    message: `Verification code sent to ${maskedPhone} via SMS.`,
+    message: `Verification code will be sent to ${maskedPhone} via SMS.`,
   };
 };
 
-const verifyPhoneRegistrationOtp = async ({ phone, otp }) => {
-  const { verifyPhoneOtp } = require('./otpService');
-  const normalizedPhone = normalizePhoneNumber(phone);
+const verifyPhoneRegistrationOtp = async ({ phone, otp, firebaseToken } = {}) => {
+  if (!phone || !firebaseToken) {
+    const error = new Error('Phone number and Firebase verification token are required.');
+    error.statusCode = 400;
+    throw error;
+  }
 
-  // Verify OTP
-  verifyPhoneOtp(normalizedPhone, otp);
+  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
+  const normalizedPhone = normalizePhoneNumber(phone);
+  if (!decodedToken.phone_number || decodedToken.phone_number !== normalizedPhone) {
+    const error = new Error('Firebase token does not match the provided phone number.');
+    error.statusCode = 403;
+    throw error;
+  }
 
   const pending = pendingRegistrations.get(normalizedPhone);
   if (!pending) {
@@ -767,9 +767,6 @@ const requestPasswordReset = async ({ email, redirectTo } = {}) => {
 };
 
 const requestPhonePasswordReset = async ({ phone } = {}) => {
-  const { sendSms } = require('./smsService');
-  const { createPhoneOtp } = require('./otpService');
-
   if (!phone) {
     const error = new Error('Phone number is required.');
     error.statusCode = 400;
@@ -786,14 +783,7 @@ const requestPhonePasswordReset = async ({ phone } = {}) => {
   }
 
   // Silently look up the user — respond generically regardless of result
-  const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
-
-  if (matchedUser) {
-    // Only send OTP if user exists — but don't reveal this to caller
-    const { plainOtp } = await createPhoneOtp(adminClient, matchedUser, 'reset');
-    const smsMessage = `Your Campus Navigator password reset code is: ${plainOtp}. Valid for 10 minutes. Do not share this code.`;
-    await sendSms({ to: normalizedPhone, message: smsMessage });
-  }
+  await findUserByPhone(adminClient, normalizedPhone);
 
   const lastFour = normalizedPhone.slice(-4);
   const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
@@ -806,8 +796,8 @@ const requestPhonePasswordReset = async ({ phone } = {}) => {
   };
 };
 
-const verifyPhonePasswordResetOtp = async ({ phone, otp } = {}) => {
-  const { verifyPhoneOtp, issueResetToken } = require('./otpService');
+const verifyPhonePasswordResetOtp = async ({ phone, otp, firebaseToken } = {}) => {
+  const { issueResetToken } = require('./otpService');
 
   if (!phone || !otp) {
     const error = new Error('Phone number and verification code are required.');
@@ -815,7 +805,20 @@ const verifyPhonePasswordResetOtp = async ({ phone, otp } = {}) => {
     throw error;
   }
 
+  if (!firebaseToken) {
+    const error = new Error('Firebase verification token is required for phone OTP flow.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
   const normalizedPhone = normalizePhoneNumber(phone);
+  if (!decodedToken.phone_number || decodedToken.phone_number !== normalizedPhone) {
+    const error = new Error('Firebase token does not match the provided phone number.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const { admin: adminClient } = getSupabaseClients();
 
   if (!adminClient) {
@@ -833,10 +836,6 @@ const verifyPhonePasswordResetOtp = async ({ phone, otp } = {}) => {
     throw error;
   }
 
-  // This throws with statusCode + remainingAttempts on failure
-  await verifyPhoneOtp(adminClient, matchedUser, otp);
-
-  // OTP verified — issue short-lived single-use reset token
   const resetToken = issueResetToken(matchedUser);
   return { resetToken };
 };

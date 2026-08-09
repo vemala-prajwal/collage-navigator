@@ -43,6 +43,7 @@ export default function AuthShell({ eyebrow, title, description, children, foote
             <div>{children}</div>
           </div>
         </section>
+        <div id="recaptcha-container" className="hidden" />
 
         {footer ? <div className="mt-6 text-center text-sm text-foreground-muted">{footer}</div> : null}
       </div>

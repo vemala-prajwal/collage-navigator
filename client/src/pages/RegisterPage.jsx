@@ -20,6 +20,7 @@ import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
 import { useAuth } from '../context/AuthContext';
 import { fetchCampuses, verifyRegistrationOtp } from '../services/authApi';
+import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber } from '../lib/firebase';
 import { CAMPUSES } from '../lib/campuses';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,6 +76,7 @@ function RegisterPage() {
   // Phone OTP Verification State
   const [maskedPhone, setMaskedPhone] = useState('');
   const [normalizedPhone, setNormalizedPhone] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [cooldown, setCooldown] = useState(0);
   const [otpTimer, setOtpTimer] = useState(OTP_EXPIRY_SECONDS);
@@ -210,8 +212,18 @@ function RegisterPage() {
       const result = await register(payload);
 
       if (result.requiresOtp) {
+        const nextPhone = normalizePhoneNumber(result.phone || rawContact);
+        try {
+          const confirmation = await sendPhoneOtp(nextPhone);
+          setConfirmationResult(confirmation);
+        } catch (sendError) {
+          setError('Unable to send SMS verification. Please try again.');
+          setLoading(false);
+          return;
+        }
+
         setMaskedPhone(result.maskedPhone || rawContact);
-        setNormalizedPhone(result.phone || rawContact);
+        setNormalizedPhone(nextPhone);
         setStep('otp_verification');
         setOtpDigits(['', '', '', '', '', '']);
         setOtpTimer(OTP_EXPIRY_SECONDS);
@@ -279,9 +291,16 @@ function RegisterPage() {
       return;
     }
 
+    if (!confirmationResult) {
+      setError('Unable to verify code. Please request a new SMS code.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await verifyRegistrationOtp(normalizedPhone || form.contactInput, otpCode);
+      const userCredential = await confirmPhoneOtp(confirmationResult, otpCode);
+      const firebaseToken = await userCredential.user.getIdToken();
+      const res = await verifyRegistrationOtp(normalizedPhone || form.contactInput, otpCode, firebaseToken);
       if (res.token) {
         localStorage.setItem('campus_auth_token', res.token);
         localStorage.setItem('campus_auth_user', JSON.stringify(res.user));

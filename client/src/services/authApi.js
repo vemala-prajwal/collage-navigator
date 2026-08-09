@@ -89,9 +89,9 @@ export async function loginUser(payload) {
 }
 
 /** Verify phone registration OTP code to activate account and sign in. */
-export async function verifyRegistrationOtp(phone, otp) {
+export async function verifyRegistrationOtp(phone, otp, firebaseToken) {
   try {
-    const { data } = await client.post('/verify-registration-otp', { phone, otp });
+    const { data } = await client.post('/verify-registration-otp', { phone, otp, firebaseToken });
     return data;
   } catch (error) {
     throw createCustomError(error);
@@ -119,9 +119,9 @@ export async function requestPhonePasswordReset(phone) {
 }
 
 /** Verify Phone Password Reset OTP */
-export async function verifyPhoneOtp(phone, otp) {
+export async function verifyPhoneOtp(phone, otp, firebaseToken) {
   try {
-    const { data } = await client.post('/verify-otp', { phone, otp });
+    const { data } = await client.post('/verify-otp', { phone, otp, firebaseToken });
     return data;
   } catch (error) {
     throw createCustomError(error);

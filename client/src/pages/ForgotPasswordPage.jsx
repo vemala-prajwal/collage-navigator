@@ -21,6 +21,7 @@ import {
   resetPasswordWithToken,
   verifyPhoneOtp,
 } from '../services/authApi';
+import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber } from '../lib/firebase';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const COOLDOWN_SECONDS = 60;
@@ -39,6 +40,7 @@ function ForgotPasswordPage() {
   // Phone OTP state
   const [normalizedPhone, setNormalizedPhone] = useState('');
   const [maskedPhone, setMaskedPhone] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [cooldown, setCooldown] = useState(0);
   const [otpTimer, setOtpTimer] = useState(OTP_EXPIRY_SECONDS);
@@ -123,7 +125,16 @@ function ForgotPasswordPage() {
         toast.success('Reset link sent to your email');
       } else {
         const res = await requestPhonePasswordReset(rawInput);
-        setNormalizedPhone(res.phone || rawInput);
+        const normalized = normalizePhoneNumber(rawInput);
+        try {
+          const confirmation = await sendPhoneOtp(normalized);
+          setConfirmationResult(confirmation);
+        } catch (sendError) {
+          setError('Unable to send SMS verification. Please try again.');
+          setLoading(false);
+          return;
+        }
+        setNormalizedPhone(normalized);
         setMaskedPhone(res.maskedPhone || rawInput);
         setStep('otp_verify');
         setOtpDigits(['', '', '', '', '', '']);
@@ -151,8 +162,8 @@ function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await requestPhonePasswordReset(normalizedPhone);
-      setMaskedPhone(res.maskedPhone || normalizedPhone);
+      const confirmation = await sendPhoneOtp(normalizedPhone);
+      setConfirmationResult(confirmation);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpTimer(OTP_EXPIRY_SECONDS);
       setCooldown(COOLDOWN_SECONDS);
@@ -209,6 +220,11 @@ function ForgotPasswordPage() {
       return;
     }
 
+    if (!confirmationResult) {
+      setError('Unable to verify code. Please request a new SMS code.');
+      return;
+    }
+
     if (otpTimer <= 0) {
       setError('Verification code has expired. Please request a new code.');
       return;
@@ -217,7 +233,9 @@ function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await verifyPhoneOtp(normalizedPhone, code);
+      const userCredential = await confirmPhoneOtp(confirmationResult, code);
+      const firebaseToken = await userCredential.user.getIdToken();
+      const res = await verifyPhoneOtp(normalizedPhone, code, firebaseToken);
       if (!res?.resetToken) {
         throw new Error('Verification failed. Please try requesting a new code.');
       }
