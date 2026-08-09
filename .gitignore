@@ -1,21 +1,17 @@
 node_modules
-<<<<<<< HEAD
+
+# Build output
 dist
 client/dist
-.env
-client/.env
-server/.env
-=======
 
-# Local environment files
+# Local environment files (keep secrets out of git)
 .env
 client/.env
 server/.env
 
-# Vercel env export file
+# Vercel env export file (optional import)
 vercel-env.txt
 
 # Ignore local build output
 client/dist/
 server/dist/
->>>>>>> prajwal
