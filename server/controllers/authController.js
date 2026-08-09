@@ -47,26 +47,13 @@ const loginUser = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: formatValidationErrors(errors) });
     }
-
-    const result = await loginAccount(req.body);
-    res.json(result);
   } catch (error) {
     if (error.statusCode) {
       return res.status(error.statusCode).json({ message: error.message });
     }
-    next(error);
-  }
-};
-
-const registerValidators = [
-  body('name').isString().trim().notEmpty().withMessage('Full name is required'),
-  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
-  body('campus').isIn(CAMPUSES).withMessage('Please select a valid campus'),
-  body('sanUsn')
-    .isString()
-    .trim()
-    .notEmpty().withMessage('SAN/USN number is required')
-    .matches(/^[A-Za-z0-9]+$/).withMessage('SAN/USN must contain only letters and numbers'),
+      const bodyRes = { message: error.message };
+      if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
+      return res.status(error.statusCode).json(bodyRes);
 ];
 
 const loginValidators = [
@@ -111,17 +98,9 @@ const forgotPasswordPhone = async (req, res, next) => {
     res.json(result);
   } catch (error) {
     if (error.statusCode) {
-<<<<<<< HEAD
-      const body = { message: error.message };
-      if (error.retryAfterSeconds != null) {
-        body.retryAfterSeconds = error.retryAfterSeconds;
-      }
-      return res.status(error.statusCode).json(body);
-=======
       const bodyRes = { message: error.message };
       if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
       return res.status(error.statusCode).json(bodyRes);
->>>>>>> prajwal
     }
     next(error);
   }
@@ -133,17 +112,9 @@ const verifyOtp = async (req, res, next) => {
     res.json(result);
   } catch (error) {
     if (error.statusCode) {
-<<<<<<< HEAD
-      const body = { message: error.message };
-      if (error.remainingAttempts != null) {
-        body.remainingAttempts = error.remainingAttempts;
-      }
-      return res.status(error.statusCode).json(body);
-=======
       const bodyRes = { message: error.message };
       if (error.remainingAttempts != null) bodyRes.remainingAttempts = error.remainingAttempts;
       return res.status(error.statusCode).json(bodyRes);
->>>>>>> prajwal
     }
     next(error);
   }
@@ -166,7 +137,6 @@ const forgotPasswordValidators = [
   body('email').isEmail().normalizeEmail().withMessage('A valid email is required'),
 ];
 
-=======
 >>>>>>> prajwal
 const getCampuses = (req, res) => {
   res.json({ campuses: CAMPUSES });
@@ -174,10 +144,7 @@ const getCampuses = (req, res) => {
 
 module.exports = {
   registerUser,
-<<<<<<< HEAD
-=======
   verifyRegistrationOtp,
->>>>>>> prajwal
   loginUser,
   forgotPassword,
   forgotPasswordPhone,
@@ -185,13 +152,10 @@ module.exports = {
   resetPasswordToken,
   registerValidators,
   loginValidators,
-<<<<<<< HEAD
   forgotPasswordValidators,
   getCampuses,
 };
 
-
-=======
   getCampuses,
 };
 
