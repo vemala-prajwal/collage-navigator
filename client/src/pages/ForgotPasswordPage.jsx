@@ -1,40 +1,7 @@
-<<<<<<< HEAD
-import { useEffect, useRef, useState } from 'react';
-=======
 import { useEffect, useMemo, useRef, useState } from 'react';
->>>>>>> prajwal
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  KeyRound,
-  Loader2,
-<<<<<<< HEAD
-  Lock,
-  Mail,
-  Phone,
-  ShieldCheck,
-} from 'lucide-react';
-import AuthShell from '../components/auth/AuthShell';
-import AuthField from '../components/auth/AuthField';
-import {
-  requestPasswordReset as apiRequestEmailReset,
-  requestPhonePasswordReset as apiRequestPhoneReset,
-  resetPasswordWithToken as apiResetPasswordWithToken,
-  verifyPhoneOtp as apiVerifyPhoneOtp,
-} from '../services/authApi';
-import { supabase } from '../lib/supabaseClient';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_PATTERN = /^\+?[1-9]\d{7,14}$/;
-=======
-  Mail,
-  Phone,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Mail, Phone } from 'lucide-react';
 import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
 import { PASSWORD_CHECKS, getPasswordStrength } from '../lib/passwordStrength';
@@ -47,343 +14,107 @@ import {
 import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber } from '../lib/firebase';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
->>>>>>> prajwal
 const COOLDOWN_SECONDS = 60;
 const OTP_EXPIRY_SECONDS = 600; // 10 minutes
 
 function ForgotPasswordPage() {
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-  // Multi-step flow state: 'input' | 'email_sent' | 'otp_verification' | 'new_password' | 'success'
-  const [step, setStep] = useState('input');
+  const [step, setStep] = useState('request'); // request | email_sent | otp_verify | new_password | reset_success
 
-  // Input state
-  const [inputVal, setInputVal] = useState('');
-  const [detectedType, setDetectedType] = useState('email'); // 'email' | 'phone'
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [cooldown, setCooldown] = useState(0);
-
-  // Phone OTP Flow State
-  const [maskedPhone, setMaskedPhone] = useState('');
-  const [normalizedPhone, setNormalizedPhone] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-  const [otpTimer, setOtpTimer] = useState(OTP_EXPIRY_SECONDS);
-  const [remainingAttempts, setRemainingAttempts] = useState(null);
-  const [resetToken, setResetToken] = useState('');
-  const otpInputRefs = useRef([]);
-
-  // New Password State
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Auto-detect input type (email or phone) as the user types
-  useEffect(() => {
-    const raw = inputVal.trim();
-=======
-  // Steps: 'request' | 'email_sent' | 'otp_verify' | 'new_password' | 'reset_success'
-  const [step, setStep] = useState('request');
-
-  // Input states
   const [identifier, setIdentifier] = useState('');
   const [detectedType, setDetectedType] = useState('email'); // 'email' | 'phone'
 
-  // Phone OTP state
   const [normalizedPhone, setNormalizedPhone] = useState('');
   const [maskedPhone, setMaskedPhone] = useState('');
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const otpInputRefs = useRef([]);
+
   const [cooldown, setCooldown] = useState(0);
   const [otpTimer, setOtpTimer] = useState(OTP_EXPIRY_SECONDS);
   const [remainingAttempts, setRemainingAttempts] = useState(null);
-  const otpInputRefs = useRef([]);
 
-  // Gated Reset Token after successful OTP
   const [resetToken, setResetToken] = useState('');
 
-  // Password reset states
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Common UI states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-detect Email vs Phone Mode as user types
   useEffect(() => {
     const raw = identifier.trim();
->>>>>>> prajwal
-    if (!raw) {
-      setDetectedType('email');
-      return;
-    }
-<<<<<<< HEAD
-
-=======
->>>>>>> prajwal
-    if (raw.includes('@')) {
-      setDetectedType('email');
-    } else if (/^[\d\s()+-]+$/.test(raw)) {
-      setDetectedType('phone');
-    }
-<<<<<<< HEAD
-  }, [inputVal]);
-
-  // Cooldown timer (60 seconds)
-  useEffect(() => {
-    if (cooldown <= 0) return undefined;
-    const timer = setInterval(() => {
-      setCooldown((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
-
-  // OTP expiry countdown timer (10 minutes)
-  useEffect(() => {
-    if (step !== 'otp_verification' || otpTimer <= 0) return undefined;
-    const timer = setInterval(() => {
-      setOtpTimer((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [step, otpTimer]);
-
-  // Step 1 Submit: Combined Email / Phone submit handler
-  const handleInitialSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-
-    const raw = inputVal.trim();
-
-    if (!raw) {
-=======
+    if (!raw) return setDetectedType('email');
+    if (raw.includes('@')) setDetectedType('email');
+    else if (/^[\d\s()+-]+$/.test(raw)) setDetectedType('phone');
   }, [identifier]);
 
-  // Resend cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return undefined;
-    const timer = setInterval(() => setCooldown((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
   }, [cooldown]);
 
-  // OTP expiry timer
   useEffect(() => {
     if (step !== 'otp_verify' || otpTimer <= 0) return undefined;
-    const timer = setInterval(() => setOtpTimer((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setOtpTimer((s) => s - 1), 1000);
+    return () => clearInterval(t);
   }, [step, otpTimer]);
 
   const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
 
-  // ── Step 1 Submit: Request Reset (Email or Phone) ─────────────────────────
-  const handleRequestSubmit = async (event) => {
-    event.preventDefault();
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
     setError('');
+    const raw = identifier.trim();
+    if (!raw) return setError('Please enter your email address or phone number.');
 
-    const rawInput = identifier.trim();
-    if (!rawInput) {
->>>>>>> prajwal
-      setError('Please enter your email address or phone number.');
-      return;
-    }
-
-<<<<<<< HEAD
-    if (cooldown > 0) {
-      setError(`Please wait ${cooldown} seconds before requesting another code.`);
-      return;
-    }
-
-    // Determine type
     const isEmail = raw.includes('@');
-    const digitsOnly = raw.replace(/\D/g, '');
-
     if (isEmail) {
-      const normalizedEmail = raw.toLowerCase();
-      if (!EMAIL_PATTERN.test(normalizedEmail)) {
-        setError('Please enter a valid email address.');
-        return;
-      }
+      if (!EMAIL_PATTERN.test(raw.toLowerCase())) return setError('Please enter a valid email address.');
+    } else {
+      const digits = raw.replace(/\D/g, '');
+      if (digits.length < 7 || digits.length > 15) return setError('Please enter a valid phone number.');
+    }
 
-      setLoading(true);
-
-      const siteUrl =
-        import.meta.env.VITE_SITE_URL ||
-        import.meta.env.NEXT_PUBLIC_SITE_URL ||
-        window.location.origin;
-      const targetRedirectTo = `${siteUrl}/reset-password`;
-
-      let success = false;
-      let errorMessage = '';
-      let retryAfterSeconds = null;
-
-      try {
-        await apiRequestEmailReset(normalizedEmail, targetRedirectTo);
-        success = true;
-      } catch (apiErr) {
-        const errText = apiErr?.message || '';
-        retryAfterSeconds = apiErr?.retryAfterSeconds ?? null;
-
-        const isRateLimitErr = retryAfterSeconds != null || /rate.?limit|too.?many/i.test(errText);
-
-        if (!isRateLimitErr && supabase) {
-          try {
-            const { error: sbErr } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-              redirectTo: targetRedirectTo,
-            });
-            if (!sbErr) {
-              success = true;
-            } else {
-              errorMessage = sbErr.message || 'Could not send reset link. Please try again.';
-            }
-          } catch (sbThrown) {
-            errorMessage = sbThrown?.message || 'Could not send reset link. Please try again.';
-          }
-        } else {
-          errorMessage = retryAfterSeconds
-            ? `Please wait ${retryAfterSeconds} seconds before requesting another link.`
-            : errText || 'Could not send reset link. Please try again.';
-        }
-      }
-
-      setLoading(false);
-
-      if (success) {
+    setLoading(true);
+    try {
+      if (isEmail) {
+        await requestPasswordReset(raw.toLowerCase());
         setStep('email_sent');
         setCooldown(COOLDOWN_SECONDS);
         toast.success('Reset link sent');
       } else {
-        setError(errorMessage);
-        toast.error(errorMessage);
-      }
-    } else {
-      // Phone Flow
-      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-        setError('Please enter a valid phone number (e.g. +1 234 567 8900).');
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await apiRequestPhoneReset(raw);
-        setMaskedPhone(res.maskedPhone || raw);
-        setNormalizedPhone(res.phone || raw);
-        setStep('otp_verification');
-        setOtpDigits(['', '', '', '', '', '']);
-        setOtpTimer(OTP_EXPIRY_SECONDS);
-        setCooldown(COOLDOWN_SECONDS);
-        toast.success('Verification code sent via SMS');
-      } catch (phoneErr) {
-        const msg = phoneErr?.message || 'Could not send verification code. Please try again.';
-        setError(msg);
-        toast.error(msg);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  // Step 2: Handle OTP Digit Input Box Changes
-  const handleOtpDigitChange = (index, value) => {
-    const cleanDigit = value.replace(/\D/g, '').slice(-1);
-    const newDigits = [...otpDigits];
-    newDigits[index] = cleanDigit;
-    setOtpDigits(newDigits);
-    if (error) setError('');
-
-    // Auto-advance focus to next digit box
-    if (cleanDigit && index < 5 && otpInputRefs.current[index + 1]) {
-      otpInputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index, event) => {
-    if (event.key === 'Backspace' && !otpDigits[index] && index > 0 && otpInputRefs.current[index - 1]) {
-      otpInputRefs.current[index - 1].focus();
-    }
-  };
-
-  const handleOtpPaste = (event) => {
-    event.preventDefault();
-    const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pasted.length === 6) {
-      const digits = pasted.split('');
-      setOtpDigits(digits);
-      if (otpInputRefs.current[5]) otpInputRefs.current[5].focus();
-    }
-  };
-
-  // Submit OTP Verification
-  const handleVerifyOtp = async (event) => {
-    if (event) event.preventDefault();
-    setError('');
-
-    const otpCode = otpDigits.join('');
-    if (otpCode.length !== 6) {
-      setError('Please enter all 6 digits of the verification code.');
-=======
-    const isEmail = rawInput.includes('@');
-
-    if (isEmail) {
-      if (!EMAIL_PATTERN.test(rawInput.toLowerCase())) {
-        setError('Please enter a valid email address.');
-        return;
-      }
-    } else {
-      const digitsOnly = rawInput.replace(/\D/g, '');
-      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-        setError('Please enter a valid phone number (e.g. +91 98765 43210).');
-        return;
-      }
-    }
-
-    setLoading(true);
-
-    try {
-      if (isEmail) {
-        await requestPasswordReset(rawInput.toLowerCase());
-        setStep('email_sent');
-        toast.success('Reset link sent to your email');
-      } else {
-        const res = await requestPhonePasswordReset(rawInput);
-        const normalized = normalizePhoneNumber(rawInput);
-        try {
-          const confirmation = await sendPhoneOtp(normalized);
-          setConfirmationResult(confirmation);
-        } catch (sendError) {
-          setError('Unable to send SMS verification. Please try again.');
-          setLoading(false);
-          return;
-        }
+        const res = await requestPhonePasswordReset(raw);
+        const normalized = normalizePhoneNumber(raw);
+        const confirmation = await sendPhoneOtp(normalized);
+        setConfirmationResult(confirmation);
         setNormalizedPhone(normalized);
-        setMaskedPhone(res.maskedPhone || rawInput);
-        setStep('otp_verify');
+        setMaskedPhone(res.maskedPhone || raw);
         setOtpDigits(['', '', '', '', '', '']);
         setOtpTimer(OTP_EXPIRY_SECONDS);
         setCooldown(COOLDOWN_SECONDS);
         setRemainingAttempts(null);
+        setStep('otp_verify');
         toast.success('Verification code sent via SMS');
       }
     } catch (err) {
-      const msg = err?.message || 'Unable to request password reset. Please try again.';
+      const msg = err?.message || 'Unable to request password reset.';
       setError(msg);
-      if (err?.retryAfterSeconds) {
-        setCooldown(err.retryAfterSeconds);
-      }
+      if (err?.retryAfterSeconds) setCooldown(err.retryAfterSeconds);
       toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Resend Phone OTP ───────────────────────────────────────────────────────
   const handleResendOtp = async () => {
     if (cooldown > 0) return;
     setError('');
     setLoading(true);
-
     try {
       const confirmation = await sendPhoneOtp(normalizedPhone);
       setConfirmationResult(confirmation);
@@ -391,180 +122,75 @@ function ForgotPasswordPage() {
       setOtpTimer(OTP_EXPIRY_SECONDS);
       setCooldown(COOLDOWN_SECONDS);
       setRemainingAttempts(null);
-      toast.success('New verification code sent via SMS');
+      toast.success('New verification code sent');
     } catch (err) {
       const msg = err?.message || 'Unable to resend verification code.';
       setError(msg);
-      if (err?.retryAfterSeconds) {
-        setCooldown(err.retryAfterSeconds);
-      }
       toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Step 2 OTP Digits Handlers ─────────────────────────────────────────────
   const handleOtpDigitChange = (index, value) => {
-    const cleanDigit = value.replace(/\D/g, '').slice(-1);
-    const newDigits = [...otpDigits];
-    newDigits[index] = cleanDigit;
-    setOtpDigits(newDigits);
+    const d = value.replace(/\D/g, '').slice(-1);
+    const next = [...otpDigits];
+    next[index] = d;
+    setOtpDigits(next);
+    if (d && otpInputRefs.current[index + 1]) otpInputRefs.current[index + 1].focus();
     if (error) setError('');
-
-    if (cleanDigit && index < 5 && otpInputRefs.current[index + 1]) {
-      otpInputRefs.current[index + 1].focus();
-    }
   };
 
-  const handleOtpKeyDown = (index, event) => {
-    if (event.key === 'Backspace' && !otpDigits[index] && index > 0 && otpInputRefs.current[index - 1]) {
-      otpInputRefs.current[index - 1].focus();
-    }
-  };
-
-  const handleOtpPaste = (event) => {
-    event.preventDefault();
-    const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+  const handleOtpPaste = (ev) => {
+    ev.preventDefault();
+    const pasted = ev.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
     if (pasted.length === 6) {
       setOtpDigits(pasted.split(''));
       if (otpInputRefs.current[5]) otpInputRefs.current[5].focus();
     }
   };
 
-  // ── Step 2 Submit: Verify Phone OTP ───────────────────────────────────────
-  const handleVerifyOtpSubmit = async (event) => {
-    event.preventDefault();
+  const handleVerifyOtpSubmit = async (e) => {
+    e.preventDefault();
     setError('');
-
     const code = otpDigits.join('');
-    if (code.length !== 6) {
-      setError('Please enter all 6 digits of your verification code.');
-      return;
-    }
-
-    if (!confirmationResult) {
-      setError('Unable to verify code. Please request a new SMS code.');
-      return;
-    }
-
-    if (otpTimer <= 0) {
-      setError('Verification code has expired. Please request a new code.');
->>>>>>> prajwal
-      return;
-    }
+    if (code.length !== 6) return setError('Please enter all 6 digits of your verification code.');
+    if (!confirmationResult) return setError('Unable to verify code. Please request a new SMS code.');
+    if (otpTimer <= 0) return setError('Verification code has expired. Please request a new code.');
 
     setLoading(true);
-
     try {
-<<<<<<< HEAD
-      const res = await apiVerifyPhoneOtp(normalizedPhone || inputVal, otpCode);
-      setResetToken(res.resetToken);
-      setStep('new_password');
-      toast.success('Code verified successfully');
-    } catch (verifyErr) {
-      const msg = verifyErr?.message || 'Invalid verification code.';
-      setError(msg);
-      if (verifyErr?.remainingAttempts != null) {
-        setRemainingAttempts(verifyErr.remainingAttempts);
-      }
-=======
       const userCredential = await confirmPhoneOtp(confirmationResult, code);
       const firebaseToken = await userCredential.user.getIdToken();
       const res = await verifyPhoneOtp(normalizedPhone, code, firebaseToken);
-      if (!res?.resetToken) {
-        throw new Error('Verification failed. Please try requesting a new code.');
-      }
+      if (!res?.resetToken) throw new Error('Verification failed.');
       setResetToken(res.resetToken);
       setStep('new_password');
-      toast.success('Code verified! Enter your new password.');
+      toast.success('Code verified');
     } catch (err) {
       const msg = err?.message || 'Incorrect verification code.';
       setError(msg);
-      if (err?.remainingAttempts !== undefined) {
-        setRemainingAttempts(err.remainingAttempts);
-      }
->>>>>>> prajwal
+      if (err?.remainingAttempts !== undefined) setRemainingAttempts(err.remainingAttempts);
       toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-<<<<<<< HEAD
-  // Resend OTP
-  const handleResendOtp = async () => {
-    if (cooldown > 0) return;
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
     setError('');
-    setLoading(true);
-    try {
-      const res = await apiRequestPhoneReset(normalizedPhone || inputVal);
-      setMaskedPhone(res.maskedPhone || inputVal);
-      setOtpDigits(['', '', '', '', '', '']);
-      setOtpTimer(OTP_EXPIRY_SECONDS);
-      setCooldown(COOLDOWN_SECONDS);
-      setRemainingAttempts(null);
-      toast.success('New verification code sent!');
-    } catch (err) {
-      const msg = err?.message || 'Failed to resend code.';
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Step 3 Submit: Password Reset Submit Handler
-  const handlePasswordResetSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-
-    if (!newPassword || newPassword.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
-=======
-  // ── Step 3 Submit: Reset Password with Token ──────────────────────────────
-  const handleResetPasswordSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-
-    if (passwordStrength.score < 5) {
-      setError('Please meet all password requirements before continuing.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match. Please retype them exactly.');
-      return;
-    }
-
-    if (!resetToken) {
-      setError('Reset session expired. Please start the process again.');
->>>>>>> prajwal
-      return;
-    }
+    if (password !== confirmPassword) return setError('Passwords do not match.');
+    if (passwordStrength.score < 5) return setError('Please meet all password requirements.');
+    if (!resetToken) return setError('Reset session expired. Please start again.');
 
     setLoading(true);
-<<<<<<< HEAD
-    try {
-      await apiResetPasswordWithToken(resetToken, newPassword);
-      setStep('success');
-      toast.success('Password updated successfully');
-    } catch (resetErr) {
-      const msg = resetErr?.message || 'Could not update password. Please try again.';
-=======
-
     try {
       await resetPasswordWithToken(resetToken, password);
       setStep('reset_success');
-      toast.success('Password updated successfully!');
+      toast.success('Password updated successfully');
     } catch (err) {
       const msg = err?.message || 'Failed to update password. Please try again.';
->>>>>>> prajwal
       setError(msg);
       toast.error(msg);
     } finally {
@@ -573,24 +199,15 @@ function ForgotPasswordPage() {
   };
 
   const formatTimer = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
   return (
     <AuthShell
       eyebrow="Account recovery"
       title={
-<<<<<<< HEAD
-        step === 'new_password' ? (
-          <>
-            Set new <span className="italic">password</span>
-          </>
-        ) : (
-          <>
-            Forgot your <span className="italic">password?</span>
-=======
         step === 'email_sent' ? (
           <>
             Check your <span className="italic">inbox.</span>
@@ -601,7 +218,7 @@ function ForgotPasswordPage() {
           </>
         ) : step === 'new_password' ? (
           <>
-            Set new <span className="italic">password.</span>
+            Set new <span className="italic">password</span>
           </>
         ) : step === 'reset_success' ? (
           <>
@@ -610,574 +227,135 @@ function ForgotPasswordPage() {
         ) : (
           <>
             Reset your <span className="italic">password.</span>
->>>>>>> prajwal
           </>
         )
       }
       description={
-<<<<<<< HEAD
-        step === 'otp_verification'
-          ? `Enter the 6-digit code sent to ${maskedPhone || 'your phone'}`
-          : step === 'new_password'
-          ? 'Enter your new secure password below.'
-          : 'Enter your registered email address or phone number to reset your password.'
-=======
         step === 'email_sent'
-          ? `We sent password reset instructions to ${identifier.trim().toLowerCase()}.`
+          ? `We sent reset instructions to ${identifier.trim().toLowerCase()}`
           : step === 'otp_verify'
-          ? `We sent a 6-digit code to ${maskedPhone}.`
+          ? `Enter the 6-digit code sent to ${maskedPhone}`
           : step === 'new_password'
           ? 'Enter and confirm your new secure password below.'
           : step === 'reset_success'
-          ? 'Your password has been changed. Sign in with your new password.'
-          : "Enter your registered email address or phone number and we'll help you reset your password."
->>>>>>> prajwal
+          ? 'Your password was updated. Sign in with the new password.'
+          : "Enter your registered email address or phone number to reset your password."
       }
       footer={
         <p>
-          <Link
-            to="/login"
-            className="font-semibold text-accent transition-colors hover:text-accent-strong"
-          >
+          <Link to="/login" className="font-semibold text-accent transition-colors hover:text-accent-strong">
             Back to sign in
           </Link>
         </p>
       }
     >
-<<<<<<< HEAD
-      {/* STEP 1: SUCCESS BANNER FOR EMAIL */}
+      {/* Email sent banner */}
       {step === 'email_sent' && (
         <div className="space-y-3">
-          <div
-            className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3"
-            role="status"
-          >
+          <div className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3" role="status">
             <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
             <p className="text-sm leading-relaxed text-success">
-              If an account exists for <strong>{inputVal.trim().toLowerCase()}</strong>, you&apos;ll receive a
-              password reset link shortly. Check your spam folder if it does not arrive.
+              If an account exists for <strong>{identifier.trim().toLowerCase()}</strong>, you'll receive a reset link shortly.
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled={cooldown > 0}
-            onClick={() => setStep('input')}
-            className="inline-flex w-full items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 px-4 py-3.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/40 hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <button type="button" disabled={cooldown > 0} onClick={() => setStep('request')} className="inline-flex w-full items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 px-4 py-3.5 text-sm font-semibold">
             {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Send another link'}
           </button>
         </div>
       )}
 
-      {/* STEP 1: INITIAL COMBINED INPUT FORM */}
-      {step === 'input' && (
-        <form onSubmit={handleInitialSubmit} className="auth-form space-y-3" noValidate>
-=======
-      {/* ── STEP 1: INITIAL REQUEST FORM (EMAIL OR PHONE) ───────────────── */}
+      {/* Request form */}
       {step === 'request' && (
         <form onSubmit={handleRequestSubmit} className="auth-form space-y-3" noValidate>
->>>>>>> prajwal
           {error && (
-            <div
-              className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
-              role="alert"
-            >
+            <div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert">
               <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
               <p className="text-sm font-medium text-error">{error}</p>
             </div>
           )}
 
           <AuthField
-            label={
-              <div className="flex items-center justify-between">
-                <span>Email or Phone Number</span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted/80">
-<<<<<<< HEAD
-                  {detectedType === 'phone' ? 'Phone Mode' : 'Email Mode'}
-=======
-                  {detectedType === 'phone' ? 'SMS Code Mode' : 'Email Link Mode'}
->>>>>>> prajwal
-                </span>
-              </div>
-            }
+            label={<div className="flex items-center justify-between"><span>Email or Phone Number</span><span className="text-xs font-semibold uppercase tracking-wider text-muted/80">{detectedType === 'phone' ? 'SMS Code Mode' : 'Email Link Mode'}</span></div>}
             htmlFor="identifier"
             icon={detectedType === 'phone' ? <Phone size={16} /> : <Mail size={16} />}
           >
-            <input
-              id="identifier"
-              type="text"
-              autoComplete="username"
-              required
-              autoFocus
-<<<<<<< HEAD
-              value={inputVal}
-              onChange={(event) => {
-                setInputVal(event.target.value);
-                if (error) setError('');
-              }}
-              className="input-field pl-11"
-              placeholder="you@campus.edu or +1 234 567 8900"
-            />
+            <input id="identifier" type="text" autoComplete="username" required autoFocus value={identifier} onChange={(ev) => { setIdentifier(ev.target.value); if (error) setError(''); }} className="input-field pl-11" placeholder="you@campus.edu or +1 234 567 8900" />
           </AuthField>
 
-          <button
-            type="submit"
-            disabled={loading || cooldown > 0}
-            className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {detectedType === 'phone' ? 'Sending SMS Code...' : 'Sending Reset Link...'}
-              </>
-            ) : cooldown > 0 ? (
-              `Please wait ${cooldown}s`
-            ) : detectedType === 'phone' ? (
-              'Send SMS Code'
-            ) : (
-              'Send Reset Link'
-            )}
+          <button type="submit" disabled={loading || cooldown > 0} className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold">
+            {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />{detectedType === 'phone' ? 'Sending SMS Code...' : 'Sending Reset Link...'}</>) : cooldown > 0 ? (`Please wait ${cooldown}s`) : detectedType === 'phone' ? 'Send SMS Code' : 'Send Reset Link'}
           </button>
         </form>
       )}
 
-      {/* STEP 2: OTP VERIFICATION SCREEN (PHONE FLOW) */}
-      {step === 'otp_verification' && (
-        <form onSubmit={handleVerifyOtp} className="auth-form space-y-4" noValidate>
-          {error && (
-            <div
-              className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
-              role="alert"
-            >
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
-              <div>
-                <p className="text-sm font-medium text-error">{error}</p>
-                {remainingAttempts != null && (
-                  <p className="mt-1 text-xs text-error/80">{remainingAttempts} attempts remaining</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-              6-Digit Verification Code
-            </label>
-
-            {/* 6 Digit Input Boxes */}
-            <div className="flex items-center justify-between gap-2" onPaste={handleOtpPaste}>
-              {otpDigits.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (otpInputRefs.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                  className="h-12 w-11 rounded-xl border border-border/80 bg-surface-secondary/80 text-center text-lg font-bold text-foreground transition-all focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-muted">
-            <span>
-              Code expires in: <strong className="text-foreground">{formatTimer(otpTimer)}</strong>
-            </span>
-
-            <button
-              type="button"
-              disabled={cooldown > 0 || loading}
-              onClick={handleResendOtp}
-              className="font-semibold text-accent transition-colors hover:text-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {cooldown > 0 ? `Resend code (${cooldown}s)` : 'Resend Code'}
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setStep('input');
-                setError('');
-              }}
-              className="inline-flex items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 p-3.5 text-foreground transition-colors hover:bg-surface"
-              title="Back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading || otpDigits.join('').length !== 6}
-              className="btn-gradient inline-flex flex-1 items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying Code...
-                </>
-              ) : (
-                'Verify & Continue'
-              )}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* STEP 3: NEW PASSWORD SCREEN (PHONE FLOW) */}
-      {step === 'new_password' && (
-        <form onSubmit={handlePasswordResetSubmit} className="auth-form space-y-3" noValidate>
-          {error && (
-            <div
-              className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
-              role="alert"
-            >
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
-              <p className="text-sm font-medium text-error">{error}</p>
-            </div>
-          )}
-
-          <AuthField label="New Password" htmlFor="newPassword" icon={<Lock size={16} />}>
-            <div className="relative">
-              <input
-                id="newPassword"
-                type={showPassword ? 'text' : 'password'}
-                required
-                autoFocus
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  if (error) setError('');
-                }}
-                className="input-field pl-11 pr-11"
-                placeholder="At least 8 characters"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground"
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </AuthField>
-
-          <AuthField label="Confirm New Password" htmlFor="confirmPassword" icon={<KeyRound size={16} />}>
-            <input
-              id="confirmPassword"
-              type={showPassword ? 'text' : 'password'}
-              required
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (error) setError('');
-              }}
-              className="input-field pl-11"
-              placeholder="Re-enter new password"
-=======
-              value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                if (error) setError('');
-              }}
-              className="input-field pl-11"
-              placeholder="you@campus.edu or +91 98765 43210"
->>>>>>> prajwal
-            />
-          </AuthField>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-<<<<<<< HEAD
-                Updating Password...
-=======
-                {detectedType === 'phone' ? 'Sending SMS Code...' : 'Sending Link...'}
->>>>>>> prajwal
-              </>
-            ) : detectedType === 'phone' ? (
-              'Send SMS Reset Code'
-            ) : (
-<<<<<<< HEAD
-              'Reset Password'
-=======
-              'Send Reset Link'
->>>>>>> prajwal
-            )}
-          </button>
-        </form>
-      )}
-
-<<<<<<< HEAD
-      {/* STEP 4: SUCCESS BANNER */}
-      {step === 'success' && (
-        <div className="space-y-4">
-          <div
-            className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3.5"
-            role="status"
-          >
-            <ShieldCheck size={20} className="mt-0.5 shrink-0 text-success" />
-            <div>
-              <h4 className="font-semibold text-success">Password Reset Successful!</h4>
-              <p className="mt-0.5 text-xs text-success/80 leading-relaxed">
-                Your account password has been updated successfully. You can now log in with your new password.
-              </p>
-            </div>
-=======
-      {/* ── STEP 1B: EMAIL SENT SUCCESS SCREEN ────────────────────────────── */}
-      {step === 'email_sent' && (
-        <div className="space-y-4">
-          <div
-            className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3"
-            role="status"
-          >
-            <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
-            <p className="text-sm leading-relaxed text-success">
-              Check your inbox for a password reset email. If it doesn't arrive within a few minutes, check your spam folder.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setStep('request')}
-            className="inline-flex w-full items-center justify-center rounded-xl border border-border/80 bg-surface-secondary/80 px-4 py-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface"
-          >
-            Try another email or phone
-          </button>
-        </div>
-      )}
-
-      {/* ── STEP 2: PHONE OTP VERIFICATION SCREEN ───────────────────────── */}
+      {/* OTP verify */}
       {step === 'otp_verify' && (
-        <form onSubmit={handleVerifyOtpSubmit} className="auth-form space-y-4" noValidate>
+        <form onSubmit={handleVerifyOtpSubmit} className="auth-form space-y-4" noValidate onPaste={handleOtpPaste}>
           {error && (
-            <div
-              className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
-              role="alert"
-            >
+            <div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert">
               <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
               <div>
                 <p className="text-sm font-medium text-error">{error}</p>
-                {remainingAttempts !== null && remainingAttempts > 0 && (
-                  <p className="mt-0.5 text-xs text-error/80">
-                    {remainingAttempts} attempt{remainingAttempts === 1 ? '' : 's'} remaining before code invalidates.
-                  </p>
-                )}
+                {remainingAttempts != null && <p className="mt-1 text-xs text-error/80">{remainingAttempts} attempts remaining</p>}
               </div>
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-              6-Digit Reset Code
-            </label>
-
-            <div className="flex items-center justify-between gap-2" onPaste={handleOtpPaste}>
-              {otpDigits.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (otpInputRefs.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                  className="h-12 w-11 rounded-xl border border-border/80 bg-surface-secondary/80 text-center text-lg font-bold text-foreground transition-all focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
-                />
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted">6-Digit Verification Code</label>
+            <div className="flex items-center justify-between gap-2">
+              {otpDigits.map((d, i) => (
+                <input key={i} ref={(el) => (otpInputRefs.current[i] = el)} type="text" inputMode="numeric" maxLength={1} value={d} onChange={(e) => handleOtpDigitChange(i, e.target.value)} className="h-12 w-11 rounded-xl border border-border/80 bg-surface-secondary/80 text-center text-lg font-bold" />
               ))}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-xs text-muted">
-            <span>
-              Expires in: <strong className="text-foreground">{formatTimer(otpTimer)}</strong>
-            </span>
-
-            <button
-              type="button"
-              disabled={cooldown > 0 || loading}
-              onClick={handleResendOtp}
-              className="font-semibold text-accent transition-colors hover:text-accent-strong disabled:cursor-not-allowed disabled:text-muted"
-            >
-              {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code'}
-            </button>
+            <span>Code expires in: <strong className="text-foreground">{formatTimer(otpTimer)}</strong></span>
+            <button type="button" disabled={cooldown > 0 || loading} onClick={handleResendOtp} className="font-semibold text-accent">{cooldown > 0 ? `Resend code (${cooldown}s)` : 'Resend Code'}</button>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setStep('request');
-                setError('');
-              }}
-              className="inline-flex items-center justify-center rounded-xl border border-border/70 bg-surface-secondary/70 p-3.5 text-foreground transition-colors hover:bg-surface"
-              title="Back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading || otpDigits.join('').length !== 6}
-              className="btn-gradient inline-flex flex-1 items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify & Continue'
-              )}
-            </button>
-          </div>
+          <button type="submit" className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold">Verify Code</button>
         </form>
       )}
 
-      {/* ── STEP 3: NEW PASSWORD FORM (GATED BY PHONE OTP TOKEN) ─────────── */}
+      {/* New password */}
       {step === 'new_password' && (
-        <form onSubmit={handleResetPasswordSubmit} className="auth-form space-y-3" noValidate>
-          {error && (
-            <div
-              className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3"
-              role="alert"
-            >
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
-              <p className="text-sm font-medium text-error">{error}</p>
-            </div>
-          )}
+        <form onSubmit={handleResetPasswordSubmit} className="auth-form space-y-4" noValidate>
+          {error && (<div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert"><AlertCircle size={16} className="mt-0.5 shrink-0 text-error" /><p className="text-sm font-medium text-error">{error}</p></div>)}
 
-          <AuthField label="New password" htmlFor="password" icon={<KeyRound size={16} />}>
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              autoFocus
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError('');
-              }}
-              className="input-field pr-12 pl-11"
-              placeholder="Choose a strong password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-3 flex items-center text-foreground-muted transition-colors hover:text-foreground"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+          <AuthField label={<span>New Password</span>} htmlFor="password" icon={<KeyRound size={16} />}>
+            <div className="relative">
+              <input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="input-field pl-11" placeholder="Choose a secure password" />
+              <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+            </div>
           </AuthField>
 
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-1.5">
-              {[0, 1, 2, 3, 4].map((segment) => (
-                <span
-                  key={segment}
-                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                    password && segment < passwordStrength.score
-                      ? passwordStrength.color
-                      : 'bg-border/60'
-                  }`}
-                />
-              ))}
-              <span className="ml-1.5 text-xs font-semibold text-foreground-muted">
-                {passwordStrength.label || 'Choose a password'}
-              </span>
+          <AuthField label={<span>Confirm Password</span>} htmlFor="confirmPassword" icon={<KeyRound size={16} />}>
+            <div className="relative">
+              <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="input-field pl-11" placeholder="Retype new password" />
+              <button type="button" onClick={() => setShowConfirmPassword((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
-            <ul className="grid gap-x-3 gap-y-1 text-xs text-foreground-muted sm:grid-cols-2">
-              {PASSWORD_CHECKS.map(({ key, label }) => (
-                <li key={key} className={passwordStrength.checks[key] ? 'text-success' : ''}>
-                  {passwordStrength.checks[key] ? '✓' : '○'} {label}
-                </li>
-              ))}
-            </ul>
+          </AuthField>
+
+          <div className="space-y-2">
+            {PASSWORD_CHECKS.map((chk) => (
+              <div key={chk.key} className={`text-sm ${passwordStrength[chk.key] ? 'text-success' : 'text-muted'}`}>{chk.label}</div>
+            ))}
           </div>
 
-          <AuthField
-            label="Confirm new password"
-            htmlFor="confirmPassword"
-            icon={<KeyRound size={16} />}
-          >
-            <input
-              id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (error) setError('');
-              }}
-              className="input-field pr-12 pl-11"
-              placeholder="Re-enter your new password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-3 flex items-center text-foreground-muted transition-colors hover:text-foreground"
-              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-            >
-              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </AuthField>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating password...
-              </>
-            ) : (
-              'Update password'
-            )}
-          </button>
+          <button type="submit" disabled={loading} className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set New Password'}</button>
         </form>
       )}
 
-      {/* ── STEP 4: RESET SUCCESS SCREEN ───────────────────────────────────── */}
       {step === 'reset_success' && (
         <div className="space-y-4">
-          <div
-            className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3"
-            role="status"
-          >
+          <div className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3">
             <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
-            <p className="text-sm leading-relaxed text-success">
-              Your password has been changed successfully. You can now sign in with your new password.
-            </p>
->>>>>>> prajwal
+            <p className="text-sm leading-relaxed text-success">Your password was updated. You can now sign in with your new password.</p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold"
-          >
-<<<<<<< HEAD
-            Proceed to Sign In
-=======
-            Continue to sign in
->>>>>>> prajwal
-          </button>
+          <button onClick={() => navigate('/login')} className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold">Back to Sign In</button>
         </div>
       )}
     </AuthShell>
