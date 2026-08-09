@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Mail, Phone } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Mail, Phone } from 'lucide-react';
 import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
 import { PASSWORD_CHECKS, getPasswordStrength } from '../lib/passwordStrength';
@@ -268,6 +268,7 @@ function ForgotPasswordPage() {
       {/* Request form */}
       {step === 'request' && (
         <form onSubmit={handleRequestSubmit} className="auth-form space-y-3" noValidate>
+          <div id="recaptcha-container"></div>
           {error && (
             <div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert">
               <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
