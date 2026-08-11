@@ -6,36 +6,26 @@ import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
 import SetNewPasswordForm from '../components/auth/SetNewPasswordForm';
 import {
+  requestPasswordReset,
   requestPhonePasswordReset,
   resetPasswordWithToken,
   verifyPhoneOtp,
 } from '../services/authApi';
 import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber, clearFirebasePhoneSession } from '../lib/firebase';
-import { supabase } from '../lib/supabaseClient';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const COOLDOWN_SECONDS = 60;
 const OTP_EXPIRY_SECONDS = 600; // 10 minutes
-const PASSWORD_RESET_REDIRECT_URL = 'https://collage-navigator-client.vercel.app/reset-password';
+const PASSWORD_RESET_REDIRECT_URL = 'https://collage-navigator-client.vercel.app/forgot-password';
 
-const requestSupabasePasswordReset = async (email) => {
-  if (!supabase) {
-    throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: PASSWORD_RESET_REDIRECT_URL,
-  });
-
-  if (error) {
-    if (/rate.?limit|too.?many/i.test(error.message)) {
-      const rateLimitError = new Error('Too many requests. Please wait before requesting another reset link.');
-      rateLimitError.retryAfterSeconds = COOLDOWN_SECONDS;
-      throw rateLimitError;
-    }
-    throw new Error(error.message || 'Unable to send reset link.');
-  }
+const getPasswordResetRedirectUrl = () => {
+  const configuredUrl = import.meta.env.VITE_PASSWORD_RESET_REDIRECT_URL;
+  return configuredUrl || PASSWORD_RESET_REDIRECT_URL;
 };
+
+const isRecoveryLink = () =>
+  new URLSearchParams(window.location.search).has('code') ||
+  new URLSearchParams(window.location.hash.slice(1)).has('access_token');
 
 function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -59,6 +49,14 @@ function ForgotPasswordPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isRecoveryLink()) return;
+
+    // The hosted recovery URL is /forgot-password. Route recovery tokens to
+    // the dedicated update screen while preserving the code/hash Supabase sent.
+    navigate(`/reset-password${window.location.search}${window.location.hash}`, { replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     const raw = identifier.trim();
@@ -96,7 +94,7 @@ function ForgotPasswordPage() {
     setLoading(true);
     try {
       if (isEmail) {
-        await requestSupabasePasswordReset(raw.toLowerCase());
+        await requestPasswordReset(raw.toLowerCase(), getPasswordResetRedirectUrl());
         setStep('email_sent');
         setCooldown(COOLDOWN_SECONDS);
         toast.success('Reset link sent');

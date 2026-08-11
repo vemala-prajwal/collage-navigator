@@ -40,18 +40,37 @@ function ResetPasswordPage() {
       }
     });
 
-    // Fall back to getSession() for cases where the browser already exchanged
-    // the URL token for a session before this component mounted (e.g. hard
-    // refresh on the /reset-password page while a session is still alive).
+    // Supabase's default PKCE flow puts a one-time code in the query string.
+    // It must be exchanged before updateUser() can change the password.
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
+      try {
+        const recoveryCode = new URLSearchParams(window.location.search).get('code');
+        let session = null;
 
-      // Only update state from getSession() if the auth state listener did
-      // not already handle the PASSWORD_RECOVERY event.
-      if (!recoveryFired) {
-        setHasRecoverySession(Boolean(data.session));
-        setCheckingSession(false);
+        if (recoveryCode) {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(recoveryCode);
+          if (exchangeError) throw exchangeError;
+          session = data.session;
+
+          // The code is single-use and should not remain in browser history.
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        } else {
+          const { data } = await supabase.auth.getSession();
+          session = data.session;
+        }
+
+        if (!active || recoveryFired) return;
+        setHasRecoverySession(Boolean(session));
+      } catch (sessionError) {
+        if (!active) return;
+        setHasRecoverySession(false);
+        setError(
+          sessionError?.message?.toLowerCase().includes('expired')
+            ? 'This reset link has expired. Please request a new one.'
+            : 'This reset link is invalid. Please request a new one.'
+        );
+      } finally {
+        if (active && !recoveryFired) setCheckingSession(false);
       }
     };
 

@@ -5,6 +5,7 @@ jest.mock('../lib/authService', () => ({
   registerAccount: jest.fn(),
   loginAccount: jest.fn(),
   getCurrentUser: jest.fn(),
+  requestPasswordReset: jest.fn(),
   requestPhonePasswordReset: jest.fn(),
   verifyPhonePasswordResetOtp: jest.fn(),
   resetPasswordWithToken: jest.fn(),
@@ -62,6 +63,25 @@ describe('Auth routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('token', 'login-token');
+  });
+
+  it('requests an email password reset using the supplied redirect URL', async () => {
+    authService.requestPasswordReset.mockResolvedValue({
+      message: 'If an account exists for this email, a reset link has been sent.',
+    });
+
+    const response = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({
+        email: 'test@example.com',
+        redirectTo: 'http://localhost:5173/reset-password',
+      });
+
+    expect(response.status).toBe(200);
+    expect(authService.requestPasswordReset).toHaveBeenCalledWith(expect.objectContaining({
+      email: 'test@example.com',
+      redirectTo: 'http://localhost:5173/reset-password',
+    }));
   });
 
   it('handles phone password reset request', async () => {

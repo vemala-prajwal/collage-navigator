@@ -134,7 +134,37 @@ const normalizePhoneNumber = (phone) => {
   return `+${str}`;
 };
 
-const PASSWORD_RESET_REDIRECT_URL = 'https://collage-navigator-client.vercel.app/reset-password';
+const getPasswordResetRedirectUrl = (redirectTo) => {
+  if (redirectTo) {
+    try {
+      const url = new URL(redirectTo);
+      if (url.protocol === 'https:' || url.hostname === 'localhost') return url.toString();
+    } catch {
+      // Use the configured fallback below for malformed client input.
+    }
+  }
+
+  const configuredResetUrl =
+    process.env.PASSWORD_RESET_REDIRECT_URL || process.env.VITE_PASSWORD_RESET_REDIRECT_URL;
+  if (configuredResetUrl) {
+    try {
+      return new URL(configuredResetUrl).toString();
+    } catch {
+      // Continue to the site URL fallback.
+    }
+  }
+
+  const siteUrl = process.env.CLIENT_URL || process.env.VITE_SITE_URL;
+  if (siteUrl) {
+    try {
+      return new URL('/reset-password', siteUrl).toString();
+    } catch {
+      // Continue to the local-development fallback.
+    }
+  }
+
+  return 'http://localhost:5173/reset-password';
+};
 
 const validateRegisterPayload = ({ name, email, phone, password, campus, sanUsn } = {}) => {
   const errors = [];
@@ -745,7 +775,7 @@ const getCurrentUser = async (token) => {
 };
 
 
-const requestPasswordReset = async ({ email } = {}) => {
+const requestPasswordReset = async ({ email, redirectTo } = {}) => {
   if (!email) {
     const error = new Error('Email address is required.');
     error.statusCode = 400;
@@ -762,7 +792,7 @@ const requestPasswordReset = async ({ email } = {}) => {
   const normalizedEmail = String(email).trim().toLowerCase();
 
   const { error: sbError } = await authClient.auth.resetPasswordForEmail(normalizedEmail, {
-    redirectTo: PASSWORD_RESET_REDIRECT_URL,
+    redirectTo: getPasswordResetRedirectUrl(redirectTo),
   });
 
   if (sbError) {
