@@ -14,7 +14,10 @@ const { CAMPUSES } = require('../constants/campuses');
 const envCandidates = [
   path.resolve(__dirname, '../.env'),
   path.resolve(__dirname, '../../.env'),
+  path.resolve(__dirname, '../../client/.env'),
+  path.resolve(__dirname, '../client/.env'),
   path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), 'client/.env'),
 ];
 for (const candidate of envCandidates) {
   if (fs.existsSync(candidate)) {
@@ -130,6 +133,8 @@ const normalizePhoneNumber = (phone) => {
   }
   return `+${str}`;
 };
+
+const PASSWORD_RESET_REDIRECT_URL = 'https://collage-navigator-client.vercel.app/reset-password';
 
 const validateRegisterPayload = ({ name, email, phone, password, campus, sanUsn } = {}) => {
   const errors = [];
@@ -276,8 +281,14 @@ const findUserByEmail = async (authClient, email) => {
 };
 
 const findUserByPhone = async (authClient, phone) => {
+  if (!authClient || !authClient.auth || !authClient.auth.admin) {
+    return null;
+  }
+
   let page = 1;
   const perPage = 200;
+  const cleanPhone = phone ? normalizePhoneNumber(phone) : '';
+  const syntheticEmail = cleanPhone ? `${cleanPhone.replace(/\+/g, '')}@phone.campusnavigator.internal` : '';
 
   while (page <= 25) {
     const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
@@ -289,9 +300,11 @@ const findUserByPhone = async (authClient, phone) => {
 
     const match = data?.users?.find((user) => {
       const meta = user.user_metadata || {};
+      const uPhone = user.phone ? normalizePhoneNumber(user.phone) : '';
+      const mPhone = meta.phone ? normalizePhoneNumber(meta.phone) : '';
       return (
-        user.phone === phone ||
-        meta.phone === phone
+        (cleanPhone && (uPhone === cleanPhone || mPhone === cleanPhone || user.phone === phone || meta.phone === phone)) ||
+        (syntheticEmail && user.email?.toLowerCase() === syntheticEmail.toLowerCase())
       );
     });
 
@@ -731,144 +744,14 @@ const getCurrentUser = async (token) => {
   }
 };
 
-<<<<<<< HEAD
-const requestPasswordReset = async (payload = {}) => {
-  const { email, redirectTo } = payload;
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
-    const error = new Error('A valid email is required');
-=======
-// ─── Password Reset Service Functions ────────────────────────────────────────
 
-const requestPasswordReset = async ({ email, redirectTo } = {}) => {
+const requestPasswordReset = async ({ email } = {}) => {
   if (!email) {
     const error = new Error('Email address is required.');
->>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
-<<<<<<< HEAD
-  const { admin: adminClient, public: publicClient } = getSupabaseClients();
-  // Prefer the admin client — it is not subject to the restrictive per-IP
-  // rate limits that Supabase applies to public (anon) client email requests.
-  const authClient = adminClient || publicClient;
-
-  if (!authClient) {
-    ensureSupabase();
-  }
-
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const targetRedirectTo =
-    redirectTo ||
-    process.env.CLIENT_URL ||
-    process.env.VITE_SITE_URL ||
-    'http://localhost:5173/reset-password';
-
-  console.info('[requestPasswordReset] sending reset email to:', normalizedEmail);
-
-  const { error } = await authClient.auth.resetPasswordForEmail(normalizedEmail, {
-    redirectTo: targetRedirectTo,
-  });
-
-  if (error) {
-    // Log the raw Supabase error so it is visible in server/Vercel logs.
-    console.warn('[requestPasswordReset] Supabase error:', {
-      status: error.status,
-      code: error.code,
-      message: error.message,
-    });
-
-    const isRateLimit =
-      error.status === 429 ||
-      /rate.?limit|too.?many|over_email/i.test(error.message || '') ||
-      /over_email_send_rate_limit/i.test(error.code || '');
-
-    if (isRateLimit) {
-      // Supabase often encodes the exact retry window in its message, e.g.:
-      // "For security purposes, you can only request this after 54 seconds."
-      const rawMsg = error.message || '';
-      const secondsMatch = rawMsg.match(/after\s+(\d+)\s+second/i);
-      const retryAfterSeconds = secondsMatch ? parseInt(secondsMatch[1], 10) : null;
-
-      console.warn('[requestPasswordReset] rate limit hit:', {
-        email: normalizedEmail,
-        retryAfterSeconds,
-        rawMsg,
-      });
-
-      const rateLimitError = new Error(
-        retryAfterSeconds
-          ? `Please wait ${retryAfterSeconds} seconds before requesting another reset link.`
-          : 'Too many password reset requests. Please try again in a few minutes.'
-      );
-      rateLimitError.statusCode = 429;
-      // Expose the real retry window to the client so the UI can show an
-      // accurate countdown instead of a hardcoded 60 seconds.
-      rateLimitError.retryAfterSeconds = retryAfterSeconds;
-      throw rateLimitError;
-    }
-
-    // Use a password-reset–specific fallback message — not the registration
-    // one from extractSupabaseMessage.
-    const rawMsg = error.message || '';
-    const serviceError = new Error(
-      rawMsg && !rawMsg.toLowerCase().includes('server error')
-        ? rawMsg
-        : 'We could not send the reset link. Please try again.'
-    );
-    serviceError.statusCode = error.status || 500;
-    throw serviceError;
-  }
-
-  console.info('[requestPasswordReset] reset email sent successfully to:', normalizedEmail);
-  return { message: 'Password reset link sent successfully.' };
-};
-
-const findUserByPhone = async (authClient, phone) => {
-  const normalizedDigits = String(phone).replace(/\D/g, '');
-  if (!normalizedDigits) return null;
-
-  let page = 1;
-  const perPage = 200;
-
-  while (page <= 25) {
-    const { data, error } = await authClient.auth.admin.listUsers({ page, perPage });
-
-    if (error) {
-      console.error('[findUserByPhone] listUsers error:', error.message || error);
-      return null;
-    }
-
-    const match = data?.users?.find((user) => {
-      const userPhone = String(user.phone || user.user_metadata?.phone || '').replace(/\D/g, '');
-      return userPhone && (userPhone === normalizedDigits || userPhone.endsWith(normalizedDigits));
-    });
-
-    if (match) {
-      return match;
-    }
-
-    if (!data?.users?.length || data.users.length < perPage) {
-      break;
-    }
-
-    page += 1;
-  }
-
-  return null;
-};
-
-const requestPhonePasswordReset = async (payload = {}) => {
-  const { sendSms } = require('./smsService');
-  const { createPhoneOtp } = require('./otpService');
-
-  const { phone } = payload;
-  const rawPhone = String(phone || '').trim();
-  const digitsOnly = rawPhone.replace(/\D/g, '');
-
-  if (!rawPhone || digitsOnly.length < 7 || digitsOnly.length > 15) {
-    const error = new Error('A valid phone number is required');
-=======
   const authClient = getSupabaseClient();
   if (!authClient) {
     const error = new Error('Email reset is not available right now.');
@@ -876,12 +759,13 @@ const requestPhonePasswordReset = async (payload = {}) => {
     throw error;
   }
 
-  const { error: sbError } = await authClient.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-    redirectTo,
+  const normalizedEmail = String(email).trim().toLowerCase();
+
+  const { error: sbError } = await authClient.auth.resetPasswordForEmail(normalizedEmail, {
+    redirectTo: PASSWORD_RESET_REDIRECT_URL,
   });
 
   if (sbError) {
-    // Rate-limit detection
     if (/rate.?limit|too.?many/i.test(sbError.message)) {
       const rateLimitError = new Error('Too many requests. Please wait before requesting another reset link.');
       rateLimitError.statusCode = 429;
@@ -891,72 +775,37 @@ const requestPhonePasswordReset = async (payload = {}) => {
     console.error('[requestPasswordReset] Supabase error:', sbError.message);
   }
 
-  // Always respond generically to avoid account enumeration
   return { message: 'If an account exists for this email, a reset link has been sent.' };
 };
 
 const requestPhonePasswordReset = async ({ phone } = {}) => {
-  if (!phone) {
+  if (!phone || !String(phone).trim()) {
     const error = new Error('Phone number is required.');
->>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
-<<<<<<< HEAD
-  const { admin: adminClient } = getSupabaseClients();
-  const authClient = adminClient || getSupabaseClient();
-
-  let targetUser = null;
-  if (adminClient) {
-    try {
-      targetUser = await findUserByPhone(adminClient, rawPhone);
-    } catch (findErr) {
-      console.warn('[requestPhonePasswordReset] search error:', findErr.message);
-    }
-  }
-
-  // Create hashed OTP & enforce 60s cooldown limit
-  const { plainOtp, normalizedPhone } = createPhoneOtp(rawPhone);
-
-  // Send SMS if user exists OR in fallback mode
-  const smsMessage = `Your Campus Navigator password reset code is: ${plainOtp}. This code expires in 10 minutes.`;
-  await sendSms({ to: normalizedPhone, message: smsMessage });
-
-  // Mask phone for security feedback e.g. +1 ********90
-  const lastFour = normalizedPhone.slice(-4);
-  const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
-
-  return {
-    message: "If an account exists for this phone number, you'll receive a verification code shortly.",
-    maskedPhone,
-    phone: normalizedPhone,
-  };
-};
-
-const verifyPhonePasswordResetOtp = async (payload = {}) => {
-  const { verifyPhoneOtp } = require('./otpService');
-  const { phone, otp } = payload;
-
-  if (!phone || !otp) {
-    const error = new Error('Phone number and 6-digit verification code are required.');
-=======
   const normalizedPhone = normalizePhoneNumber(phone);
-  const { admin: adminClient } = getSupabaseClients();
-
-  if (!adminClient) {
-    const error = new Error('Service unavailable. Please try again later.');
-    error.statusCode = 500;
+  const digitsOnly = normalizedPhone.replace(/\D/g, '');
+  if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+    const error = new Error('Please enter a valid phone number.');
+    error.statusCode = 400;
     throw error;
   }
 
-  // Silently look up the user — respond generically regardless of result
-  await findUserByPhone(adminClient, normalizedPhone);
+  const { admin: adminClient } = getSupabaseClients();
+
+  if (adminClient) {
+    try {
+      await findUserByPhone(adminClient, normalizedPhone);
+    } catch (err) {
+      console.warn('[requestPhonePasswordReset] User lookup notice:', err.message || err);
+    }
+  }
 
   const lastFour = normalizedPhone.slice(-4);
   const maskedPhone = `${normalizedPhone.slice(0, 3)} *****${lastFour}`;
 
-  // Generic response — identical whether phone exists or not
   return {
     maskedPhone,
     phone: normalizedPhone,
@@ -969,93 +818,42 @@ const verifyPhonePasswordResetOtp = async ({ phone, otp, firebaseToken } = {}) =
 
   if (!phone || !otp) {
     const error = new Error('Phone number and verification code are required.');
->>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
-<<<<<<< HEAD
-  const result = verifyPhoneOtp(phone, otp);
-  return {
-    message: 'Verification successful.',
-    resetToken: result.resetToken,
-  };
-};
-
-const resetPasswordWithToken = async (payload = {}) => {
-  const { verifyResetToken, invalidateResetToken } = require('./otpService');
-  const { resetToken, newPassword } = payload;
-
-  if (!newPassword || String(newPassword).length < 8) {
-    const error = new Error('Password must be at least 8 characters');
-=======
   if (!firebaseToken) {
     const error = new Error('Firebase verification token is required for phone OTP flow.');
->>>>>>> prajwal
     error.statusCode = 400;
     throw error;
   }
 
-<<<<<<< HEAD
-  // Verify and decode resetToken
-  const tokenData = verifyResetToken(resetToken);
-  const phone = tokenData.phone;
-
-  const { admin: adminClient } = getSupabaseClients();
-  const authClient = adminClient || getSupabaseClient();
-
-  if (!authClient) {
-    ensureSupabase();
-  }
-
-  let user = null;
-  if (adminClient) {
-    user = await findUserByPhone(adminClient, phone);
-  }
-
-  if (user && adminClient) {
-    const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
-      password: newPassword,
-    });
-    if (updateError) {
-      console.error('[resetPasswordWithToken] Supabase update error:', updateError);
-      const error = new Error(extractSupabaseMessage(updateError));
-      error.statusCode = updateError.status || 500;
-      throw error;
-    }
-  }
-
-  // Invalidate single-use token
-  invalidateResetToken(resetToken);
-
-  return {
-    message: 'Your password has been reset successfully. Please sign in with your new password.',
-  };
-};
-
-=======
-  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
   const normalizedPhone = normalizePhoneNumber(phone);
-  if (!decodedToken.phone_number || decodedToken.phone_number !== normalizedPhone) {
+  if (!/^\d{6}$/.test(String(otp).trim())) {
+    const error = new Error('Please enter a valid 6-digit verification code.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const decodedToken = await verifyFirebaseIdToken(firebaseToken);
+
+  if (!decodedToken.phone_number || normalizePhoneNumber(decodedToken.phone_number) !== normalizedPhone) {
     const error = new Error('Firebase token does not match the provided phone number.');
     error.statusCode = 403;
     throw error;
   }
 
   const { admin: adminClient } = getSupabaseClients();
-
   if (!adminClient) {
-    const error = new Error('Service unavailable. Please try again later.');
+    const error = new Error('Server configuration error: Supabase service role is required for phone password reset.');
     error.statusCode = 500;
     throw error;
   }
 
   const matchedUser = await findUserByPhone(adminClient, normalizedPhone);
   if (!matchedUser) {
-    // Don't reveal whether the phone is registered — generic error
-    const error = new Error('Incorrect code. Please try again.');
-    error.statusCode = 400;
-    error.remainingAttempts = 0;
+    const error = new Error('No account was found for this verified phone number.');
+    error.statusCode = 404;
     throw error;
   }
 
@@ -1079,30 +877,33 @@ const resetPasswordWithToken = async ({ token, password } = {}) => {
   }
 
   const { admin: adminClient } = getSupabaseClients();
-  if (!adminClient) {
-    const error = new Error('Service unavailable. Please try again later.');
+
+  if (!adminClient || !adminClient.auth || !adminClient.auth.admin) {
+    const error = new Error('Server configuration error: Supabase service role is required to update passwords.');
     error.statusCode = 500;
     throw error;
   }
 
-  // consumeResetToken verifies JWT, checks single-use flag in Supabase, marks used
-  const { userId } = await consumeResetToken(adminClient, token);
+  const { userId, phone } = await consumeResetToken(adminClient, token);
 
-  const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, { password });
+  let targetUserId = userId;
+  if (phone) {
+    const found = await findUserByPhone(adminClient, phone);
+    if (found) targetUserId = found.id;
+  }
+
+  const { error: updateError } = await adminClient.auth.admin.updateUserById(targetUserId, { password });
 
   if (updateError) {
     console.error('[resetPasswordWithToken] update error:', updateError.message);
-    const error = new Error('Failed to update password. Please try again.');
-    error.statusCode = 500;
+    const error = new Error(extractSupabaseMessage(updateError) || 'Failed to update password. Please try again.');
+    error.statusCode = 400;
     throw error;
   }
 
   return { message: 'Password has been reset successfully.' };
 };
 
-// ─── Exports ─────────────────────────────────────────────────────────────────
-
->>>>>>> prajwal
 module.exports = {
   CAMPUSES,
   registerAccount,
@@ -1117,8 +918,3 @@ module.exports = {
   validateLoginPayload,
   normalizePhoneNumber,
 };
-
-<<<<<<< HEAD
-
-=======
->>>>>>> prajwal

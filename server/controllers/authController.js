@@ -47,46 +47,33 @@ const loginUser = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: formatValidationErrors(errors) });
     }
+
+    const result = await loginAccount(req.body);
+    res.json(result);
   } catch (error) {
     if (error.statusCode) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
       const bodyRes = { message: error.message };
       if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
       return res.status(error.statusCode).json(bodyRes);
-];
-
-const loginValidators = [
-  body('password').notEmpty().withMessage('Password is required'),
-];
+    }
+    next(error);
+  }
+};
 
 const forgotPassword = async (req, res, next) => {
   try {
-<<<<<<< HEAD
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: formatValidationErrors(errors) });
     }
 
-=======
->>>>>>> prajwal
     const result = await requestPasswordReset(req.body);
     res.json(result);
   } catch (error) {
     if (error.statusCode) {
-<<<<<<< HEAD
-      // Forward retryAfterSeconds (if present) so the client UI can display
-      // an accurate countdown derived from Supabase's actual rate-limit window.
-      const body = { message: error.message };
-      if (error.retryAfterSeconds != null) {
-        body.retryAfterSeconds = error.retryAfterSeconds;
-      }
-      return res.status(error.statusCode).json(body);
-=======
       const bodyRes = { message: error.message };
       if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
       return res.status(error.statusCode).json(bodyRes);
->>>>>>> prajwal
     }
     next(error);
   }
@@ -97,12 +84,10 @@ const forgotPasswordPhone = async (req, res, next) => {
     const result = await requestPhonePasswordReset(req.body);
     res.json(result);
   } catch (error) {
-    if (error.statusCode) {
-      const bodyRes = { message: error.message };
-      if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
-      return res.status(error.statusCode).json(bodyRes);
-    }
-    next(error);
+    const statusCode = error.statusCode || 400;
+    const bodyRes = { message: error.message || 'Unable to process password reset.' };
+    if (error.retryAfterSeconds != null) bodyRes.retryAfterSeconds = error.retryAfterSeconds;
+    return res.status(statusCode).json(bodyRes);
   }
 };
 
@@ -111,12 +96,10 @@ const verifyOtp = async (req, res, next) => {
     const result = await verifyPhonePasswordResetOtp(req.body);
     res.json(result);
   } catch (error) {
-    if (error.statusCode) {
-      const bodyRes = { message: error.message };
-      if (error.remainingAttempts != null) bodyRes.remainingAttempts = error.remainingAttempts;
-      return res.status(error.statusCode).json(bodyRes);
-    }
-    next(error);
+    const statusCode = error.statusCode || 400;
+    const bodyRes = { message: error.message || 'Verification failed.' };
+    if (error.remainingAttempts != null) bodyRes.remainingAttempts = error.remainingAttempts;
+    return res.status(statusCode).json(bodyRes);
   }
 };
 
@@ -125,19 +108,29 @@ const resetPasswordToken = async (req, res, next) => {
     const result = await resetPasswordWithToken(req.body);
     res.json(result);
   } catch (error) {
-    if (error.statusCode) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    next(error);
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({ message: error.message || 'Password reset failed.' });
   }
 };
 
-<<<<<<< HEAD
+const registerValidators = [
+  body('name').notEmpty().withMessage('Full name is required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('campus').notEmpty().withMessage('Campus selection is required'),
+  body('sanUsn').notEmpty().withMessage('SAN/USN number is required'),
+];
+
+const loginValidators = [
+  body('identifier')
+    .custom((value, { req }) => Boolean(value || req.body.email || req.body.phone))
+    .withMessage('Email or phone number is required'),
+  body('password').notEmpty().withMessage('Password is required'),
+];
+
 const forgotPasswordValidators = [
   body('email').isEmail().normalizeEmail().withMessage('A valid email is required'),
 ];
 
->>>>>>> prajwal
 const getCampuses = (req, res) => {
   res.json({ campuses: CAMPUSES });
 };
@@ -155,8 +148,3 @@ module.exports = {
   forgotPasswordValidators,
   getCampuses,
 };
-
-  getCampuses,
-};
-
->>>>>>> prajwal

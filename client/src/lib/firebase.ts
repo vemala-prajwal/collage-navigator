@@ -10,7 +10,23 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
 };
 
-export const firebaseApp = initializeApp(firebaseConfig); 
+const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId &&
+  firebaseConfig.apiKey !== 'undefined'
+);
+
+let _firebaseApp: ReturnType<typeof initializeApp> | null = null;
+const getFirebaseApp = () => {
+  if (_firebaseApp) return _firebaseApp;
+  if (!isFirebaseConfigured) {
+    throw new Error('Firebase Phone Authentication is not configured.');
+  }
+  _firebaseApp = initializeApp(firebaseConfig);
+  return _firebaseApp;
+};
 
 let _firebaseAuth: ReturnType<typeof getAuth> | null = null;
 const getFirebaseAuth = () => {
@@ -18,7 +34,7 @@ const getFirebaseAuth = () => {
   if (typeof window === 'undefined') {
     throw new Error('getFirebaseAuth requires a browser environment.');
   }
-  _firebaseAuth = getAuth(firebaseApp);
+  _firebaseAuth = getAuth(getFirebaseApp());
   return _firebaseAuth;
 };
 
@@ -32,7 +48,7 @@ const getRecaptchaVerifier = (containerId = 'recaptcha-container'): RecaptchaVer
     return win.firebaseRecaptchaVerifier;
   }
 
-  win.firebaseRecaptchaVerifier = new RecaptchaVerifier(containerId, { size: 'invisible' }, firebaseAuth);
+  win.firebaseRecaptchaVerifier = new RecaptchaVerifier(containerId, { size: 'invisible' }, getFirebaseAuth());
   return win.firebaseRecaptchaVerifier;
 };
 

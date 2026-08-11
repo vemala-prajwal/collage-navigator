@@ -11,19 +11,34 @@ const initFirebaseAdmin = () => {
 
   let credential;
   if (serviceAccountKey) {
-    credential = admin.credential.cert(JSON.parse(serviceAccountKey));
+    try {
+      credential = admin.credential.cert(JSON.parse(serviceAccountKey));
+    } catch {
+      credential = admin.credential.cert(serviceAccountKey);
+    }
   } else if (serviceAccountPath && fs.existsSync(serviceAccountPath)) {
-    credential = admin.credential.cert(JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8')));
+    try {
+      credential = admin.credential.cert(JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8')));
+    } catch {
+      return null;
+    }
   } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    credential = admin.credential.applicationDefault();
+    try {
+      credential = admin.credential.applicationDefault();
+    } catch {
+      return null;
+    }
   } else {
-    const error = new Error('Firebase admin credentials are not configured. Set FIREBASE_SERVICE_ACCOUNT_KEY, FIREBASE_SERVICE_ACCOUNT_PATH, or GOOGLE_APPLICATION_CREDENTIALS.');
-    error.statusCode = 500;
-    throw error;
+    return null;
   }
 
-  firebaseAdminApp = admin.initializeApp({ credential });
-  return firebaseAdminApp;
+  try {
+    firebaseAdminApp = admin.initializeApp({ credential });
+    return firebaseAdminApp;
+  } catch (err) {
+    console.warn('[firebaseAdmin] initializeApp notice:', err.message);
+    return null;
+  }
 };
 
 const verifyFirebaseIdToken = async (idToken) => {
@@ -33,8 +48,18 @@ const verifyFirebaseIdToken = async (idToken) => {
     throw error;
   }
 
-  const app = initFirebaseAdmin();
-  return app.auth().verifyIdToken(idToken);
+  try {
+    const app = initFirebaseAdmin();
+    if (app) {
+      return await app.auth().verifyIdToken(idToken);
+    }
+  } catch (adminErr) {
+    console.warn('[verifyFirebaseIdToken] Firebase Admin verification failed:', adminErr.message || adminErr);
+  }
+
+  const error = new Error('Firebase Admin is not configured or the Firebase token is invalid.');
+  error.statusCode = 401;
+  throw error;
 };
 
 module.exports = { verifyFirebaseIdToken };

@@ -1,21 +1,41 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Mail, Phone } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Mail, Phone } from 'lucide-react';
 import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
-import { PASSWORD_CHECKS, getPasswordStrength } from '../lib/passwordStrength';
+import SetNewPasswordForm from '../components/auth/SetNewPasswordForm';
 import {
-  requestPasswordReset,
   requestPhonePasswordReset,
   resetPasswordWithToken,
   verifyPhoneOtp,
 } from '../services/authApi';
-import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber } from '../lib/firebase';
+import { sendPhoneOtp, confirmPhoneOtp, normalizePhoneNumber, clearFirebasePhoneSession } from '../lib/firebase';
+import { supabase } from '../lib/supabaseClient';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const COOLDOWN_SECONDS = 60;
 const OTP_EXPIRY_SECONDS = 600; // 10 minutes
+const PASSWORD_RESET_REDIRECT_URL = 'https://collage-navigator-client.vercel.app/reset-password';
+
+const requestSupabasePasswordReset = async (email) => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: PASSWORD_RESET_REDIRECT_URL,
+  });
+
+  if (error) {
+    if (/rate.?limit|too.?many/i.test(error.message)) {
+      const rateLimitError = new Error('Too many requests. Please wait before requesting another reset link.');
+      rateLimitError.retryAfterSeconds = COOLDOWN_SECONDS;
+      throw rateLimitError;
+    }
+    throw new Error(error.message || 'Unable to send reset link.');
+  }
+};
 
 function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -36,11 +56,6 @@ function ForgotPasswordPage() {
   const [remainingAttempts, setRemainingAttempts] = useState(null);
 
   const [resetToken, setResetToken] = useState('');
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,8 +79,6 @@ function ForgotPasswordPage() {
     return () => clearInterval(t);
   }, [step, otpTimer]);
 
-  const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
-
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -83,7 +96,7 @@ function ForgotPasswordPage() {
     setLoading(true);
     try {
       if (isEmail) {
-        await requestPasswordReset(raw.toLowerCase());
+        await requestSupabasePasswordReset(raw.toLowerCase());
         setStep('email_sent');
         setCooldown(COOLDOWN_SECONDS);
         toast.success('Reset link sent');
@@ -162,7 +175,12 @@ function ForgotPasswordPage() {
     try {
       const userCredential = await confirmPhoneOtp(confirmationResult, code);
       const firebaseToken = await userCredential.user.getIdToken();
-      const res = await verifyPhoneOtp(normalizedPhone, code, firebaseToken);
+      let res;
+      try {
+        res = await verifyPhoneOtp(normalizedPhone, code, firebaseToken);
+      } finally {
+        await clearFirebasePhoneSession();
+      }
       if (!res?.resetToken) throw new Error('Verification failed.');
       setResetToken(res.resetToken);
       setStep('new_password');
@@ -177,11 +195,8 @@ function ForgotPasswordPage() {
     }
   };
 
-  const handleResetPasswordSubmit = async (e) => {
-    e.preventDefault();
+  const handleResetPasswordSubmit = async (password) => {
     setError('');
-    if (password !== confirmPassword) return setError('Passwords do not match.');
-    if (passwordStrength.score < 5) return setError('Please meet all password requirements.');
     if (!resetToken) return setError('Reset session expired. Please start again.');
 
     setLoading(true);
@@ -268,7 +283,6 @@ function ForgotPasswordPage() {
       {/* Request form */}
       {step === 'request' && (
         <form onSubmit={handleRequestSubmit} className="auth-form space-y-3" noValidate>
-          <div id="recaptcha-container"></div>
           {error && (
             <div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert">
               <AlertCircle size={16} className="mt-0.5 shrink-0 text-error" />
@@ -323,31 +337,14 @@ function ForgotPasswordPage() {
 
       {/* New password */}
       {step === 'new_password' && (
-        <form onSubmit={handleResetPasswordSubmit} className="auth-form space-y-4" noValidate>
-          {error && (<div className="auth-error flex items-start gap-2.5 rounded-xl border border-error/25 bg-error/10 px-4 py-3" role="alert"><AlertCircle size={16} className="mt-0.5 shrink-0 text-error" /><p className="text-sm font-medium text-error">{error}</p></div>)}
-
-          <AuthField label={<span>New Password</span>} htmlFor="password" icon={<KeyRound size={16} />}>
-            <div className="relative">
-              <input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="input-field pl-11" placeholder="Choose a secure password" />
-              <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-            </div>
-          </AuthField>
-
-          <AuthField label={<span>Confirm Password</span>} htmlFor="confirmPassword" icon={<KeyRound size={16} />}>
-            <div className="relative">
-              <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="input-field pl-11" placeholder="Retype new password" />
-              <button type="button" onClick={() => setShowConfirmPassword((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-            </div>
-          </AuthField>
-
-          <div className="space-y-2">
-            {PASSWORD_CHECKS.map((chk) => (
-              <div key={chk.key} className={`text-sm ${passwordStrength[chk.key] ? 'text-success' : 'text-muted'}`}>{chk.label}</div>
-            ))}
-          </div>
-
-          <button type="submit" disabled={loading} className="btn-gradient inline-flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-sm font-semibold">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set New Password'}</button>
-        </form>
+        <SetNewPasswordForm
+          onSubmit={handleResetPasswordSubmit}
+          loading={loading}
+          error={error}
+          onClearError={() => setError('')}
+          submitLabel="Set New Password"
+          loadingLabel="Updating password..."
+        />
       )}
 
       {step === 'reset_success' && (

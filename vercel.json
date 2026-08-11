@@ -11,19 +11,7 @@
   },
   "rewrites": [
     {
-      "source": "/api/locations/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/canteen-items/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/feedback/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/health",
+      "source": "/api/:path*",
       "destination": "/api/index.js"
     },
     {
