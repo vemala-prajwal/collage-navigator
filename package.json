@@ -2,7 +2,10 @@
   "name": "campus-navigator",
   "private": true,
   "version": "1.0.0",
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
     "build": "npm run build --workspace=client"
@@ -22,6 +25,6 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "concurrently": "^8.0.0"
+    "concurrently": "^8.2.2"
   }
 }
