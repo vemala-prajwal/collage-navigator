@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import Footer from './home/Footer';
 import AmbientBackground from './AmbientBackground';
+import BootSplash from './BootSplash';
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ export default function Layout({ children }) {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground transition-colors duration-300">
+      <BootSplash />
       <AmbientBackground />
       <Navbar user={user} logout={handleLogout} />
       <main

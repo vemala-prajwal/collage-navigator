@@ -19,6 +19,8 @@ export default function Card({
 }) {
   return (
     <motion.div
+      whileTap={hover ? { scale: 0.975 } : undefined}
+      transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
       className={`ui-card card-surface ${
         variantClasses[variant] || variantClasses.glass
       } ${hover ? 'card-interactive' : 'card-static'} ${className}`}

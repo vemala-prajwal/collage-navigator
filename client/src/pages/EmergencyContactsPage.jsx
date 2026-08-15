@@ -144,37 +144,37 @@ export default function EmergencyContactsPage() {
   const getAccentBadgeStyle = (accent) => {
     switch (accent) {
       case 'crimson':
-        return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800/60';
+        return 'bg-rose-500/15 text-rose-400 border-rose-500/30';
       case 'amber':
-        return 'bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800/60';
+        return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
       case 'cobalt':
-        return 'bg-blue-100 text-blue-900 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800/60';
+        return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30';
       case 'teal':
       default:
-        return 'bg-teal-100 text-teal-900 border-teal-200 dark:bg-teal-950/80 dark:text-teal-300 dark:border-teal-800/60';
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
     }
   };
 
   const getCallBtnStyle = (accent, isPrimary) => {
     if (isPrimary && accent === 'crimson') {
-      return 'bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-600/20 dark:bg-rose-500 dark:hover:bg-rose-600';
+      return 'bg-rose-600 text-white hover:bg-rose-500 shadow-md shadow-rose-600/30';
     }
     if (isPrimary && accent === 'amber') {
-      return 'bg-amber-600 text-white hover:bg-amber-700 shadow-md shadow-amber-600/20 dark:bg-amber-500 dark:hover:bg-amber-600';
+      return 'bg-amber-500 text-on-accent hover:bg-amber-400 shadow-md shadow-amber-500/30';
     }
     if (isPrimary) {
-      return 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white';
+      return 'bg-accent text-on-accent hover:bg-accent-strong shadow-md shadow-accent/30';
     }
-    return 'bg-white/90 text-slate-800 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800/90 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700';
+    return 'bg-surface-secondary text-foreground hover:bg-surface-elevated border border-border/50';
   };
 
   return (
-    <div className="min-h-screen pb-16 pt-4 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen pb-16 pt-4 text-foreground">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 sm:px-6">
         
         {/* HERO DISPATCH HEADER */}
         <section
-          className={`relative overflow-hidden rounded-3xl border border-rose-500/20 bg-gradient-to-b from-rose-500/5 via-slate-50 to-white p-6 backdrop-blur-md shadow-sm sm:p-10 dark:border-rose-500/30 dark:from-rose-950/30 dark:via-slate-900/80 dark:to-slate-950 ${styles.radarMesh}`}
+          className={`relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-b from-surface-secondary via-background to-surface p-6 backdrop-blur-md shadow-elevated sm:p-10 ${styles.radarMesh}`}
         >
           <div className="relative z-10 flex flex-col items-center text-center">
             

@@ -7,37 +7,37 @@ const FEATURES = [
     logo: 'googlemaps',
     title: 'Real-time navigation',
     description: 'Live routes across every mapped building and floor.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent))',
   },
   {
     logo: 'ubereats',
     title: 'Live canteen status',
     description: 'Menu availability and queue updates every two minutes.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent2))',
   },
   {
     logo: 'googlemessages',
     title: 'Verified feedback',
     description: 'Student-submitted ratings that facilities actually act on.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent))',
   },
   {
     logo: 'googlecloud',
     title: 'Speed by default',
     description: 'Instant search results — no loading screens, no friction.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent2))',
   },
   {
     logo: 'googlecalendar',
     title: 'Always current',
     description: 'Campus data refreshed around the clock, not once a semester.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent))',
   },
   {
     logo: 'googleworkspace',
     title: 'Trusted data',
     description: 'Every location verified against official campus records.',
-    color: 'rgb(var(--ui-accent))',
+    color: 'rgb(var(--color-accent2))',
   },
 ];
 
