@@ -1,1 +1,0 @@
-import{ak as s}from"./vendor-WTk3NEbF.js";const e="https://ryrwdqxztontjeugavhl.supabase.co",t="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5cndkcXh6dG9udGpldWdhdmhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODU5MTgsImV4cCI6MjEwMDU2MTkxOH0.1oFwQKwZTUcLSPfsq7TIgCCb2vXxHTGb3UqgVVNWvUQ",a=s(e,t,{auth:{persistSession:!0,autoRefreshToken:!0}});export{a as s};
