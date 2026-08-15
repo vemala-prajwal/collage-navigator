@@ -1,0 +1,1 @@
+import{r as m}from"./vendor-Cfj0NrsI.js";function o({title:t,description:a}={}){m.useEffect(()=>{if(t&&(document.title=`${t} | Campus Navigator`),a){let e=document.querySelector('meta[name="description"]');e||(e=document.createElement("meta"),e.setAttribute("name","description"),document.head.appendChild(e)),e.setAttribute("content",a)}},[t,a])}export{o as u};

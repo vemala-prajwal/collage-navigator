@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
-import { AlertTriangle, House, Map, Menu, ShieldCheck, UtensilsCrossed, X } from 'lucide-react';
+import { BookOpen, House, Info, Map, Menu, MessageSquare, UtensilsCrossed, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import Button from './Button';
 import CampusLogoIcon from './CampusLogo';
@@ -10,10 +10,11 @@ const MotionLink = motion(Link);
 
 const navItems = [
   { label: 'Home', to: '/', icon: House },
-  { label: 'Map', to: '/map-search', icon: Map },
+  { label: 'How to Use', to: '/how-to-use', icon: BookOpen },
+  { label: 'Navigate', to: '/navigate', icon: Map },
   { label: 'Canteen', to: '/canteen', icon: UtensilsCrossed },
-  { label: 'Emergency', to: '/emergency-contacts', icon: AlertTriangle },
-  { label: 'Admin', to: '/admin', icon: ShieldCheck },
+  { label: 'Feedback', to: '/feedback', icon: MessageSquare },
+  { label: 'About', to: '/about', icon: Info },
 ];
 
 const overlayVariants = {

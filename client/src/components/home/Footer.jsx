@@ -3,10 +3,12 @@ import { Sparkles } from 'lucide-react';
 import CampusLogoIcon from '../CampusLogo';
 
 const FOOTER_LINKS = [
-  { label: 'Home',       to: '/' },
-  { label: 'Map Search', to: '/map-search' },
-  { label: 'Canteen',    to: '/canteen' },
-  { label: 'Login',      to: '/login' },
+  { label: 'Home', to: '/' },
+  { label: 'How to Use', to: '/how-to-use' },
+  { label: 'Navigate', to: '/navigate' },
+  { label: 'Canteen', to: '/canteen' },
+  { label: 'Feedback', to: '/feedback' },
+  { label: 'About', to: '/about' },
 ];
 
 export default function Footer() {

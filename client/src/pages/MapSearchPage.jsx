@@ -7,6 +7,7 @@ import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
 import { SkeletonCard } from '../components/Skeleton';
+import usePageMeta from '../hooks/usePageMeta';
 
 const listVariants = {
   hidden: {},
@@ -30,6 +31,11 @@ const statusMap = {
 };
 
 export default function MapSearchPage() {
+  usePageMeta({
+    title: 'Search & Navigate',
+    description: 'Search campus locations and follow live routes with a modern navigation experience built for students.',
+  });
+
   const [query, setQuery] = useState('');
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
