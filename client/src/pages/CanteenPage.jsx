@@ -5,7 +5,7 @@ import api from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
-import CanteenLogo from '../assets/canteen-logo.jpeg';
+import CanteenLogo from '../assets/canteen-logo.png';
 import { SkeletonCard } from '../components/Skeleton';
 
 const listVariants = {
@@ -76,7 +76,7 @@ export default function CanteenPage() {
         <img
           src={CanteenLogo}
           alt="Campus canteen logo"
-          className="h-40 w-full rounded-2xl object-cover ring-1 ring-border"
+          className="mx-auto h-44 w-44 rounded-full object-cover ring-1 ring-border"
         />
       </PageHeader>
 
