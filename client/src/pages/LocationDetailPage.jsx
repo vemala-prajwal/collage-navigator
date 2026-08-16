@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, MessageSquare, Star } from 'lucide-react';
+import { Building2, MapPin, MessageSquare } from 'lucide-react';
+import RatingsLogo from '../assets/ratings-logo.png';
 import api from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -139,7 +140,7 @@ export default function LocationDetailPage() {
                 <div className="card-header">
                   <div className="card-header__main">
                     <span className="card-header__icon" aria-hidden="true">
-                      <Star size={16} strokeWidth={1.8} />
+                      <img src={RatingsLogo} alt="Ratings logo" className="h-6 w-6 rounded object-cover" />
                     </span>
                     <span className="card-title">Average rating</span>
                   </div>

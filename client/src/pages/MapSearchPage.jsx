@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, MapPin, X } from 'lucide-react';
 import api from '../services/api';
+import SearchLogo from '../assets/search-logo.png';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
@@ -89,7 +90,7 @@ export default function MapSearchPage() {
       <div className="card-header">
         <div className="card-header__main">
           <span className="card-header__icon" aria-hidden="true">
-            <Search size={16} strokeWidth={1.8} />
+            <img src={SearchLogo} alt="Search and navigation logo" className="h-6 w-6 rounded object-cover" />
           </span>
           <span className="card-title">Search campus locations</span>
         </div>
