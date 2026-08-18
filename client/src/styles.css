@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,52 +11,63 @@
   --font-body: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
 
+<<<<<<< HEAD
   --font-brand: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
   --color-background: 249 248 255;
   --color-background-secondary: 241 239 255;
+=======
+  --color-background: 248 250 252;
+  --color-background-secondary: 241 245 249;
+>>>>>>> f3b7adee01245eb9eed63553a02e5219db5e5294
   --color-surface: 255 255 255;
-  --color-surface-secondary: 246 245 255;
+  --color-surface-secondary: 241 245 249;
   --color-surface-elevated: 255 255 255;
-  --color-foreground: 15 10 40;
-  --color-foreground-muted: 99 90 138;
-  --color-border: 219 214 244;
+  --color-foreground: 15 23 42;
+  --color-foreground-muted: 100 116 139;
+  --color-border: 226 232 240;
 
-  /* Vivid violet-to-indigo accent */
-  --color-accent: 109 40 217;
-  --color-accent-strong: 79 20 180;
-  --color-accent-muted: 237 233 254;
+  /* Crimson Red primary accent for light mode */
+  --color-accent: 220 38 38;
+  --color-accent-strong: 185 28 28;
+  --color-accent-muted: 254 242 242;
   --color-on-accent: 255 255 255;
 
+<<<<<<< HEAD
   --color-brand: 79 38 180;
   --color-brand-soft: 237 233 254;
 
   /* Secondary accent: fuchsia-pink */
   --color-accent2: 217 70 239;
   --color-accent2-muted: 250 232 255;
+=======
+  /* Secondary Sunfire Orange accent for light mode */
+  --color-accent2: 234 88 12;
+  --color-accent2-muted: 255 247 237;
+>>>>>>> f3b7adee01245eb9eed63553a02e5219db5e5294
 
   --color-success: 16 185 129;
-  --color-success-muted: 209 250 229;
-  --color-warning: 245 158 11;
+  --color-success-muted: 236 253 245;
+  --color-warning: 217 119 6;
   --color-warning-muted: 254 243 199;
-  --color-error: 239 68 68;
+  --color-error: 220 38 38;
   --color-error-muted: 254 226 226;
   --color-glass: 255 255 255;
 
-  --shadow-soft: 0 1px 2px rgb(15 10 40 / 0.04), 0 18px 50px rgb(109 40 217 / 0.09), 0 8px 24px rgb(15 10 40 / 0.05);
-  --shadow-elevated: 0 2px 4px rgb(15 10 40 / 0.05), 0 28px 80px rgb(109 40 217 / 0.14), 0 12px 32px rgb(15 10 40 / 0.08);
-  --shadow-glow: 0 0 40px rgb(109 40 217 / 0.30), 0 0 80px rgb(217 70 239 / 0.15);
-  --shadow-glow2: 0 0 40px rgb(217 70 239 / 0.25);
+  --shadow-soft: 0 2px 8px -2px rgb(15 23 42 / 0.06), 0 12px 32px -4px rgb(15 23 42 / 0.08);
+  --shadow-elevated: 0 4px 16px -2px rgb(15 23 42 / 0.08), 0 20px 48px -6px rgb(15 23 42 / 0.12);
+  --shadow-glow: 0 0 30px rgb(220 38 38 / 0.25);
+  --shadow-glow2: 0 0 30px rgb(234 88 12 / 0.25);
 
-  --gradient-hero: linear-gradient(160deg, rgb(249 248 255) 0%, rgb(241 239 255) 48%, rgb(247 241 255) 100%);
-  --gradient-accent: linear-gradient(135deg, rgb(109 40 217) 0%, rgb(190 60 235) 60%, rgb(217 70 239) 100%);
-  --gradient-accent-rev: linear-gradient(135deg, rgb(217 70 239) 0%, rgb(109 40 217) 100%);
-  --gradient-text: linear-gradient(120deg, rgb(109 40 217) 0%, rgb(168 60 235) 55%, rgb(217 70 239) 100%);
-  --gradient-mesh: radial-gradient(ellipse at 20% 30%, rgb(109 40 217 / 0.12) 0%, transparent 55%),
-                   radial-gradient(ellipse at 80% 70%, rgb(217 70 239 / 0.10) 0%, transparent 55%),
-                   radial-gradient(ellipse at 50% 50%, rgb(139 92 246 / 0.06) 0%, transparent 60%);
+  --gradient-hero: linear-gradient(160deg, rgb(248 250 252) 0%, rgb(241 245 249) 48%, rgb(255 255 255) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(220 38 38) 0%, rgb(234 88 12) 50%, rgb(217 119 6) 100%);
+  --gradient-accent-rev: linear-gradient(135deg, rgb(217 119 6) 0%, rgb(220 38 38) 100%);
+  --gradient-text: linear-gradient(120deg, rgb(220 38 38) 0%, rgb(234 88 12) 50%, rgb(217 119 6) 100%);
+  --gradient-mesh: radial-gradient(ellipse at 20% 30%, rgb(220 38 38 / 0.08) 0%, transparent 55%),
+                   radial-gradient(ellipse at 80% 70%, rgb(234 88 12 / 0.06) 0%, transparent 55%),
+                   radial-gradient(ellipse at 50% 50%, rgb(217 119 6 / 0.04) 0%, transparent 60%);
 
-  --color-shimmer-base: 200 190 240;
+  --color-shimmer-base: 226 232 240;
   --color-shimmer-highlight: 255 255 255;
   --section-gap: clamp(6rem, 12vw, 10rem);
 
@@ -70,48 +81,49 @@
 html.dark {
   color-scheme: dark;
 
-  --color-background: 8 6 23;
-  --color-background-secondary: 5 4 14;
-  --color-surface: 15 12 36;
-  --color-surface-secondary: 21 17 49;
-  --color-surface-elevated: 29 23 63;
-  --color-foreground: 243 241 255;
-  --color-foreground-muted: 160 150 200;
-  --color-border: 52 42 104;
+  /* Warm Pitch Black (#050404) Base */
+  --color-background: 5 4 4;
+  --color-background-secondary: 17 13 13;
+  --color-surface: 17 13 13;
+  --color-surface-secondary: 26 20 20;
+  --color-surface-elevated: 34 26 26;
+  --color-foreground: 252 248 246;
+  --color-foreground-muted: 163 153 149;
+  --color-border: 42 32 32;
 
-  /* Brighter neon purple-violet for dark mode */
-  --color-accent: 139 92 246;
-  --color-accent-strong: 167 139 250;
-  --color-accent-muted: 46 16 101;
+  /* Flame Red primary accent */
+  --color-accent: 239 68 68;
+  --color-accent-strong: 220 38 38;
+  --color-accent-muted: 64 18 18;
   --color-on-accent: 255 255 255;
 
-  /* Secondary accent: hot pink */
-  --color-accent2: 240 100 255;
-  --color-accent2-muted: 80 20 100;
+  /* Sunfire Orange secondary accent */
+  --color-accent2: 249 115 22;
+  --color-accent2-muted: 64 30 10;
 
-  --color-success: 52 211 153;
-  --color-success-muted: 6 60 40;
-  --color-warning: 251 191 36;
-  --color-warning-muted: 90 50 10;
-  --color-error: 248 113 113;
-  --color-error-muted: 80 20 20;
-  --color-glass: 15 12 36;
+  --color-success: 16 185 129;
+  --color-success-muted: 6 78 54;
+  --color-warning: 245 158 11;
+  --color-warning-muted: 80 55 5;
+  --color-error: 239 68 68;
+  --color-error-muted: 80 20 35;
+  --color-glass: 17 13 13;
 
-  --shadow-soft: 0 2px 6px rgb(0 0 0 / 0.35), 0 24px 70px rgb(0 0 0 / 0.50), 0 10px 30px rgb(139 92 246 / 0.12);
-  --shadow-elevated: 0 4px 12px rgb(0 0 0 / 0.45), 0 32px 90px rgb(0 0 0 / 0.65), 0 14px 40px rgb(139 92 246 / 0.18);
-  --shadow-glow: 0 0 50px rgb(139 92 246 / 0.45), 0 0 100px rgb(240 100 255 / 0.20);
-  --shadow-glow2: 0 0 50px rgb(240 100 255 / 0.35);
+  --shadow-soft: 0 2px 6px rgb(0 0 0 / 0.75), 0 24px 70px rgb(0 0 0 / 0.88), 0 10px 30px rgb(239 68 68 / 0.16);
+  --shadow-elevated: 0 4px 12px rgb(0 0 0 / 0.85), 0 32px 90px rgb(0 0 0 / 0.96), 0 14px 40px rgb(239 68 68 / 0.24);
+  --shadow-glow: 0 0 35px rgb(239 68 68 / 0.38), 0 0 70px rgb(249 115 22 / 0.20);
+  --shadow-glow2: 0 0 35px rgb(249 115 22 / 0.32);
 
-  --gradient-hero: linear-gradient(160deg, rgb(8 6 23) 0%, rgb(13 9 37) 48%, rgb(10 6 28) 100%);
-  --gradient-accent: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(210 100 255) 60%, rgb(240 100 255) 100%);
-  --gradient-accent-rev: linear-gradient(135deg, rgb(240 100 255) 0%, rgb(139 92 246) 100%);
-  --gradient-text: linear-gradient(120deg, rgb(167 139 250) 0%, rgb(210 110 255) 55%, rgb(240 100 255) 100%);
-  --gradient-mesh: radial-gradient(ellipse at 20% 30%, rgb(139 92 246 / 0.18) 0%, transparent 55%),
-                   radial-gradient(ellipse at 80% 70%, rgb(240 100 255 / 0.14) 0%, transparent 55%),
-                   radial-gradient(ellipse at 50% 10%, rgb(109 40 217 / 0.10) 0%, transparent 50%);
+  --gradient-hero: linear-gradient(160deg, rgb(5 4 4) 0%, rgb(17 13 13) 48%, rgb(10 7 7) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(249 115 22) 50%, rgb(245 158 11) 100%);
+  --gradient-accent-rev: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(239 68 68) 100%);
+  --gradient-text: linear-gradient(120deg, rgb(239 68 68) 0%, rgb(249 115 22) 50%, rgb(245 158 11) 100%);
+  --gradient-mesh: radial-gradient(ellipse at 20% 30%, rgb(239 68 68 / 0.18) 0%, transparent 55%),
+                   radial-gradient(ellipse at 80% 70%, rgb(249 115 22 / 0.16) 0%, transparent 55%),
+                   radial-gradient(ellipse at 50% 10%, rgb(245 158 11 / 0.10) 0%, transparent 50%);
 
-  --color-shimmer-base: 50 40 100;
-  --color-shimmer-highlight: 139 92 246;
+  --color-shimmer-base: 26 20 20;
+  --color-shimmer-highlight: 239 68 68;
 
   /* Map trees */
   --color-canopy: 116 132 88;
@@ -888,20 +900,21 @@ html.dark .glow-pill {
 :root {
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'Space Grotesk', 'IBM Plex Mono', ui-monospace, monospace;
 
-  --ui-ink: 28 31 30;
-  --ui-muted: 91 97 94;
-  --ui-surface: 250 249 245;
-  --ui-surface-2: 240 240 235;
-  --ui-border: 205 208 202;
-  --ui-accent: 224 82 61;
-  --ui-accent-strong: 181 57 42;
-  --ui-accent-soft: 254 233 226;
-  --ui-shadow: 0 12px 28px rgb(28 31 30 / 0.07), 0 2px 5px rgb(28 31 30 / 0.06);
-  --ui-shadow-raised: 0 18px 42px rgb(28 31 30 / 0.11), 0 2px 5px rgb(28 31 30 / 0.07);
-  --ui-command: 28 31 30;
-  --ui-command-ink: 250 249 245;
+  --ui-ink: var(--color-foreground);
+  --ui-muted: var(--color-foreground-muted);
+  --ui-surface: var(--color-surface);
+  --ui-surface-2: var(--color-surface-secondary);
+  --ui-border: var(--color-border);
+  --ui-accent: var(--color-accent);
+  --ui-accent2: var(--color-accent2);
+  --ui-accent-strong: var(--color-accent-strong);
+  --ui-accent-soft: var(--color-accent-muted);
+  --ui-shadow: 0 12px 28px rgb(10 18 30 / 0.08), 0 2px 5px rgb(10 18 30 / 0.06);
+  --ui-shadow-raised: 0 18px 42px rgb(10 18 30 / 0.12), 0 2px 5px rgb(10 18 30 / 0.07);
+  --ui-command: 10 18 30;
+  --ui-command-ink: 255 255 255;
   --type-12: 0.75rem;
   --type-14: 0.875rem;
   --type-16: 1rem;
@@ -912,18 +925,19 @@ html.dark .glow-pill {
 }
 
 html.dark {
-  --ui-ink: 242 241 235;
-  --ui-muted: 164 168 162;
-  --ui-surface: 22 24 24;
-  --ui-surface-2: 31 34 33;
-  --ui-border: 67 72 68;
-  --ui-accent: 255 124 94;
-  --ui-accent-strong: 255 151 124;
-  --ui-accent-soft: 69 34 28;
-  --ui-shadow: 0 14px 34px rgb(0 0 0 / 0.24), 0 2px 5px rgb(0 0 0 / 0.22);
-  --ui-shadow-raised: 0 22px 50px rgb(0 0 0 / 0.34), 0 2px 6px rgb(0 0 0 / 0.26);
-  --ui-command: 16 18 18;
-  --ui-command-ink: 242 241 235;
+  --ui-ink: 252 248 246;
+  --ui-muted: 163 153 149;
+  --ui-surface: 17 13 13;
+  --ui-surface-2: 26 20 20;
+  --ui-border: 42 32 32;
+  --ui-accent: 239 68 68;
+  --ui-accent2: 249 115 22;
+  --ui-accent-strong: 220 38 38;
+  --ui-accent-soft: 64 18 18;
+  --ui-shadow: 0 14px 34px rgb(0 0 0 / 0.35), 0 2px 5px rgb(0 0 0 / 0.25);
+  --ui-shadow-raised: 0 22px 50px rgb(0 0 0 / 0.45), 0 2px 6px rgb(0 0 0 / 0.30);
+  --ui-command: 17 13 13;
+  --ui-command-ink: 252 248 246;
 }
 
 /* Every card surface uses the same flat, tight geometry. */
@@ -1072,42 +1086,53 @@ footer .border-accent {
 
 /* Navigation is a work surface, not a floating glass ornament. */
 header {
-  border-bottom-color: rgb(var(--ui-border) / 0.82) !important;
-  background: rgb(var(--ui-surface) / 0.94) !important;
-  backdrop-filter: none !important;
-  box-shadow: 0 1px 0 rgb(var(--ui-border) / 0.28) !important;
+  border-bottom-color: rgb(var(--color-border) / 0.4) !important;
+  background: rgb(var(--color-background) / 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: 0 1px 0 rgb(var(--color-border) / 0.3) !important;
 }
 
 header.glass-nav {
-  background: rgb(var(--ui-surface) / 0.98) !important;
-  box-shadow: 0 8px 22px rgb(28 31 30 / 0.08) !important;
+  background: rgb(var(--color-background) / 0.94) !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45) !important;
 }
 
 .nav-link {
-  border-radius: 6px !important;
-  padding-inline: 0.75rem !important;
-  color: rgb(var(--ui-muted)) !important;
-  transition: color 160ms ease, background-color 160ms ease !important;
+  border-radius: 12px !important;
+  padding-inline: 0.85rem !important;
+  color: rgb(var(--color-foreground-muted)) !important;
+  transition: color 180ms ease, background-color 180ms ease !important;
 }
 
-.nav-link:hover,
+.nav-link:hover {
+  color: rgb(var(--color-foreground)) !important;
+  background: rgb(var(--color-surface-secondary) / 0.7) !important;
+}
+
 .nav-link[aria-current='page'] {
-  color: rgb(var(--ui-ink)) !important;
-  background: rgb(var(--ui-surface-2) / 0.9) !important;
+  color: rgb(var(--color-foreground)) !important;
+  background: rgb(var(--color-accent) / 0.16) !important;
+  border: 1px solid rgb(var(--color-accent) / 0.3) !important;
 }
 
 .nav-active-pill {
-  background: rgb(var(--ui-accent)) !important;
-  box-shadow: none !important;
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  border-radius: 9999px;
+  background: rgb(var(--color-accent)) !important;
+  box-shadow: 0 0 12px rgb(var(--color-accent)) !important;
 }
 
 /* Buttons use a single signal color and a short, weighted interaction. */
 .btn-gradient,
 .ui-button-primary {
-  border-radius: 8px !important;
-  background: rgb(var(--ui-accent)) !important;
-  background-image: none !important;
-  box-shadow: 0 2px 0 rgb(var(--ui-accent-strong) / 0.34), 0 7px 14px rgb(var(--ui-accent) / 0.14) !important;
+  border-radius: 12px !important;
+  background: rgb(var(--color-accent)) !important;
+  background-image: var(--gradient-accent) !important;
+  box-shadow: 0 2px 0 rgb(var(--color-accent-strong) / 0.34), 0 7px 14px rgb(var(--color-accent) / 0.22) !important;
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
 }
 
@@ -1979,3 +2004,236 @@ header.glass-nav {
     width: 2rem;
   }
 }
+
+/* ─── STEPPER TIMELINE & FLOW UTILITIES ─────────────────────────────── */
+.stepper-line {
+  position: absolute;
+  top: 2.5rem;
+  bottom: 0.5rem;
+  left: 1.375rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--color-accent) / 0.8),
+    rgb(var(--color-accent2) / 0.5) 70%,
+    transparent
+  );
+}
+
+.team-card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card-glow::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -40%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-accent) / 0.25) 0%,
+    rgb(var(--color-accent2) / 0.1) 45%,
+    transparent 70%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  opacity: 0.6;
+}
+
+.team-card-glow:hover::before {
+  opacity: 1;
+}
+
+.glass-panel-interactive {
+  background: rgba(var(--color-surface), 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--color-border), 0.4);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover {
+  border-color: rgba(var(--color-accent), 0.5);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* ─── TACTILE CARD PRESS & ICON ARROW SLIDE UTILITIES ───────────────── */
+.card-interactive,
+.glass-panel-interactive,
+.card-surface {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Tactile scale-down press effect on click / touch tap / active state */
+.card-interactive:active,
+.glass-panel-interactive:active,
+.card-surface:active {
+  transform: scale(0.975) translateY(1px) !important;
+  border-color: rgb(var(--color-accent) / 0.8) !important;
+  box-shadow: 0 0 25px rgb(0 245 160 / 0.45) !important;
+}
+
+/* Micro-interaction: Action icon/arrow slide right on active press */
+.card-interactive:active svg.lucide-arrow-right,
+.glass-panel-interactive:active svg.lucide-arrow-right,
+.card-surface:active svg.lucide-arrow-right,
+.card-interactive:active .card-header__icon,
+.glass-panel-interactive:active .card-header__icon {
+  transform: translateX(5px) scale(1.08);
+  color: rgb(var(--color-accent));
+  transition: transform 0.1s ease, color 0.1s ease;
+}
+
+/* Reduced motion fallback: instant border highlight without scale physics */
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive:active,
+  .glass-panel-interactive:active,
+  .card-surface:active {
+    transform: none !important;
+    border-color: rgb(var(--color-accent)) !important;
+  }
+}
+
+/* ─── GPS LOCK-ON BOOT SPLASH ANIMATIONS & UTILITIES ───────────────── */
+@keyframes gps-grid-fade {
+  0% { opacity: 0; }
+  100% { opacity: 0.18; }
+}
+
+@keyframes gps-reticle-scan {
+  0% {
+    transform: translate(-60px, -35px) scale(1);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(-60px, -35px) scale(1);
+    opacity: 1;
+  }
+  29.9% {
+    transform: translate(-60px, -35px) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(55px, 28px) scale(1.05);
+    opacity: 1;
+  }
+  59.9% {
+    transform: translate(55px, 28px) scale(1.05);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-28px, 42px) scale(0.96);
+    opacity: 1;
+  }
+  89.9% {
+    transform: translate(-28px, 42px) scale(0.96);
+    opacity: 1;
+  }
+  90% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes gps-ripple-pulse {
+  0% {
+    transform: scale(0.1);
+    opacity: 0.95;
+    border-color: rgba(249, 115, 22, 0.9);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    opacity: 0.6;
+    border-color: rgba(239, 68, 68, 0.7);
+  }
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+    border-color: rgba(249, 115, 22, 0);
+    box-shadow: 0 0 0px transparent;
+  }
+}
+
+@keyframes gps-reticle-snap-glow {
+  0% {
+    box-shadow: 0 0 0px transparent;
+    border-color: rgba(249, 115, 22, 0.4);
+  }
+  30% {
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.95), inset 0 0 15px rgba(249, 115, 22, 0.7);
+    border-color: rgba(239, 68, 68, 1);
+    transform: scale(1.12);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+    border-color: rgba(249, 115, 22, 0.9);
+    transform: scale(1);
+  }
+}
+
+@keyframes gps-wordmark-snap-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.93) translateY(8px);
+    filter: blur(4px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-1px);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes gps-splash-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-gps-grid {
+  animation: gps-grid-fade 0.4s ease-out forwards;
+}
+
+.animate-gps-scan {
+  animation: gps-reticle-scan 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-gps-ripple {
+  animation: gps-ripple-pulse 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.animate-gps-snap-glow {
+  animation: gps-reticle-snap-glow 0.4s ease-out forwards;
+}
+
+.animate-gps-wordmark-snap {
+  animation: gps-wordmark-snap-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-gps-fade-out {
+  animation: gps-splash-fade-out 0.4s ease-in-out forwards;
+}
+
+
+

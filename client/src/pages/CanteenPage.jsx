@@ -1,32 +1,30 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, CircleOff, Clock3, UtensilsCrossed } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, CircleOff, Clock3, UtensilsCrossed, Sparkles, Filter } from 'lucide-react';
 import api from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
 import CanteenLogo from '../assets/canteen-logo.jpeg';
 import { SkeletonCard } from '../components/Skeleton';
-
-const listVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } },
-};
+import { fadeUp, staggerContainer } from '../lib/motion';
+import usePageMeta from '../hooks/usePageMeta';
 
 const statusLabel = {
   available: 'Available',
-  limited: 'Limited',
-  soldOut: 'Sold out',
+  limited: 'Limited Stock',
+  soldOut: 'Sold Out',
 };
 
 export default function CanteenPage() {
+  usePageMeta({
+    title: 'Canteen Menu & Status',
+    description: 'Check real-time canteen menu availability, pricing, and item status before walking to the campus dining hall.',
+  });
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -55,112 +53,186 @@ export default function CanteenPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const safeItems = Array.isArray(items) ? items : [];
-  const statusCounts = safeItems.reduce(
-    (counts, item) => {
-      const status = item?.status || 'available';
-      counts[status] = (counts[status] || 0) + 1;
-      return counts;
-    },
-    { available: 0, limited: 0, soldOut: 0 },
-  );
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
+  const statusCounts = useMemo(() => {
+    return safeItems.reduce(
+      (counts, item) => {
+        const status = item?.status || 'available';
+        counts[status] = (counts[status] || 0) + 1;
+        return counts;
+      },
+      { available: 0, limited: 0, soldOut: 0 }
+    );
+  }, [safeItems]);
+
+  const filteredItems = useMemo(() => {
+    if (activeFilter === 'all') return safeItems;
+    return safeItems.filter((item) => (item?.status || 'available') === activeFilter);
+  }, [safeItems, activeFilter]);
 
   return (
-    <div className="canteen-page">
+    <div className="canteen-page space-y-10">
+      {/* Header Banner */}
       <PageHeader
         icon={UtensilsCrossed}
-        eyebrow="Canteen menu"
-        title="Fresh campus food, status-first."
-        description="Scan the live menu, see availability instantly, and spot the fastest line with confidence."
+        eyebrow="Live Campus Dining"
+        title="Fresh food menu, updated in real time."
+        description="Scan today's live menu availability, check pricing, and avoid long canteen lines before you walk over."
       >
-        <img
-          src={CanteenLogo}
-          alt="Campus canteen logo"
-          className="h-40 w-full rounded-2xl object-cover ring-1 ring-border"
-        />
+        <div className="relative overflow-hidden rounded-2xl border border-border/40 shadow-elevated">
+          <img
+            src={CanteenLogo}
+            alt="Campus canteen hall"
+            className="h-44 w-full object-cover brightness-90"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent flex items-end p-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur-md px-3 py-1 text-xs font-semibold text-accent border border-accent/30">
+              <Sparkles size={13} /> Campus Central Dining Hall
+            </span>
+          </div>
+        </div>
       </PageHeader>
 
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {/* Real-time Status Counters */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
-          { label: 'Available', value: statusCounts.available, tone: 'text-success', icon: CheckCircle2 },
-          { label: 'Limited', value: statusCounts.limited, tone: 'text-warning', icon: Clock3 },
-          { label: 'Sold out', value: statusCounts.soldOut, tone: 'text-error', icon: CircleOff },
-        ].map((stat) => (
-          <div key={stat.label} className="card-surface flat-card canteen-stat">
-            <div className="card-header">
-              <div className="card-header__main">
-                <span className="card-header__icon" aria-hidden="true">
-                  <stat.icon size={16} strokeWidth={1.8} />
+          { key: 'available', label: 'Available Now', value: statusCounts.available, tone: 'text-emerald-400', icon: CheckCircle2, bg: 'bg-emerald-500/10 border-emerald-500/20' },
+          { key: 'limited', label: 'Limited Stock', value: statusCounts.limited, tone: 'text-amber-400', icon: Clock3, bg: 'bg-amber-500/10 border-amber-500/20' },
+          { key: 'soldOut', label: 'Sold Out', value: statusCounts.soldOut, tone: 'text-rose-400', icon: CircleOff, bg: 'bg-rose-500/10 border-rose-500/20' },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              whileHover={{ y: -3 }}
+              onClick={() => setActiveFilter(stat.key)}
+              className={`card-surface rounded-2xl border p-5 cursor-pointer transition-all duration-300 ${
+                activeFilter === stat.key
+                  ? 'border-accent shadow-glow bg-surface-secondary/90'
+                  : 'border-border/40 hover:border-border/70'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+                  {stat.label}
                 </span>
-                <span className="card-title">{stat.label}</span>
+                <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${stat.bg} ${stat.tone}`}>
+                  <Icon size={16} />
+                </span>
               </div>
-            </div>
-            <div className="card-data-item">
-              <span className="card-label">Items</span>
-              <span className={`card-value ${stat.tone}`}>{stat.value}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className={`font-display text-3xl font-extrabold ${stat.tone}`}>
+                  {stat.value}
+                </span>
+                <span className="text-xs text-foreground-muted">Menu items</span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </section>
 
-      <motion.section
-        initial="hidden"
-        animate={loading ? 'hidden' : 'visible'}
-        variants={listVariants}
-        className="grid gap-4 md:grid-cols-2"
-      >
-        {loading
-          ? [1, 2, 3, 4].map((item) => <SkeletonCard key={item} />)
-            : safeItems.length === 0 ? (
-              <div className="card-surface flat-card empty-state col-span-1 sm:col-span-2">
-                <div className="card-header">
-                  <div className="card-header__main">
-                    <span className="card-header__icon" aria-hidden="true">
-                      <UtensilsCrossed size={16} strokeWidth={1.8} />
-                    </span>
-                    <h2 className="card-title">No menu items yet</h2>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <p className="text-sm text-foreground-muted">
-                    The canteen team has not published today&apos;s menu.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              safeItems.map((item) => (
-                <motion.div key={item._id} variants={itemVariants}>
-                  <Card
-                    variant="glass"
-                    hover={false}
-                    icon={UtensilsCrossed}
-                    title={item.name}
-                    status={<Badge status={item.status}>{statusLabel[item.status] || 'Available'}</Badge>}
-                    className="menu-card h-full"
-                  >
-                    <div className="flex flex-col gap-3">
-                      <div className="card-data-grid card-data-grid--two menu-divider border-t border-border pt-3">
-                        <div className="card-data-item">
-                          <span className="card-label">Category</span>
-                          <span className="card-value text-base">{item.category || 'Campus menu'}</span>
+      {/* Filter Tabs & Menu Grid */}
+      <section className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/30 pb-4">
+          <div className="flex items-center gap-2">
+            <Filter size={16} className="text-accent" />
+            <h2 className="font-display text-lg font-bold text-foreground">Today's Menu Items</h2>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            {[
+              { id: 'all', label: 'All Items' },
+              { id: 'available', label: 'Available' },
+              { id: 'limited', label: 'Limited' },
+              { id: 'soldOut', label: 'Sold Out' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveFilter(tab.id)}
+                className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-200 ${
+                  activeFilter === tab.id
+                    ? 'bg-accent text-white shadow-soft'
+                    : 'bg-surface-secondary/80 text-foreground-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Menu Items Grid */}
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <SkeletonCard key={item} />
+            ))}
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <Card title="No menu items in this category" className="empty-state text-center py-10" hover={false}>
+            <p className="text-sm text-foreground-muted max-w-sm mx-auto">
+              {activeFilter === 'all'
+                ? "The canteen team hasn't published items for today yet."
+                : `There are currently no menu items marked as "${statusLabel[activeFilter] || activeFilter}".`}
+            </p>
+          </Card>
+        ) : (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer(0.06, 0.03)}
+            className="grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {filteredItems.map((item) => {
+              const status = item?.status || 'available';
+
+              return (
+                <motion.div key={item._id || item.name} variants={fadeUp}>
+                  <div className="card-surface glass-panel rounded-2xl border border-border/40 p-5 shadow-soft hover:shadow-elevated hover:border-accent/40 transition-all duration-300 h-full flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent border border-accent/20">
+                            <UtensilsCrossed size={18} />
+                          </span>
+                          <div>
+                            <h3 className="font-display font-bold text-foreground text-base">
+                              {item.name}
+                            </h3>
+                            <span className="text-xs text-foreground-muted">
+                              {item.category || 'General Menu'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="card-data-item">
-                          <span className="card-label">Price</span>
-                          <span className="card-value">₹{item.price}</span>
-                        </div>
-                      </div>
-                      <div className="card-meta-row">
-                        <span className="card-label">Updated</span>
-                        <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Recently'}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>Chef&apos;s pick</span>
+
+                        <Badge status={status}>
+                          {statusLabel[status] || 'Available'}
+                        </Badge>
                       </div>
                     </div>
-                  </Card>
+
+                    <div className="mt-5 pt-3 border-t border-border/30 flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] uppercase tracking-wider text-foreground-muted block">Price</span>
+                        <span className="font-display text-lg font-bold text-accent">
+                          ₹{item.price}
+                        </span>
+                      </div>
+
+                      <span className="text-xs text-foreground-muted bg-surface-secondary px-2.5 py-1 rounded-lg border border-border/30">
+                        {item.updatedAt ? `Updated ${new Date(item.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Live'}
+                      </span>
+                    </div>
+                  </div>
                 </motion.div>
-              ))
-            )}
-      </motion.section>
+              );
+            })}
+          </motion.div>
+        )}
+      </section>
     </div>
   );
 }
