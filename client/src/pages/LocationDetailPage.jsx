@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+<<<<<<< HEAD
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, MapPin, MessageSquare, Star, Send, ThumbsUp, ArrowLeft, Navigation, ShieldCheck, Clock } from 'lucide-react';
+=======
+import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Building2, MapPin, MessageSquare } from 'lucide-react';
+import RatingsLogo from '../assets/ratings-logo.png';
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
 import api from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -156,11 +163,22 @@ export default function LocationDetailPage() {
                   {data?.location?.building || 'Main Campus'}
                 </span>
               </div>
+<<<<<<< HEAD
 
               <div className="rounded-2xl bg-surface-secondary/80 border border-border/40 p-4">
                 <div className="flex items-center gap-1.5 text-xs text-foreground-muted mb-1">
                   <Star size={13} className="text-amber-400" />
                   <span>Avg Rating</span>
+=======
+              <div className="card-surface location-meta">
+                <div className="card-header">
+                  <div className="card-header__main">
+                    <span className="card-header__icon" aria-hidden="true">
+                      <img src={RatingsLogo} alt="Ratings logo" className="h-6 w-6 rounded object-cover" />
+                    </span>
+                    <span className="card-title">Average rating</span>
+                  </div>
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
                 </div>
                 <span className="font-display text-base font-bold text-foreground">
                   {data?.averageRating ? `${data.averageRating} / 5` : 'New'}

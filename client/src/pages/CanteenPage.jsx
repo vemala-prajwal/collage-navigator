@@ -5,7 +5,7 @@ import api from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import PageHeader from '../components/PageHeader';
-import CanteenLogo from '../assets/canteen-logo.jpeg';
+import CanteenLogo from '../assets/canteen-logo.png';
 import { SkeletonCard } from '../components/Skeleton';
 import { fadeUp, staggerContainer } from '../lib/motion';
 import usePageMeta from '../hooks/usePageMeta';
@@ -80,6 +80,7 @@ export default function CanteenPage() {
         title="Fresh food menu, updated in real time."
         description="Scan today's live menu availability, check pricing, and avoid long canteen lines before you walk over."
       >
+<<<<<<< HEAD
         <div className="relative overflow-hidden rounded-2xl border border-border/40 shadow-elevated">
           <img
             src={CanteenLogo}
@@ -92,6 +93,13 @@ export default function CanteenPage() {
             </span>
           </div>
         </div>
+=======
+        <img
+          src={CanteenLogo}
+          alt="Campus canteen logo"
+          className="mx-auto h-44 w-44 rounded-full object-cover ring-1 ring-border"
+        />
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
       </PageHeader>
 
       {/* Real-time Status Counters */}

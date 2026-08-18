@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+import CampusLogo from '../assets/campus-logo.png';
+
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
 export default function CampusLogoIcon({ className = '' }) {
   return (
     <svg

@@ -65,7 +65,11 @@ export default function Navbar({ user, logout }) {
           <Link
             to="/"
             aria-label="Campus Navigator home"
+<<<<<<< HEAD
             className="brand-logo"
+=======
+            className="group flex items-center gap-3 font-display text-lg font-semibold tracking-tight"
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
           >
 <<<<<<< HEAD
             <span className="brand-logo__mark">
@@ -77,7 +81,14 @@ export default function Navbar({ user, logout }) {
 >>>>>>> f3b7adee01245eb9eed63553a02e5219db5e5294
               <CampusLogoIcon />
             </span>
+<<<<<<< HEAD
             <span className="brand-logo__name">Campus Navigator</span>
+=======
+            <span className="brand-wordmark">
+              <span className="inline-block text-xl leading-none">Campus</span>
+              <span className="inline-block text-sm leading-none text-foreground-muted">Navigator</span>
+            </span>
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -175,7 +186,7 @@ export default function Navbar({ user, logout }) {
 =======
                 <Link
                   to="/"
-                  className="flex items-center gap-2 font-display text-lg font-bold"
+                  className="flex items-center gap-2 font-display text-lg font-semibold"
                   onClick={() => setMenuOpen(false)}
                 >
                   <span
@@ -183,11 +194,21 @@ export default function Navbar({ user, logout }) {
                     style={{ background: 'rgb(var(--color-accent))' }}
 >>>>>>> f3b7adee01245eb9eed63553a02e5219db5e5294
                   >
+<<<<<<< HEAD
                     <span className="brand-logo__mark">
                       <CampusLogoIcon />
                     </span>
                     <span className="brand-logo__name">Campus Navigator</span>
                   </Link>
+=======
+                    <CampusLogoIcon />
+                  </span>
+                  <span className="brand-wordmark">
+                    <span className="inline-block text-base leading-none">Campus</span>
+                    <span className="inline-block text-xs leading-none text-foreground-muted">Nav</span>
+                  </span>
+                </Link>
+>>>>>>> 03d75daff3567e2c1d59e4a89b9b29222f5f273e
                 <button
                   type="button"
                   onClick={() => setMenuOpen(false)}
