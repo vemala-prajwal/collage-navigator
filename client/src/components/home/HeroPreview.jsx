@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { motion, useReducedMotion } from 'framer-motion';
 import { MapPinned } from 'lucide-react';
 import Badge from '../Badge';
+import RouteLogo from '../../assets/route-logo.png';
 
 const routePath = 'M 48 180 Q 120 140 180 120 T 300 80 T 420 100 T 520 60';
 
@@ -136,7 +137,7 @@ export default function HeroPreview({ className = '' }) {
         <div className="card-header">
           <div className="card-header__main">
             <span className="card-header__icon" aria-hidden="true">
-              <MapPinned size={14} strokeWidth={1.8} />
+              <img src={RouteLogo} alt="Route access logo" className="h-6 w-6 rounded object-cover" />
             </span>
             <span className="card-title">Route information</span>
           </div>
