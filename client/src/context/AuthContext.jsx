@@ -66,8 +66,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
   };
 
-  const register = async ({ name, email, password, campus, sanUsn }) => {
-    const data = await registerUser({ name, email, password, campus, sanUsn });
+  const register = async (payload) => {
+    const data = await registerUser(payload);
+    if (data.requiresOtp) {
+      return data;
+    }
     if (!data?.user) {
       throw new Error('Account creation failed. Please try again.');
     }
@@ -78,15 +81,14 @@ export function AuthProvider({ children }) {
     const nextUser = {
       id: data.user.id,
       name: data.user.name,
-      email: data.user.email,
+      email: data.user.email || '',
+      phone: data.user.phone || '',
+      phoneVerified: Boolean(data.user.phoneVerified),
       campus: data.user.campus,
       role: data.user.role,
       sanUsn: data.user.sanUsn || '',
     };
 
-    // A public Supabase sign-up may require email confirmation before a
-    // session exists. Keep the account response so the form can explain the
-    // next step without persisting an unusable token.
     if (data.token) {
       persistSession(data.token, nextUser);
     }
@@ -94,12 +96,14 @@ export function AuthProvider({ children }) {
     return { ...data, user: nextUser };
   };
 
-  const login = async ({ email, password }) => {
-    const data = await loginUser({ email, password });
+  const login = async (payload) => {
+    const data = await loginUser(payload);
     const nextUser = {
       id: data.user.id,
       name: data.user.name,
-      email: data.user.email,
+      email: data.user.email || '',
+      phone: data.user.phone || '',
+      phoneVerified: Boolean(data.user.phoneVerified),
       campus: data.user.campus,
       role: data.user.role,
       sanUsn: data.user.sanUsn || '',

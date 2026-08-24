@@ -1,1 +1,17 @@
 node_modules
+
+# Build output
+dist
+client/dist
+
+# Local environment files (keep secrets out of git)
+.env
+client/.env
+server/.env
+
+# Vercel env export file (optional import)
+vercel-env.txt
+
+# Ignore local build output
+client/dist/
+server/dist/

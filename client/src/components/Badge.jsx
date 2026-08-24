@@ -16,12 +16,12 @@ const statusStyles = {
 };
 
 export default function Badge({ status = 'available', children, className = '', ...props }) {
-  const style = statusStyles[status] || statusStyles.available;
+  const styleClass = `status-badge--${status}`;
 
   return (
-    <span className={`status-badge inline-flex items-center gap-2 text-xs font-medium ${style.text} ${className}`} {...props}>
-      <span className={`status-badge__dot h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
-      {children}
+    <span className={`status-badge ${styleClass} inline-flex items-center gap-2 text-xs font-medium ${className}`} {...props}>
+      <span className={`status-badge__dot h-2 w-2 shrink-0 rounded-full`} aria-hidden="true" />
+      <span className="status-badge__label">{children}</span>
     </span>
   );
 }

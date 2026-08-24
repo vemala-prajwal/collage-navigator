@@ -5,15 +5,17 @@ const BASE_TITLE = 'Campus Navigator';
 export default function usePageMeta({ title, description } = {}) {
   useEffect(() => {
     const previousTitle = document.title;
-    const metaDescription = document.querySelector('meta[name="description"]');
+    let metaDescription = document.querySelector('meta[name="description"]');
+    const createdMetaDescription = !metaDescription;
     const previousDescription = metaDescription?.getAttribute('content') || '';
 
-    if (title) {
-      document.title = `${title} | ${BASE_TITLE}`;
-    } else {
-      document.title = BASE_TITLE;
+    if (!metaDescription && description) {
+      metaDescription = document.createElement('meta');
+      metaDescription.name = 'description';
+      document.head.appendChild(metaDescription);
     }
 
+    document.title = title ? `${title} | ${BASE_TITLE}` : BASE_TITLE;
     if (description && metaDescription) {
       metaDescription.setAttribute('content', description);
     }
@@ -21,7 +23,11 @@ export default function usePageMeta({ title, description } = {}) {
     return () => {
       document.title = previousTitle || BASE_TITLE;
       if (metaDescription) {
-        metaDescription.setAttribute('content', previousDescription);
+        if (createdMetaDescription) {
+          metaDescription.remove();
+        } else {
+          metaDescription.setAttribute('content', previousDescription);
+        }
       }
     };
   }, [title, description]);

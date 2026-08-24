@@ -6,125 +6,95 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api/auth';
 const client = axios.create({
   baseURL: apiBaseUrl,
   timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-/**
- * Extracts a human-readable error message from an Axios error.
- * All auth is routed through the backend — no client-side Supabase fallback.
- */
-const getErrorMessage = (error) => {
-  const responseData = error?.response?.data;
+const createCustomError = (axiosError) => {
+  const responseData = axiosError?.response?.data;
+  const status = axiosError?.response?.status;
 
-  const parseMessage = (val) => {
-    if (!val) return '';
-    let str = typeof val === 'string' ? val : JSON.stringify(val);
-    if (str.trim().startsWith('{')) {
-      try {
-        const parsed = JSON.parse(str);
-        str = parsed.message || parsed.error_description || parsed.error || str;
-      } catch {
-        // Keep original string if parse fails
-      }
-    }
-    return typeof str === 'string' ? str : '';
-  };
+  let message = '';
+  if (typeof responseData === 'string' && responseData.trim()) message = responseData;
+  else if (responseData?.message) message = responseData.message;
+  else if (axiosError?.message) message = axiosError.message;
+  else message = 'Something went wrong. Please try again.';
 
-  if (typeof responseData === 'string' && responseData.trim()) {
-    const parsed = parseMessage(responseData);
-    if (parsed) return parsed;
-  }
-
-  if (responseData?.message) {
-    const msg = parseMessage(responseData.message);
-    if (msg && msg !== '{}') return msg;
-  }
-
-  if (responseData?.error) {
-    const msg = parseMessage(responseData.error);
-    if (msg && msg !== '{}') return msg;
-  }
-
-  if (responseData?.errors?.length) {
-    return responseData.errors
-      .map((item) => item.msg || item.message || item)
-      .filter(Boolean)
-      .join(', ');
-  }
-
-  const status = error?.response?.status;
-
-  if (status === 401) {
-    return 'Invalid email or password.';
-  }
-
-  if (status === 409) {
-    return 'An account with this email already exists.';
-  }
-
-  if (status === 400) {
-    return responseData?.message || 'Please check your details and try again.';
-  }
-
-  if (status === 404 || status === 405) {
-    return 'Auth service is unavailable. Please try again shortly.';
-  }
-
-  if (status === 500 || status === 502 || status === 503) {
-    return 'The server is temporarily unavailable. Please try again in a moment.';
-  }
-
-  if (error?.code === 'ECONNABORTED') {
-    return 'The request timed out. Please check your connection and try again.';
-  }
-
-  if (error?.message === 'Network Error' || !error?.response) {
-    return 'Unable to reach the server. Make sure you are online and the backend is running.';
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  return 'Something went wrong. Please try again.';
+  const err = new Error(message);
+  if (responseData?.remainingAttempts !== undefined) err.remainingAttempts = responseData.remainingAttempts;
+  if (responseData?.retryAfterSeconds !== undefined) err.retryAfterSeconds = responseData.retryAfterSeconds;
+  err.status = status;
+  return err;
 };
 
-/** Register a new account via the backend API. */
 export async function registerUser(payload) {
   try {
     const { data } = await client.post('/register', payload);
     return data;
-  } catch (error) {
-    throw new Error(getErrorMessage(error));
+  } catch (e) {
+    throw createCustomError(e);
   }
 }
 
-/** Sign in via the backend API. */
 export async function loginUser(payload) {
   try {
     const { data } = await client.post('/login', payload);
     return data;
-  } catch (error) {
-    throw new Error(getErrorMessage(error));
+  } catch (e) {
+    throw createCustomError(e);
   }
 }
 
-/**
- * Validate an existing session token against the backend.
- * Returns null (without throwing) if the token is invalid/expired so the
- * AuthProvider can clear the session silently.
- */
+export async function verifyRegistrationOtp(phone, otp, firebaseToken) {
+  try {
+    const { data } = await client.post('/verify-registration-otp', { phone, otp, firebaseToken });
+    return data;
+  } catch (e) {
+    throw createCustomError(e);
+  }
+}
+
+export async function requestPasswordReset(email, redirectTo) {
+  try {
+    const { data } = await client.post('/forgot-password', { email, redirectTo });
+    return data;
+  } catch (e) {
+    throw createCustomError(e);
+  }
+}
+
+export async function requestPhonePasswordReset(phone) {
+  try {
+    const { data } = await client.post('/forgot-password-phone', { phone });
+    return data;
+  } catch (e) {
+    throw createCustomError(e);
+  }
+}
+
+export async function verifyPhoneOtp(phone, otp, firebaseToken) {
+  try {
+    const { data } = await client.post('/verify-otp', { phone, otp, firebaseToken });
+    return data;
+  } catch (e) {
+    throw createCustomError(e);
+  }
+}
+
+export async function resetPasswordWithToken(token, password) {
+  try {
+    const { data } = await client.post('/reset-password-with-token', { token, password });
+    return data;
+  } catch (e) {
+    throw createCustomError(e);
+  }
+}
+
 export async function fetchCurrentUser(token) {
   if (!token) return null;
   try {
-    const { data } = await client.get('/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const { data } = await client.get('/me', { headers: { Authorization: `Bearer ${token}` } });
     return data.user || null;
   } catch {
-    // Token is invalid or backend is unreachable — clear the session.
     return null;
   }
 }

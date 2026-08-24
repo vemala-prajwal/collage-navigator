@@ -65,15 +65,12 @@ export default function Navbar({ user, logout }) {
           <Link
             to="/"
             aria-label="Campus Navigator home"
-            className="group flex items-center gap-3 font-display text-lg font-bold tracking-tight"
+            className="brand-logo"
           >
-            <span
-              className="brand-mark relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgb(239_68_217/0.35)] transition-transform duration-300 group-hover:scale-110"
-              style={{ background: 'rgb(var(--color-accent))' }}
-            >
+            <span className="brand-logo__mark">
               <CampusLogoIcon />
             </span>
-            <span className="text-gradient text-xl">Campus Navigator</span>
+            <span className="brand-logo__name">Campus Navigator</span>
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -159,23 +156,18 @@ export default function Navbar({ user, logout }) {
               transition={{ type: 'spring', stiffness: 260, damping: 28 }}
               className="fixed right-0 top-0 z-50 flex h-full w-[min(88vw,340px)] flex-col border-l border-border/50 bg-surface/90 px-6 py-6 shadow-elevated backdrop-blur-2xl mobile-nav-drawer"
             >
-              {/* gradient top accent bar */}
               <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: 'rgb(var(--color-accent))' }} />
-
               <div className="flex items-center justify-between">
-                <Link
-                  to="/"
-                  className="flex items-center gap-2 font-display text-lg font-bold"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <span
-                    className="brand-mark flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
-                    style={{ background: 'rgb(var(--color-accent))' }}
+                  <Link
+                    to="/"
+                    className="brand-logo"
+                    onClick={() => setMenuOpen(false)}
                   >
-                    <CampusLogoIcon />
-                  </span>
-                  <span className="text-gradient text-xl">Campus Nav</span>
-                </Link>
+                    <span className="brand-logo__mark">
+                      <CampusLogoIcon />
+                    </span>
+                    <span className="brand-logo__name">Campus Navigator</span>
+                  </Link>
                 <button
                   type="button"
                   onClick={() => setMenuOpen(false)}

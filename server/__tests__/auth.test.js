@@ -5,6 +5,10 @@ jest.mock('../lib/authService', () => ({
   registerAccount: jest.fn(),
   loginAccount: jest.fn(),
   getCurrentUser: jest.fn(),
+  requestPasswordReset: jest.fn(),
+  requestPhonePasswordReset: jest.fn(),
+  verifyPhonePasswordResetOtp: jest.fn(),
+  resetPasswordWithToken: jest.fn(),
 }));
 
 const authService = require('../lib/authService');
@@ -59,5 +63,65 @@ describe('Auth routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('token', 'login-token');
+  });
+
+  it('requests an email password reset using the supplied redirect URL', async () => {
+    authService.requestPasswordReset.mockResolvedValue({
+      message: 'If an account exists for this email, a reset link has been sent.',
+    });
+
+    const response = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({
+        email: 'test@example.com',
+        redirectTo: 'http://localhost:5173/reset-password',
+      });
+
+    expect(response.status).toBe(200);
+    expect(authService.requestPasswordReset).toHaveBeenCalledWith(expect.objectContaining({
+      email: 'test@example.com',
+      redirectTo: 'http://localhost:5173/reset-password',
+    }));
+  });
+
+  it('handles phone password reset request', async () => {
+    authService.requestPhonePasswordReset.mockResolvedValue({
+      maskedPhone: '+91 *****5678',
+      phone: '+919876545678',
+      message: "If this number is registered, you'll receive a code shortly.",
+    });
+
+    const response = await request(app)
+      .post('/api/auth/forgot-password-phone')
+      .send({ phone: '+919876545678' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('maskedPhone', '+91 *****5678');
+  });
+
+  it('handles phone OTP verification for password reset', async () => {
+    authService.verifyPhonePasswordResetOtp.mockResolvedValue({
+      resetToken: 'mock-reset-token',
+    });
+
+    const response = await request(app)
+      .post('/api/auth/verify-otp')
+      .send({ phone: '+919876545678', otp: '123456', firebaseToken: 'mock-fb-token' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('resetToken', 'mock-reset-token');
+  });
+
+  it('resets password with token', async () => {
+    authService.resetPasswordWithToken.mockResolvedValue({
+      message: 'Password has been reset successfully.',
+    });
+
+    const response = await request(app)
+      .post('/api/auth/reset-password-with-token')
+      .send({ token: 'mock-reset-token', password: 'newPassword123!' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('message', 'Password has been reset successfully.');
   });
 });

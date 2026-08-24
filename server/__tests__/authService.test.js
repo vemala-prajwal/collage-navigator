@@ -13,12 +13,13 @@ const publicClient = {
   auth: {
     admin: {},
     signUp: jest.fn(),
+    resetPasswordForEmail: jest.fn(),
   },
 };
 
 createClient.mockReturnValue(publicClient);
 
-const { registerAccount } = require('../lib/authService');
+const { registerAccount, requestPasswordReset } = require('../lib/authService');
 
 describe('registerAccount with public Supabase auth', () => {
   beforeEach(() => {
@@ -79,5 +80,18 @@ describe('registerAccount with public Supabase auth', () => {
 
     expect(result.token).toBeNull();
     expect(result.requiresEmailConfirmation).toBe(true);
+  });
+
+  it('uses the caller reset URL instead of a hard-coded deployment URL', async () => {
+    publicClient.auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+
+    await requestPasswordReset({
+      email: 'public@example.com',
+      redirectTo: 'http://localhost:5173/reset-password',
+    });
+
+    expect(publicClient.auth.resetPasswordForEmail).toHaveBeenCalledWith('public@example.com', {
+      redirectTo: 'http://localhost:5173/reset-password',
+    });
   });
 });

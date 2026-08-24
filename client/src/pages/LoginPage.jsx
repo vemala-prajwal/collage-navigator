@@ -1,35 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Lock, Mail, Phone } from 'lucide-react';
 import AuthShell from '../components/auth/AuthShell';
 import AuthField from '../components/auth/AuthField';
 import { useAuth } from '../context/AuthContext';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [detectedType, setDetectedType] = useState('email'); // 'email' | 'phone'
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Auto-detect input type (Email vs Phone)
+  useEffect(() => {
+    const raw = identifier.trim();
+    if (!raw) {
+      setDetectedType('email');
+      return;
+    }
+    if (raw.includes('@')) {
+      setDetectedType('email');
+    } else if (/^[\d\s()+-]+$/.test(raw)) {
+      setDetectedType('phone');
+    }
+  }, [identifier]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const rawInput = identifier.trim();
 
-    if (!normalizedEmail) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    if (!EMAIL_PATTERN.test(normalizedEmail)) {
-      setError('Please enter a valid email address.');
+    if (!rawInput) {
+      setError('Please enter your email address or phone number.');
       return;
     }
 
@@ -40,11 +48,11 @@ function LoginPage() {
 
     setLoading(true);
     try {
-      await login({ email: normalizedEmail, password });
+      await login({ identifier: rawInput, password });
       toast.success('Signed in successfully!');
       navigate('/');
     } catch (err) {
-      const message = err?.message || 'Invalid email or password';
+      const message = err?.message || 'Invalid credentials or password.';
       setError(message);
       toast.error(message);
     } finally {
@@ -60,7 +68,7 @@ function LoginPage() {
           Sign in to your <span className="italic">account.</span>
         </>
       }
-      description="Access live routes, canteen status and the places you care about."
+      description="Access live routes, canteen status, and campus navigation."
       footer={
         <p>
           New to Campus Navigator?{' '}
@@ -84,19 +92,31 @@ function LoginPage() {
           </div>
         )}
 
-        <AuthField label="Email" htmlFor="email" icon={<Mail size={16} />}>
+        <AuthField
+          label={
+            <div className="flex items-center justify-between">
+              <span>Email or Phone Number</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted/80">
+                {detectedType === 'phone' ? 'Phone Mode' : 'Email Mode'}
+              </span>
+            </div>
+          }
+          htmlFor="identifier"
+          icon={detectedType === 'phone' ? <Phone size={16} /> : <Mail size={16} />}
+        >
           <input
-            id="email"
-            type="email"
-            autoComplete="email"
+            id="identifier"
+            type="text"
+            autoComplete="username"
             required
-            value={email}
+            autoFocus
+            value={identifier}
             onChange={(event) => {
-              setEmail(event.target.value);
+              setIdentifier(event.target.value);
               if (error) setError('');
             }}
             className="input-field pl-11"
-            placeholder="you@campus.edu"
+            placeholder="you@campus.edu or +91 98765 43210"
           />
         </AuthField>
 
